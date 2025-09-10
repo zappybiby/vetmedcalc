@@ -1,64 +1,57 @@
 <script lang="ts">
-  import { patient } from '../stores/patient';
-  import type { Species } from '../stores/patient';
+  import CPRCard from './CPRCard.svelte';
 
-  // bind to local fields, then sync to store reactively
-  $: current = $patient;
-  let weight = current.weightKg ?? '';
-  let species: Species | '' = current.species ?? '';
-  let name = current.name ?? '';
+  type Tab = { id: string; label: string };
+  const tabs: Tab[] = [
+    { id: 'cpr',   label: 'CPR CARD' },
+    { id: 'cri',   label: 'CRI CALCULATOR' },
+    { id: 'blood', label: 'BLOOD TRANSFUSION' }
+  ];
 
-  // keep store in sync with inputs
-  $: patient.update(p => ({
-    ...p,
-    weightKg: weight === '' ? null : Number(weight),
-    species,
-    name
-  }));
+  let active: Tab['id'] = 'cpr'; // default
 </script>
 
-<aside class="panel" role="complementary" aria-label="Patient inputs">
-  <h2 class="panel__title">Patient</h2>
-
-  <div class="field">
-    <label for="weight">Weight (kg)</label>
-    <input id="weight" type="number" min="0" step="0.1" bind:value={weight} inputmode="decimal" />
+<section class="shell" aria-label="Main tools">
+  <div class="tabs" role="tablist" aria-label="Tool tabs">
+    {#each tabs as t}
+      <button
+        class="tab {active === t.id ? 'is-active' : ''}"
+        role="tab"
+        aria-selected={active === t.id}
+        on:click={() => (active = t.id)}
+      >
+        {t.label}
+      </button>
+    {/each}
   </div>
 
-  <div class="field">
-    <label for="species">Species</label>
-    <select id="species" bind:value={species}>
-      <option value="" disabled selected>Select…</option>
-      <option value="dog">Dog</option>
-      <option value="cat">Cat</option>
-    </select>
+  <div class="panel" role="tabpanel">
+    {#if active === 'cpr'}
+      <CPRCard />
+    {:else if active === 'cri'}
+      <div class="placeholder">CRI Calculator will appear here.</div>
+    {:else}
+      <div class="placeholder">Blood Transfusion tool will appear here.</div>
+    {/if}
   </div>
-
-  <div class="field">
-    <label for="name">Patient name (optional)</label>
-    <input id="name" type="text" placeholder="e.g., Bella" bind:value={name} />
-  </div>
-</aside>
+</section>
 
 <style>
-  .panel {
-    position: sticky;
-    top: 1rem;
-    align-self: start;
-    background: white;
-    border: 2px solid #111;
-    border-radius: .5rem;
-    padding: .75rem .9rem;
+  .shell { display: grid; gap: .75rem; }
+  .tabs { display: flex; flex-wrap: wrap; gap: .5rem; }
+  .tab {
+    border: 2px solid #111; background: #fff; padding: .4rem .7rem;
+    border-radius: .4rem; font-weight: 700; font-size: .85rem;
     box-shadow: 2px 2px 0 #111;
   }
-  .panel__title {
-    font-size: 0.95rem;
-    margin: 0 0 .5rem 0;
-    letter-spacing: .02em;
+  .tab.is-active { background: #f2f2f2; }
+  .panel {
+    min-height: 40vh;
+    border: 2px solid #111; border-radius: .5rem; padding: 1rem;
+    box-shadow: 3px 3px 0 #111; background: #fff;
   }
-  .field { display: grid; gap: .25rem; margin-bottom: .6rem; }
-  label { font-size: .8rem; font-weight: 600; }
-  input, select {
-    border: 1.5px solid #111; border-radius: .4rem; padding: .4rem .5rem; font-size: .95rem;
+  .placeholder { color: #444; opacity: .9; }
+  @media (max-width: 720px) {
+    .tabs { gap: .4rem; }
   }
 </style>

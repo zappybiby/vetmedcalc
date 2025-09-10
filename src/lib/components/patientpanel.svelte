@@ -17,7 +17,7 @@
   }));
 </script>
 
-<aside class="panel" role="complementary" aria-label="Patient inputs">
+<aside class="panel" aria-label="Patient inputs">
   <h2 class="panel__title">Patient</h2>
 
   <div class="field">
