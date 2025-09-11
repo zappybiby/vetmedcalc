@@ -503,27 +503,28 @@
   .field.chk { grid-column: 1 / -1; }
   label { font-size: .85rem; font-weight: 700; }
   input, select {
-    border: 1.5px solid #111; border-radius: .4rem;
+    border: 1.5px solid #e5e7eb; border-radius: .4rem;
     padding: .4rem .5rem; font-size: .95rem;
+    background: #0b1220; color: #e5e7eb;
   }
   .row { display: grid; grid-template-columns: 1fr auto; gap: .4rem; align-items: center; }
 
   .results {
-    border: 2px solid #111; border-radius: .5rem;
-    padding: .7rem .8rem; box-shadow: 2px 2px 0 #111; background: #fff;
+    border: 2px solid #e5e7eb; border-radius: .5rem;
+    padding: .7rem .8rem; box-shadow: 2px 2px 0 #0b0b0b; background: #111827; color: #e5e7eb;
   }
   .sub { margin: 0 0 .4rem 0; font-size: .95rem; font-weight: 900; }
   /* .rows and .val were used by the old layout */
 
   .banner.warn {
-    border: 2px dashed #111; padding: .5rem; border-radius: .4rem;
-    background: #fffae6; font-weight: 800;
+    border: 2px dashed #facc15; padding: .5rem; border-radius: .4rem;
+    background: #3b2f00; color: #fef3c7; font-weight: 800;
   }
   .muted { opacity: .7; margin: 0 .2rem; }
   .warn { color: #b45309; font-weight: 800; margin-left: .25rem; }
   .pill {
-    border: 1.5px solid #111; border-radius: 999px;
-    padding: .08rem .4rem; font-weight: 800; background: #f6f6f6;
+    border: 1.5px solid #e5e7eb; border-radius: 999px;
+    padding: .08rem .4rem; font-weight: 800; background: #0b1220; color: #e5e7eb;
   }
   .note { font-size: .8rem; opacity: .85; }
 
@@ -536,7 +537,7 @@
 
   /* New mapping layout */
 
-  .section { border: 1.5px solid #111; border-radius: .45rem; padding: .55rem .6rem; background: #fff; margin-bottom: .6rem; }
+  .section { border: 1.5px solid #e5e7eb; border-radius: .45rem; padding: .55rem .6rem; background: #0b1220; color: #e5e7eb; margin-bottom: .6rem; }
   .section-title { font-size: .8rem; font-weight: 900; margin-bottom: .35rem; }
   .kv { display: grid; grid-template-columns: 1fr auto; row-gap: .35rem; column-gap: .6rem; align-items: center; }
   .kv .k { opacity: .9; }
@@ -553,7 +554,7 @@
   .subnote { font-size: .85rem; opacity: .75; font-weight: 500; margin-top: .15rem; }
 
   .draws { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: .6rem; }
-  .card { border: 1.5px solid #111; border-radius: .45rem; padding: .6rem .65rem; background: #f9f9f9; }
+  .card { border: 1.5px solid #e5e7eb; border-radius: .45rem; padding: .6rem .65rem; background: #0b1220; color: #e5e7eb; }
   .card-title { font-weight: 900; font-size: .85rem; margin-bottom: .25rem; }
   .big { font-variant-numeric: tabular-nums; font-weight: 900; font-size: 1.05rem; margin-bottom: .2rem; }
   .detail { font-variant-numeric: tabular-nums; }

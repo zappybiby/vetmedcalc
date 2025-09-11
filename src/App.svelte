@@ -16,8 +16,9 @@
 <style>
   .page {
     min-height: 100vh;
-    background: #fafafa;
-    color: #111;
+    /* Inherit global dark styles */
+    background: transparent;
+    color: inherit;
   }
   .layout {
     max-width: 1200px;

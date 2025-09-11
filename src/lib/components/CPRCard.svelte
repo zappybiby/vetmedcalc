@@ -241,17 +241,17 @@
   /* --- screen card (unchanged from earlier, trimmed for brevity) --- */
   .card { display: grid; gap: .6rem; }
   .hdr { display: flex; justify-content: space-between; align-items: center; font-weight: 800; }
-  .btn { border: 2px solid #111; border-radius: .4rem; padding: .35rem .6rem; font-weight: 700; background: #fff; box-shadow: 2px 2px 0 #111; }
+  .btn { border: 2px solid #e5e7eb; color: #e5e7eb; border-radius: .4rem; padding: .35rem .6rem; font-weight: 700; background: #1f2937; box-shadow: 2px 2px 0 #0b0b0b; }
   .rows { display: grid; gap: .5rem; }
   .row { display: grid; align-items: center; gap: .5rem; grid-template-columns: 1.5fr .9fr .9fr;
-         background: #fff; border: 1.5px solid #111; border-radius: .45rem; padding: .55rem .7rem; box-shadow: 2px 2px 0 #111; }
+         background: #111827; color: #e5e7eb; border: 1.5px solid #e5e7eb; border-radius: .45rem; padding: .55rem .7rem; box-shadow: 2px 2px 0 #0b0b0b; }
   .row.grid4 { grid-template-columns: 1.4fr .8fr .9fr .6fr; }
   /* Shock bolus: stack rate over time, right aligned */
   /* Match base row column widths for perfect alignment */
   .row.bolus { grid-template-columns: 1.5fr .9fr .9fr; }
   .row.bolus .rt { display: flex; justify-content: flex-end; align-items: center; gap: .4rem; }
   .row.bolus .rt .stack { display: inline-grid; justify-items: center; line-height: 1.1; }
-  .row.bolus .rt .value { font-weight: 800; border-bottom: 2px solid #111; padding-bottom: 1px; }
+  .row.bolus .rt .value { font-weight: 800; border-bottom: 2px solid #e5e7eb; padding-bottom: 1px; }
   .row.bolus .rt .time { font-weight: 700; }
   .label { font-weight: 700; }
   .strong { font-weight: 800; }

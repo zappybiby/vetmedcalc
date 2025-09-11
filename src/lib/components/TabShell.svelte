@@ -41,17 +41,17 @@
   .shell { display: grid; gap: .75rem; }
   .tabs { display: flex; flex-wrap: wrap; gap: .5rem; }
   .tab {
-    border: 2px solid #111; background: #fff; padding: .4rem .7rem;
+    border: 2px solid #e5e7eb; background: #1f2937; color: #e5e7eb; padding: .4rem .7rem;
     border-radius: .4rem; font-weight: 700; font-size: .85rem;
-    box-shadow: 2px 2px 0 #111;
+    box-shadow: 2px 2px 0 #0b0b0b;
   }
-  .tab.is-active { background: #f2f2f2; }
+  .tab.is-active { background: #374151; }
   .panel {
     min-height: 40vh;
-    border: 2px solid #111; border-radius: .5rem; padding: 1rem;
-    box-shadow: 3px 3px 0 #111; background: #fff;
+    border: 2px solid #e5e7eb; border-radius: .5rem; padding: 1rem;
+    box-shadow: 3px 3px 0 #0b0b0b; background: #111827; color: #e5e7eb;
   }
-  .placeholder { color: #444; opacity: .9; }
+  .placeholder { color: #cbd5e1; opacity: .9; }
   @media (max-width: 720px) {
     .tabs { gap: .4rem; }
   }

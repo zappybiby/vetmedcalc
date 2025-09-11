@@ -46,11 +46,12 @@
     position: sticky;
     top: 1rem;
     align-self: start;
-    background: white;
-    border: 2px solid #111;
+    background: #111827;
+    border: 2px solid #e5e7eb;
     border-radius: .5rem;
     padding: .75rem .9rem;
-    box-shadow: 2px 2px 0 #111;
+    box-shadow: 2px 2px 0 #0b0b0b;
+    color: #e5e7eb;
   }
   .panel__title {
     font-size: 0.95rem;
@@ -60,6 +61,7 @@
   .field { display: grid; gap: .25rem; margin-bottom: .6rem; }
   label { font-size: .8rem; font-weight: 600; }
   input, select {
-    border: 1.5px solid #111; border-radius: .4rem; padding: .4rem .5rem; font-size: .95rem;
+    border: 1.5px solid #e5e7eb; border-radius: .4rem; padding: .4rem .5rem; font-size: .95rem;
+    background: #0b1220; color: #e5e7eb;
   }
 </style>
