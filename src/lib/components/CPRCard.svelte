@@ -181,9 +181,12 @@
       display: grid; grid-template-columns: 1.6fr 0.8fr; border: 2px solid #000; border-radius: .06in;
       min-height: 0.8in;
     }
-    .lt-left { padding: 0.05in 0.06in; display: grid; grid-auto-rows: 1fr; gap: 0.02in; border-right: 2px solid #000; }
-    .lt-right { display: grid; align-items: stretch; }
-    .lt-row { display: grid; grid-template-rows: auto auto; }
+    /* Left column holds two medication rows; remove internal gap so the
+       horizontal divider lines align perfectly with the right column. */
+    .lt-left { padding: 0.05in 0.06in; display: grid; grid-template-rows: 1fr 1fr; gap: 0; border-right: none; }
+    .lt-right { display: grid; grid-template-rows: 1fr 1fr; align-items: stretch; }
+    .lt-row { display: grid; grid-template-rows: auto auto; border-bottom: 2px solid #000; }
+    .lt-row:last-child { border-bottom: none; }
     .drug { font-weight: 800; font-size: 9pt; line-height: 1.05; }
     .perkg { font-size: 8pt; opacity: .9; }
     .dose { display: grid; place-items: center; border-bottom: 2px solid #000; font-weight: 900; font-size: 14pt; }

@@ -1,5 +1,6 @@
 <script lang="ts">
   import CPRCard from './CPRCard.svelte';
+  import CRICalculator from './CRICalculator.svelte';
 
   type Tab = { id: string; label: string };
   const tabs: Tab[] = [
@@ -29,7 +30,7 @@
     {#if active === 'cpr'}
       <CPRCard />
     {:else if active === 'cri'}
-      <div class="placeholder">CRI Calculator will appear here.</div>
+      <CRICalculator />
     {:else}
       <div class="placeholder">Blood Transfusion tool will appear here.</div>
     {/if}

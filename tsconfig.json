@@ -1,3 +1,4 @@
+// tsconfig.json
 {
   "compilerOptions": {
     "module": "ESNext",
@@ -10,7 +11,8 @@
     },
     "types": ["svelte", "vite/client"],
     "strict": true,
-    "skipLibCheck": true
+    "skipLibCheck": true,
+    "noEmit": true
   },
   "include": [
     "src/**/*.ts",
@@ -20,15 +22,6 @@
     "vite.config.ts"
   ],
   "exclude": [
-    "node_modules",
-    "dist",
-    "build",
-    ".svelte-kit",
-    ".vite",
-    "coverage",
-    "public",
-    "tmp",
-    "**/.git",
-    ".vscode"
+    "node_modules","dist","build",".svelte-kit",".vite","coverage","public","tmp","**/.git",".vscode"
   ]
 }

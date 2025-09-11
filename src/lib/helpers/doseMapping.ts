@@ -252,13 +252,13 @@ export function computeMixturePlan(input: MappingInput): MixturePlan {
 }
 import type { MedicationDef, MedicationConcentration, SyringeDef } from '../definitions/types';
 
-export type DoseUnit = 'mcg/kg/min' | 'mg/kg/hr';
+export type DoseUnit = 'mcg/kg/min' | 'mg/kg/hr' | 'mg/kg/day' | 'mcg/kg/hr';
 
 export type MappingInput = {
   weightKg: number;
   medication: MedicationDef;         // uses medication.concentration (mg/mL or mcg/mL)
   desiredDose: number;               // numeric dose value
-  doseUnit: DoseUnit;                // 'mcg/kg/min' | 'mg/kg/hr'
+  doseUnit: DoseUnit;                // 'mcg/kg/min' | 'mg/kg/hr' | 'mg/kg/day' | 'mcg/kg/hr'
   desiredRateMlPerHr: number;        // r_ref (the pump rate that should equal the dose)
   desiredDurationHr: number;         // T_hr
   syringes: readonly SyringeDef[];   // from your SYRINGES list
@@ -317,11 +317,26 @@ export type MixturePlan = {
 // ---------- core helpers ----------
 
 function unitConstant(doseUnit: DoseUnit): number {
-  // Pump delivers mg/min = (mg/mL * mL/hr) / 60
-  // Equate D*W to (C * r / 60) converted to mg/min:
-  // For D in mcg/kg/min: multiply numerator by 1 mcg = 1/1000 mg, so factor = 60/1000 = 0.06
-  // For D in mg/kg/hr: time already in hr, so factor = 1
-  return doseUnit === 'mcg/kg/min' ? 0.06 : 1.0;
+  // Pump delivers mg/hr = (mg/mL * mL/hr).
+  // Convert dose units to mg/hr·kg so that:
+  //   C_needed = (U * D * W) / r_ref
+  // where U converts the entered dose to mg/hr per kg.
+  // Cases:
+  // - 'mg/kg/hr'  → U = 1
+  // - 'mcg/kg/min'→ U = 60/1000 = 0.06
+  // - 'mg/kg/day' → U = 1/24 ≈ 0.0416667
+  // - 'mcg/kg/hr' → U = 1/1000 = 0.001
+  switch (doseUnit) {
+    case 'mcg/kg/min':
+      return 0.06;
+    case 'mg/kg/day':
+      return 1 / 24;
+    case 'mcg/kg/hr':
+      return 1 / 1000;
+    case 'mg/kg/hr':
+    default:
+      return 1.0;
+  }
 }
 
 function normalizeConcToMgPerMl(c: MedicationConcentration): number {

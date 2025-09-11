@@ -1,9 +1,10 @@
 <script lang="ts">
   import { patient } from '../stores/patient';
-  import type { Species } from '../stores/patient';
+  import type { Species, Patient } from '../stores/patient';
 
   // bind to local fields, then sync to store reactively
-  $: current = $patient;
+  let current: Patient = $patient; // initialize immediately to avoid undefined
+  $: current = $patient; // keep in sync reactively
   let weight = current.weightKg ?? '';
   let species: Species | '' = current.species ?? '';
   let name = current.name ?? '';
