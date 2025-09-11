@@ -3,6 +3,9 @@ import { defineConfig } from 'vite';
 import { svelte } from '@sveltejs/vite-plugin-svelte';
 
 export default defineConfig({
+  // ⬅️ if this is a project site, set to '/vetmedcalc/' (replace with your repo name)
+  base: '/vetmedcalc/',
+
   plugins: [svelte()],
   resolve: {
     alias: {
