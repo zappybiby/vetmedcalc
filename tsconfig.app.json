@@ -1,11 +1,11 @@
-// tsconfig.app.json
 {
   "compilerOptions": {
-    "module": "esnext",
+    "module": "ESNext",
     "moduleResolution": "bundler",
     "baseUrl": ".",
     "paths": {
       "@/*": ["src/*"],
+      "@defs": ["src/lib/definitions/index.ts"],
       "@defs/*": ["src/lib/definitions/*"]
     },
     "types": ["svelte", "vite/client"],
@@ -16,9 +16,15 @@
   "include": [
     "src/**/*.ts",
     "src/**/*.svelte",
-    "src/**/*.d.ts",
-    "vite.config.ts",
-    "svelte.config.js"
+    "src/**/*.d.ts"
   ],
-  "exclude": ["node_modules","dist","build",".svelte-kit",".vite","coverage","public"]
+  "exclude": [
+    "node_modules",
+    "dist",
+    "build",
+    ".svelte-kit",
+    ".vite",
+    "coverage",
+    "public"
+  ]
 }
