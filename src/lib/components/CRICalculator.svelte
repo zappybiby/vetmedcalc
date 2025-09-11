@@ -362,7 +362,47 @@
           </div>
         {/if}
 
-        <!-- [Dose Rate Needed] -->
+        <!-- [Summary] moved to top -->
+        <div class="section">
+          <div class="section-title">Summary</div>
+
+          <div class="draws">
+            <div class="card">
+              <div class="card-title">Stock to Draw Up</div>
+              <div class="big">{fmt(snappedStockMl, 2)} <span class="unit">mL</span></div>
+              <div class="detail">
+                in <span class="pill">{plan.stockDraw.syringeLabel ?? `${plan.stockDraw.syringeSizeMl} cc`}</span>
+                {#if plan.stockDraw.fills > 1}
+                  <span class="warn">· {plan.stockDraw.fills} fills</span>
+                {/if}
+              </div>
+            </div>
+
+            <div class="card">
+              <div class="card-title">Diluent to Draw Up</div>
+              <div class="big">{fmt(snappedDiluentMl, 2)} <span class="unit">mL</span></div>
+              <div class="detail">
+                in <span class="pill">{plan.diluentDraw.syringeLabel ?? `${plan.diluentDraw.syringeSizeMl} cc`}</span>
+                {#if plan.diluentDraw.fills > 1}
+                  <span class="warn">· {plan.diluentDraw.fills} fills</span>
+                {/if}
+              </div>
+            </div>
+          </div>
+
+          <div class="kv" style="margin-top:.35rem;">
+            <div class="k">Total Volume</div>
+            <div class="v strong">{fmt(finalVolMl, 2)} <span class="unit">mL</span></div>
+            <div class="k">Final concentration</div>
+            <div class="v strong">{fmt(plan.chosenConcentrationMgPerMl, 4)} <span class="unit">mg/mL</span></div>
+            <div class="k">When infused at {fmt(plan.desiredRateMlPerHr, 2)} mL/hr</div>
+            <div class="v">
+              delivers <span class="strong">{fmt(plan.deliveredDoseAtDesiredRate, 3)} {plan.doseUnit}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- [Dose Rate Needed] now follows Summary -->
         <div class="section">
           <div class="section-title">Dose Rate Needed</div>
           <table class="kvtable">
@@ -434,49 +474,6 @@
               </tr>
             </tbody>
           </table>
-        </div>
-
-        <!-- [Summary] -->
-        <div class="section">
-          <div class="section-title">Summary</div>
-
-          <div class="kv">
-            <div class="k">Total Volume</div>
-            <div class="v strong">{fmt(finalVolMl, 2)} <span class="unit">mL</span></div>
-          </div>
-
-          <div class="draws">
-            <div class="card">
-              <div class="card-title">Stock to Draw Up</div>
-              <div class="big">{fmt(snappedStockMl, 2)} <span class="unit">mL</span></div>
-              <div class="detail">
-                in <span class="pill">{plan.stockDraw.syringeLabel ?? `${plan.stockDraw.syringeSizeMl} cc`}</span>
-                {#if plan.stockDraw.fills > 1}
-                  <span class="warn">· {plan.stockDraw.fills} fills</span>
-                {/if}
-              </div>
-            </div>
-
-            <div class="card">
-              <div class="card-title">Diluent to Draw Up</div>
-              <div class="big">{fmt(snappedDiluentMl, 2)} <span class="unit">mL</span></div>
-              <div class="detail">
-                in <span class="pill">{plan.diluentDraw.syringeLabel ?? `${plan.diluentDraw.syringeSizeMl} cc`}</span>
-                {#if plan.diluentDraw.fills > 1}
-                  <span class="warn">· {plan.diluentDraw.fills} fills</span>
-                {/if}
-              </div>
-            </div>
-          </div>
-
-          <div class="kv" style="margin-top:.35rem;">
-            <div class="k">Final concentration</div>
-            <div class="v strong">{fmt(plan.chosenConcentrationMgPerMl, 4)} <span class="unit">mg/mL</span></div>
-            <div class="k">When infused at {fmt(plan.desiredRateMlPerHr, 2)} mL/hr</div>
-            <div class="v">
-              delivers <span class="strong">{fmt(plan.deliveredDoseAtDesiredRate, 3)} {plan.doseUnit}</span>
-            </div>
-          </div>
         </div>
 
         {#if plan.warnings.length}
