@@ -50,7 +50,68 @@
   $: rateRounded = rateRaw == null ? null : roundRateMlHr(rateRaw);
 
   function printLabel() {
-    window.print();
+    const node = document.getElementById('cpr-print-label');
+    if (!node) {
+      window.print();
+      return;
+    }
+
+    const win = window.open('', 'cpr-print', 'width=400,height=320');
+    if (!win) {
+      window.print();
+      return;
+    }
+
+    const labelHTML = node.innerHTML;
+    const styles = `
+      @page { size: auto; margin: 0; }
+      html, body { margin: 0; padding: 0; overflow: hidden; }
+      #cpr-print-label { width: 2.625in; height: 2in; box-sizing: border-box; overflow: hidden; }
+      .label-outer {
+        width: 100%; height: 100%; box-sizing: border-box;
+        border: 2px solid #000;
+        padding: 0.08in 0.08in;
+        display: grid; grid-template-rows: auto auto 1fr; gap: 0.06in;
+        font-family: system-ui, Arial, Helvetica, sans-serif;
+        color: #000;
+        -webkit-print-color-adjust: exact; print-color-adjust: exact;
+      }
+      .label-hdr { display: grid; grid-template-columns: 1fr 1fr; gap: 0.06in; border: 2px solid #000; border-radius: .06in; padding: 0.04in 0.06in; font-weight: 800; font-size: 10pt; line-height: 1.1; }
+      .label-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+      .label-weight { text-align: right; }
+      .label-table { display: grid; grid-template-columns: 1.6fr 0.8fr; border: 2px solid #000; border-radius: .06in; }
+      .lt-left { padding: 0.05in 0.06in; display: grid; grid-template-rows: 1fr 1fr; gap: 0; border-right: none; }
+      .lt-right { display: grid; grid-template-rows: 1fr 1fr; align-items: stretch; }
+      .lt-row { display: grid; grid-template-rows: auto auto; align-content: center; border-bottom: 2px solid #000; }
+      .lt-row:last-child { border-bottom: none; }
+      .drug { font-weight: 800; font-size: 9pt; line-height: 1.05; }
+      .perkg { font-size: 8pt; opacity: .9; }
+      .dose { display: grid; place-items: center; border-bottom: 2px solid #000; font-weight: 900; font-size: 14pt; }
+      .dose:last-child { border-bottom: none; }
+      .label-bolus { display: grid; grid-template-columns: 1fr auto; align-items: stretch; gap: 0.06in; /* let grid row control height */ }
+      .bolus-rect { border: 2px solid #000; border-radius: .06in; padding: 0.04in 0.06in 0.03in; font-weight: 900; font-size: 9pt; display: grid; gap: 0.02in; text-align: center; justify-self: start; height: 100%; }
+      .bolus-main { font-size: 8pt; font-weight: 900; white-space: nowrap; }
+      .bolus-amount { font-weight: 900; }
+      .bolus-word { font-weight: 900; }
+      .bolus-total { font-weight: 800; font-size: 10pt; text-align: center; }
+      .bolus-box { border: 2px solid #000; border-radius: .06in; padding: 0.04in 0.06in 0.03in; font-weight: 900; font-size: 10pt; display: grid; gap: 0.02in; text-align: right; min-width: 0.9in; height: 100%; }
+      .et-box { text-align: center; justify-self: end; padding-bottom: 0.02in; align-self: stretch; }
+      .et-label { font-weight: 800; font-size: 9pt; text-align: center; }
+      .et-row { display: flex; justify-content: center; align-items: baseline; gap: 0.04in; }
+      .et-small { font-weight: 700; font-size: 9pt; opacity: .9; }
+      .et-big { font-weight: 900; font-size: 14pt; }
+      .dash { font-weight: 800; font-size: 11pt; line-height: 1; }
+    `;
+
+    win.document.write(`<!doctype html><html><head><meta charset="utf-8" />
+      <title>CPR Label</title>
+      <style>${styles}</style>
+    </head><body>
+      <div id="cpr-print-label">${labelHTML}</div>
+    </body></html>`);
+    win.document.close();
+    win.focus();
+    setTimeout(() => { win.print(); win.close(); }, 50);
   }
 </script>
 
@@ -199,30 +260,30 @@
 
   /* ------------------- PRINT STYLES ------------------- */
   @media print {
-    /* Only show our label content */
-    :global(body *) { visibility: hidden; }
-    #cpr-print-label, #cpr-print-label * { visibility: visible; }
+    /* Hide the app; show only the label to avoid extra pages */
+    :global(html, body) { margin: 0; padding: 0; }
+    :global(#app *) { display: none !important; }
+    #cpr-print-label { display: block !important; }
 
-    /* Put label at origin and size it exactly to the label stock */
+    /* Size the label; keep static positioning to prevent repeating per page */
     #cpr-print-label {
-      display: block !important;
-      position: fixed;
-      left: 0;
-      top: 0;
       width: 2.625in;       /* 2-5/8" width */
       height: 2in;          /* 2" height */
       margin: 0;
       padding: 0;
+      box-sizing: border-box;
+      overflow: hidden;
       -webkit-print-color-adjust: exact;
               print-color-adjust: exact;
+      page-break-inside: avoid;
     }
 
-    /* Page size (many printers honor this; if not, choose the label size in the OS dialog) */
-    @page { size: 2.625in 2in; margin: 0.05in; } /* small safety margin */
+    /* Use printer-selected paper size; remove margins */
+    @page { size: auto; margin: 0; }
 
     /* Label design */
     .label-outer {
-      width: 100%; height: 100%;
+      width: 100%; height: 100%; box-sizing: border-box;
       border: 2px solid #000;
       padding: 0.08in 0.08in;
       /* Make header + meds stack to content height, and let bottom row stretch */
@@ -260,7 +321,7 @@
       grid-template-columns: 1fr auto; /* bolus on left, ET box on right */
       align-items: stretch;            /* ensure both boxes get equal height */
       gap: 0.06in;
-      height: 100%;                    /* consume the available row height */
+      /* let grid row define the height; avoids overflow */
     }
     /* New rectangular bolus box (bottom-left) */
     .bolus-rect { border: 2px solid #000; border-radius: .06in; padding: 0.04in 0.06in 0.03in; font-weight: 900; font-size: 9pt; display: grid; gap: 0.02in; text-align: center; justify-self: start; height: 100%; }
