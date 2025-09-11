@@ -2,6 +2,10 @@
   import { patient } from '../stores/patient';
   import { MEDICATIONS, CPR_DRUG_DOSES, CPR_FLUID_BOLUS } from '@defs';
 
+  // ⬇️ NEW: ET tube helper
+  import { estimateEtForPatient } from '../helpers/etTube';
+  import type { EtTubeEstimate } from '../helpers/etTube';
+
   const epiMed = MEDICATIONS.find(m => m.name.toLowerCase() === 'epinephrine');
   const atropineMed = MEDICATIONS.find(m => m.name.toLowerCase() === 'atropine');
   const epiDose = CPR_DRUG_DOSES.find(d => d.name.toLowerCase() === 'epinephrine');
@@ -21,6 +25,10 @@
   }
 
   $: p = $patient;
+
+  // ⬇️ NEW: live ET tube estimate (null until weight/species present)
+  let et: EtTubeEstimate | null = null;
+  $: et = estimateEtForPatient(p);
 
   $: epiMl =
     p.weightKg && epiDose && epiMed
@@ -56,20 +64,22 @@
     </div>
   </header>
 
-  <!-- existing on-screen rows ... -->
   <div class="rows">
+    <!-- Epi -->
     <div class="row">
       <div class="col label">Epi {epiMed?.concentration.value} {epiMed?.concentration.units}</div>
       <div class="col">{epiDose?.mgPerKg} mg/kg</div>
       <div class="col strong">{fmt2(epiMl)} mL</div>
     </div>
 
+    <!-- Atropine -->
     <div class="row">
       <div class="col label">Atropine {atropineMed?.concentration.value} {atropineMed?.concentration.units}</div>
       <div class="col">{atropineDose?.mgPerKg} mg/kg</div>
       <div class="col strong">{fmt2(atropineMl)} mL</div>
     </div>
 
+    <!-- Shock Bolus -->
     <div class="row grid4">
       <div class="col label">
         Qtr. Shock Bolus {#if bolus}({bolus.mlPerKg} mL/kg){/if}
@@ -78,10 +88,29 @@
       <div class="col">Rate: <span class="strong">{fmtRate(rateRounded, rateRaw)}</span> mL/hr</div>
       <div class="col">Time: <span class="strong">{bolus?.overMinutes ?? '—'}</span> min</div>
     </div>
+
+    <!-- ET Tube (moved to bottom) -->
+    <div class="row">
+      <div class="col label">ET Tube (ID)</div>
+      <div class="col">
+        {#if et}
+          Range: {et.lowMm.toFixed(1)}–{et.highMm.toFixed(1)} mm
+        {:else}
+          —
+        {/if}
+      </div>
+      <div class="col strong">
+        {#if et}{et.estimateMm.toFixed(1)} mm{:else}—{/if}
+      </div>
+    </div>
   </div>
+
 
   <p class="hint">Enter weight and species, then “Print label”.</p>
 </section>
+
+<!-- PRINT-ONLY LABEL (unchanged) -->
+
 
 <!-- PRINT-ONLY LABEL -->
 <div id="cpr-print-label" class="printable" aria-hidden="true">
@@ -185,7 +214,9 @@
        horizontal divider lines align perfectly with the right column. */
     .lt-left { padding: 0.05in 0.06in; display: grid; grid-template-rows: 1fr 1fr; gap: 0; border-right: none; }
     .lt-right { display: grid; grid-template-rows: 1fr 1fr; align-items: stretch; }
-    .lt-row { display: grid; grid-template-rows: auto auto; border-bottom: 2px solid #000; }
+    /* Center contents within each medication row so text has
+       balanced space above/below the divider lines. */
+    .lt-row { display: grid; grid-template-rows: auto auto; align-content: center; border-bottom: 2px solid #000; }
     .lt-row:last-child { border-bottom: none; }
     .drug { font-weight: 800; font-size: 9pt; line-height: 1.05; }
     .perkg { font-size: 8pt; opacity: .9; }
