@@ -130,6 +130,74 @@
           syringes: SYRINGES
         })
       : null;
+
+  // -------- Derived displays for dilution layout --------
+  let dosePerKgHr: number | null = null;    // mg/kg/hr
+  $: dosePerKgHr = desiredDose !== '' ? unitConstant(doseUnit) * Number(desiredDose) : null;
+
+  let dosePerKgDay: number | null = null;   // mg/kg/day
+  $: dosePerKgDay = dosePerKgHr != null ? dosePerKgHr * 24 : null;
+
+  // -------- Additional derived values used in NO-DILUTION breakdown --------
+  // Mass flow for the patient (mg/hr) and total mass over T hours (mg)
+  let stockMassRateMgHr: number | null = null;
+  $: stockMassRateMgHr = canStock && dosePerKgHr != null && p.weightKg != null
+    ? dosePerKgHr * (p.weightKg as number)
+    : null;
+
+  let stockMassTotalMg: number | null = null;
+  $: stockMassTotalMg = stockMassRateMgHr != null && durationHr !== ''
+    ? stockMassRateMgHr * Number(durationHr)
+    : null;
+
+  // Display mass unit mirrors user's dose unit (mg vs mcg)
+  let massUnit: 'mg' | 'mcg' = 'mg';
+  $: massUnit = doseUnit.includes('mcg') ? 'mcg' : 'mg';
+
+  // Display-scaled values based on massUnit
+  let dispMassRatePerHr: number | null = null;    // mg/hr or mcg/hr
+  $: dispMassRatePerHr = stockMassRateMgHr != null
+    ? (massUnit === 'mcg' ? stockMassRateMgHr * 1000 : stockMassRateMgHr)
+    : null;
+
+  let dispDosePerKgHr: number | null = null;      // mg/kg/hr or mcg/kg/hr
+  $: dispDosePerKgHr = dosePerKgHr != null
+    ? (massUnit === 'mcg' ? dosePerKgHr * 1000 : dosePerKgHr)
+    : null;
+
+  let dispMassTotal: number | null = null;        // mg or mcg over T hours
+  $: dispMassTotal = stockMassTotalMg != null
+    ? (massUnit === 'mcg' ? stockMassTotalMg * 1000 : stockMassTotalMg)
+    : null;
+
+  // Required concentration (ideal for requested mapping)
+  let requiredConcMgPerMl: number | null = null;
+  $: requiredConcMgPerMl = plan ? plan.neededConcentrationMgPerMl : null;
+
+  // Ideal bag targets (before snapping)
+  let targetVolMl: number | null = null;
+  $: targetVolMl = plan ? plan.targetTotalVolumeMl : null;
+
+  let idealDrugMg: number | null = null; // mg needed ideally at required concentration
+  $: idealDrugMg = plan ? plan.neededConcentrationMgPerMl * plan.targetTotalVolumeMl : null;
+
+  // Snapped/final values
+  let finalVolMl: number | null = null;
+  $: finalVolMl = plan ? plan.finalTotalVolumeMl : null;
+
+  let snappedStockMl: number | null = null;
+  $: snappedStockMl = plan ? plan.snappedStockVolumeMl : null;
+
+  let snappedDiluentMl: number | null = null;
+  $: snappedDiluentMl = plan ? plan.snappedDiluentVolumeMl : null;
+
+  // mg in final mix, computed from stock used (equivalently C_final * V_final)
+  let finalDrugMg: number | null = null;
+  $: finalDrugMg = plan ? plan.stockConcentrationMgPerMl * plan.snappedStockVolumeMl : null;
+
+  // Suggest a syringe for measuring total volume (for display only)
+  let totalMixSyr: SyringeDef | null = null;
+  $: totalMixSyr = finalVolMl != null ? chooseSyringeForVolume(finalVolMl, SYRINGES) : null;
 </script>
 
 <section class="cri" aria-label="CRI Calculator">
@@ -212,42 +280,77 @@
     <div class="results">
       <h3 class="sub">From Stock (no dilution)</h3>
 
-      <div class="section">
-        <div class="section-title">Set Pump</div>
-        <div class="kv">
-          <div class="k">Rate</div>
-          <div class="v strong">{fmt(stockRateMlHr ?? null, 2)} <span class="unit">mL/hr</span></div>
-          <div class="k">Estimated runtime</div>
-          <div class="v">{fmt(stockDurationFromSnapHr ?? null, 2)} <span class="unit">hr</span></div>
+      {#if canStock}
+        <!-- How we calculated it -->
+        <div class="section">
+          <div class="section-title">How Calculated</div>
+          <table class="kvtable">
+            <tbody>
+              <tr>
+                <th>Hourly dose (per kg)</th>
+                <td class="num">{fmt(dispDosePerKgHr, 3)} <span class="unit">{massUnit}/kg/hr</span></td>
+              </tr>
+              <tr>
+                <th>Mass rate (patient)</th>
+                <td class="num">{fmt(dispMassRatePerHr, 3)} <span class="unit">{massUnit}/hr</span></td>
+              </tr>
+              <tr>
+                <th>Pump rate</th>
+                <td class="num strong">{fmt(stockRateMlHr ?? null, 2)} <span class="unit">mL/hr</span></td>
+              </tr>
+              <tr>
+                <th>Total mass for {fmt(Number(durationHr), 2)} hr</th>
+                <td class="num">{fmt(dispMassTotal, 3)} <span class="unit">{massUnit}</span></td>
+              </tr>
+              <tr>
+                <th>Target volume (unsnapped)</th>
+                <td class="num">{fmt(stockTargetVolMl ?? null, 2)} <span class="unit">mL</span></td>
+              </tr>
+            </tbody>
+          </table>
         </div>
-      </div>
 
-      <div class="draws">
-        <div class="card">
-          <div class="card-title">Draw Up Volume</div>
-          <div class="big">{fmt(stockDrawVolMl ?? null, 2)} <span class="unit">mL</span></div>
-          <div class="detail">
-            {#if stockSyr}
-              in <span class="pill">{stockSyr.label ?? `${stockSyr.sizeCc} cc`}</span>
-              <span class="muted">(ticks {fmt(stockSyr.incrementMl, 2)} mL)</span>
-              {#if stockFills && stockFills > 1}
-                <span class="warn">· requires {stockFills} fills</span>
-              {/if}
-            {:else}
-              —
-            {/if}
+        <!-- Summary -->
+        <div class="section">
+          <div class="section-title">Summary</div>
+
+          <div class="draws">
+            <div class="card">
+              <div class="card-title">Stock to Draw Up</div>
+              <div class="big">{fmt(stockDrawVolMl ?? null, 2)} <span class="unit">mL</span></div>
+              <div class="detail">
+                {#if stockSyr}
+                  in <span class="pill">{stockSyr.label ?? `${stockSyr.sizeCc} cc`}</span>
+                  <span class="muted">(ticks {fmt(stockSyr.incrementMl, 2)} mL)</span>
+                  {#if stockFills && stockFills > 1}
+                    <span class="warn">� requires {stockFills} fills</span>
+                  {/if}
+                {:else}
+                  -
+                {/if}
+              </div>
+            </div>
+          </div>
+
+          <div class="kv" style="margin-top:.35rem;">
+            <div class="k">Final concentration in syringe</div>
+            <div class="v strong">{fmt(concMgPerMl(med), 4)} <span class="unit">mg/mL</span></div>
+            <div class="k">Infusion rate</div>
+            <div class="v strong">{fmt(stockRateMlHr ?? null, 2)} <span class="unit">mL/hr</span></div>
+            <div class="k">Delivers</div>
+            <div class="v">
+              <span class="strong">{fmt(dispMassRatePerHr, 3)} {massUnit}/hr</span>
+              <span class="muted"> (~{fmt(dispDosePerKgHr, 3)} {massUnit}/kg/hr)</span>
+            </div>
+            <div class="k">Estimated runtime</div>
+            <div class="v">{fmt(stockDurationFromSnapHr ?? null, 2)} <span class="unit">hr</span></div>
           </div>
         </div>
-      </div>
-
-      <div class="section">
-        <div class="kv">
-          <div class="k">Target volume (unsnapped)</div>
-          <div class="v">{fmt(stockTargetVolMl ?? null, 2)} <span class="unit">mL</span></div>
-        </div>
-      </div>
+      {:else}
+        <p class="muted">Enter all inputs to see the calculation.</p>
+      {/if}
     </div>
-  {:else}
+    {:else}
     <div class="results">
       <h3 class="sub">Dilution Plan</h3>
 
@@ -259,65 +362,120 @@
           </div>
         {/if}
 
-        <!-- Make this mixture -->
+        <!-- [Dose Rate Needed] -->
         <div class="section">
-          <div class="section-title">Make This Mixture</div>
-          <div class="kv">
-            <div class="k">Final concentration</div>
-            <div class="v strong">{fmt(plan.chosenConcentrationMgPerMl, 4)} <span class="unit">mg/mL</span></div>
-            <div class="k">Total volume</div>
-            <div class="v strong">{fmt(plan.finalTotalVolumeMl, 2)} <span class="unit">mL</span> <span class="muted">(target {fmt(plan.targetTotalVolumeMl, 2)} mL · {fmt(plan.relTotalVolumeErrorPct, 2)}% vol diff)</span></div>
-          </div>
+          <div class="section-title">Dose Rate Needed</div>
+          <table class="kvtable">
+            <tbody>
+              <tr>
+                <th>Daily dose</th>
+                <td class="num">{fmt(dosePerKgDay, 3)} <span class="unit">mg/kg/day</span></td>
+              </tr>
+              <tr>
+                <th>Hourly dose</th>
+                <td class="num">{fmt(dosePerKgHr, 3)} <span class="unit">mg/kg/hr</span></td>
+              </tr>
+              <tr>
+                <th>Required concentration</th>
+                <td class="num">{fmt(requiredConcMgPerMl, 4)} <span class="unit">mg/mL</span></td>
+              </tr>
+            </tbody>
+          </table>
         </div>
 
-        <!-- Draw steps first (what to do) -->
-        <div class="draws">
-          <div class="card">
-            <div class="card-title">Stock draw</div>
-            <div class="big">{fmt(plan.snappedStockVolumeMl, 2)} <span class="unit">mL</span></div>
-            <div class="detail">
-              in <span class="pill">{plan.stockDraw.syringeLabel ?? `${plan.stockDraw.syringeSizeMl} cc`}</span>
-              <span class="muted">(ticks {fmt(plan.stockDraw.incrementMl, 2)} mL)</span>
-              {#if plan.stockDraw.fills > 1}
-                <span class="warn">· {plan.stockDraw.fills} fills</span>
-              {/if}
-            </div>
-          </div>
-
-          <div class="card">
-            <div class="card-title">Diluent draw</div>
-            <div class="big">{fmt(plan.snappedDiluentVolumeMl, 2)} <span class="unit">mL</span></div>
-            <div class="detail">
-              in <span class="pill">{plan.diluentDraw.syringeLabel ?? `${plan.diluentDraw.syringeSizeMl} cc`}</span>
-              <span class="muted">(ticks {fmt(plan.diluentDraw.incrementMl, 2)} mL)</span>
-              {#if plan.diluentDraw.fills > 1}
-                <span class="warn">· {plan.diluentDraw.fills} fills</span>
-              {/if}
-            </div>
-          </div>
-        </div>
-
-        <!-- Then how to run it -->
-        <div class="section">
-          <div class="section-title">Infusion Setup</div>
-          <div class="kv">
-            <div class="k">Set pump</div>
-            <div class="v strong">{fmt(plan.desiredRateMlPerHr, 2)} <span class="unit">mL/hr</span></div>
-            <div class="k">Delivers at that rate</div>
-            <div class="v">{fmt(plan.deliveredDoseAtDesiredRate, 3)} <span class="unit">{plan.doseUnit}</span> <span class="muted">(±{fmt(plan.relConcentrationErrorPct, 2)}% vs target)</span></div>
-            <div class="k">Exact mapping (with this mix)</div>
-            <div class="v">{fmt(plan.mappingRateMlPerHr, 3)} <span class="unit">mL/hr</span></div>
-          </div>
-        </div>
-
-        <!-- Details & checks below -->
+        <!-- [Details] -->
         <div class="section">
           <div class="section-title">Details</div>
+          <table class="kvtable">
+            <tbody>
+              <tr>
+                <th>
+                  Total volume to run in {fmt(Number(durationHr), 2)} hr<br/>
+                  at {fmt(plan.desiredRateMlPerHr, 2)} mL/hr
+                </th>
+                <td class="num strong">{fmt(targetVolMl, 2)} <span class="unit">mL</span></td>
+              </tr>
+              <tr>
+                <th>Drug needed in that volume</th>
+                <td class="num">
+                  {fmt(targetVolMl, 2)} <span class="unit">mL</span>
+                  × {fmt(requiredConcMgPerMl, 4)} <span class="unit">mg/mL</span>
+                  = <span class="strong">{fmt(idealDrugMg, 3)}</span> <span class="unit">mg</span>
+                </td>
+              </tr>
+              <tr>
+                <th>Volume of stock to get that mg</th>
+                <td class="num">
+                  {fmt(idealDrugMg, 3)} <span class="unit">mg</span>
+                  ÷ {fmt(plan.stockConcentrationMgPerMl, 4)} <span class="unit">mg/mL</span>
+                  = {fmt(plan.rawStockVolumeMl, 2)} <span class="unit">mL</span>
+                  <div class="subnote">in <span class="pill">{plan.stockDraw.syringeLabel ?? `${plan.stockDraw.syringeSizeMl} cc`}</span>
+                  {#if plan.stockDraw.fills > 1} · {plan.stockDraw.fills} fills{/if}
+                  </div>
+                </td>
+              </tr>
+              <tr>
+                <th>Add diluent</th>
+                <td class="num">
+                  <span class="strong">{fmt(snappedDiluentMl, 2)} mL diluent</span>
+                  <div class="subnote">in <span class="pill">{plan.diluentDraw.syringeLabel ?? `${plan.diluentDraw.syringeSizeMl} cc`}</span>
+                  {#if plan.diluentDraw.fills > 1} · {plan.diluentDraw.fills} fills{/if}
+                  </div>
+                </td>
+              </tr>
+              <tr>
+                <th>Final concentration</th>
+                <td class="num">
+                  {fmt(finalDrugMg, 3)} <span class="unit">mg</span>
+                  / {fmt(finalVolMl, 2)} <span class="unit">mL</span>
+                  = <span class="strong">{fmt(plan.chosenConcentrationMgPerMl, 4)} <span class="unit">mg/mL</span></span>
+                  <span class="muted">(±{fmt(plan.relConcentrationErrorPct, 2)}% vs required)</span>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- [Summary] -->
+        <div class="section">
+          <div class="section-title">Summary</div>
+
           <div class="kv">
-            <div class="k">Needed concentration</div>
-            <div class="v">{fmt(plan.neededConcentrationMgPerMl, 4)} <span class="unit">mg/mL</span></div>
-            <div class="k">Stock concentration</div>
-            <div class="v">{fmt(plan.stockConcentrationMgPerMl, 4)} <span class="unit">mg/mL</span></div>
+            <div class="k">Total Volume</div>
+            <div class="v strong">{fmt(finalVolMl, 2)} <span class="unit">mL</span></div>
+          </div>
+
+          <div class="draws">
+            <div class="card">
+              <div class="card-title">Stock to Draw Up</div>
+              <div class="big">{fmt(snappedStockMl, 2)} <span class="unit">mL</span></div>
+              <div class="detail">
+                in <span class="pill">{plan.stockDraw.syringeLabel ?? `${plan.stockDraw.syringeSizeMl} cc`}</span>
+                {#if plan.stockDraw.fills > 1}
+                  <span class="warn">· {plan.stockDraw.fills} fills</span>
+                {/if}
+              </div>
+            </div>
+
+            <div class="card">
+              <div class="card-title">Diluent to Draw Up</div>
+              <div class="big">{fmt(snappedDiluentMl, 2)} <span class="unit">mL</span></div>
+              <div class="detail">
+                in <span class="pill">{plan.diluentDraw.syringeLabel ?? `${plan.diluentDraw.syringeSizeMl} cc`}</span>
+                {#if plan.diluentDraw.fills > 1}
+                  <span class="warn">· {plan.diluentDraw.fills} fills</span>
+                {/if}
+              </div>
+            </div>
+          </div>
+
+          <div class="kv" style="margin-top:.35rem;">
+            <div class="k">Final concentration</div>
+            <div class="v strong">{fmt(plan.chosenConcentrationMgPerMl, 4)} <span class="unit">mg/mL</span></div>
+            <div class="k">When infused at {fmt(plan.desiredRateMlPerHr, 2)} mL/hr</div>
+            <div class="v">
+              delivers <span class="strong">{fmt(plan.deliveredDoseAtDesiredRate, 3)} {plan.doseUnit}</span>
+            </div>
           </div>
         </div>
 
@@ -388,6 +546,14 @@
   .kv .v { font-variant-numeric: tabular-nums; text-align: right; }
   .kv .v.strong { font-weight: 900; }
   .unit { opacity: .85; font-weight: 700; margin-left: .15rem; }
+
+  /* Table-style alignment */
+  .kvtable { width: 100%; border-collapse: collapse; }
+  .kvtable th { text-align: left; padding: .2rem 0; font-weight: 700; opacity: .9; vertical-align: top; }
+  .kvtable td { text-align: right; padding: .2rem 0; font-variant-numeric: tabular-nums; }
+  .kvtable td.num { font-weight: 700; }
+  .kvtable td.num.strong { font-weight: 900; }
+  .subnote { font-size: .85rem; opacity: .75; font-weight: 500; margin-top: .15rem; }
 
   .draws { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: .6rem; }
   .card { border: 1.5px solid #111; border-radius: .45rem; padding: .6rem .65rem; background: #f9f9f9; }
