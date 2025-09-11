@@ -9,6 +9,4 @@ export const MEDICATIONS: readonly MedicationDef[] = [
     { id: 'furosemide-50',    name: 'Furosemide',     concentration: { value: 50, units: 'mg/mL' } },
     { id: 'midazolam-5',      name: 'Midazolam',      concentration: { value: 5,  units: 'mg/mL' } },
     { id: 'diazepam-5',       name: 'Diazepam',       concentration: { value: 5,  units: 'mg/mL' } },
-    { id: 'epinephrine-1',    name: 'Epinephrine',    concentration: { value: 1,  units: 'mg/mL' } },
-    { id: 'atropine-0-54',    name: 'Atropine',       concentration: { value: 0.54, units: 'mg/mL' } },
 ] as const;
