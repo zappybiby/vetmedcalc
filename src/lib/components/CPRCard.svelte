@@ -80,13 +80,18 @@
     </div>
 
     <!-- Shock Bolus -->
-    <div class="row grid4">
+    <div class="row bolus">
       <div class="col label">
         Qtr. Shock Bolus {#if bolus}({bolus.mlPerKg} mL/kg){/if}
       </div>
       <div class="col">Total: <span class="strong">{fmt0(totalBolusMl)}</span> mL</div>
-      <div class="col">Rate: <span class="strong">{fmtRate(rateRounded, rateRaw)}</span> mL/hr</div>
-      <div class="col">Time: <span class="strong">{bolus?.overMinutes ?? '—'}</span> min</div>
+      <div class="col rt">
+        <span class="rate-label">Rate:</span>
+        <span class="stack">
+          <span class="value">{fmtRate(rateRounded, rateRaw)} mL/hr</span>
+          <span class="time">{bolus?.overMinutes ?? '—'} min</span>
+        </span>
+      </div>
     </div>
 
     <!-- ET Tube (moved to bottom) -->
@@ -141,12 +146,31 @@
     </div>
 
     <div class="label-bolus">
-      <div class="bolus-pill">
-        BOLUS&nbsp;|&nbsp;{bolus?.mlPerKg ?? '—'} mL/kg&nbsp;|&nbsp;Total {fmt0(totalBolusMl)} mL
+      <!-- Bottom-left: Bolus rectangular box -->
+      <div class="bolus-rect">
+        <div class="bolus-main"><span class="bolus-amount">{bolus?.mlPerKg ?? '—'} mL/kg</span> <span class="bolus-word">BOLUS</span></div>
+        <div class="bolus-total">Total {fmt0(totalBolusMl)} mL</div>
       </div>
-      <div class="bolus-box">
-        <div class="rate">{fmtRate(rateRounded, rateRaw)} mL/hr</div>
-        <div class="time">{bolus?.overMinutes ?? '—'} mins</div>
+      <!-- Bottom-right: ET Tube sizes box -->
+      <div class="bolus-box et-box">
+        <div class="et-label">ET Tube Size:</div>
+        {#if et}
+          <div class="et-row" aria-label="ET tube size range">
+            <span class="et-small">{et.lowMm.toFixed(1)}</span>
+            <span class="dash">-</span>
+            <span class="et-big">{et.estimateMm.toFixed(1)}</span>
+            <span class="dash">-</span>
+            <span class="et-small">{et.highMm.toFixed(1)}</span>
+          </div>
+        {:else}
+          <div class="et-row" aria-label="ET tube size unavailable">
+            <span class="et-small">—</span>
+            <span class="dash">-</span>
+            <span class="et-big">—</span>
+            <span class="dash">-</span>
+            <span class="et-small">—</span>
+          </div>
+        {/if}
       </div>
     </div>
   </div>
@@ -161,6 +185,13 @@
   .row { display: grid; align-items: center; gap: .5rem; grid-template-columns: 1.5fr .9fr .9fr;
          background: #fff; border: 1.5px solid #111; border-radius: .45rem; padding: .55rem .7rem; box-shadow: 2px 2px 0 #111; }
   .row.grid4 { grid-template-columns: 1.4fr .8fr .9fr .6fr; }
+  /* Shock bolus: stack rate over time, right aligned */
+  /* Match base row column widths for perfect alignment */
+  .row.bolus { grid-template-columns: 1.5fr .9fr .9fr; }
+  .row.bolus .rt { display: flex; justify-content: flex-end; align-items: center; gap: .4rem; }
+  .row.bolus .rt .stack { display: inline-grid; justify-items: center; line-height: 1.1; }
+  .row.bolus .rt .value { font-weight: 800; border-bottom: 2px solid #111; padding-bottom: 1px; }
+  .row.bolus .rt .time { font-weight: 700; }
   .label { font-weight: 700; }
   .strong { font-weight: 800; }
   .hint { margin: 0; font-size: .8rem; opacity: .8; }
@@ -194,7 +225,8 @@
       width: 100%; height: 100%;
       border: 2px solid #000;
       padding: 0.08in 0.08in;
-      display: grid; grid-template-rows: auto 1fr auto; gap: 0.06in;
+      /* Make header + meds stack to content height, and let bottom row stretch */
+      display: grid; grid-template-rows: auto auto 1fr; gap: 0.06in;
       font-family: system-ui, Arial, Helvetica, sans-serif;
       color: #000;
     }
@@ -208,7 +240,7 @@
 
     .label-table {
       display: grid; grid-template-columns: 1.6fr 0.8fr; border: 2px solid #000; border-radius: .06in;
-      min-height: 0.8in;
+      /* remove rigid min-height to avoid pushing content below label bottom */
     }
     /* Left column holds two medication rows; remove internal gap so the
        horizontal divider lines align perfectly with the right column. */
@@ -224,15 +256,29 @@
     .dose:last-child { border-bottom: none; }
 
     .label-bolus {
-      display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 0.06in;
+      display: grid;
+      grid-template-columns: 1fr auto; /* bolus on left, ET box on right */
+      align-items: stretch;            /* ensure both boxes get equal height */
+      gap: 0.06in;
+      height: 100%;                    /* consume the available row height */
     }
-    .bolus-pill {
-      border: 2px solid #000; border-radius: 999px; padding: 0.04in 0.08in; font-weight: 800;
-      font-size: 9pt; text-align: center;
-    }
+    /* New rectangular bolus box (bottom-left) */
+    .bolus-rect { border: 2px solid #000; border-radius: .06in; padding: 0.04in 0.06in 0.03in; font-weight: 900; font-size: 9pt; display: grid; gap: 0.02in; text-align: center; justify-self: start; height: 100%; }
+    .bolus-main { font-size: 8pt; font-weight: 900; white-space: nowrap; }
+    .bolus-amount { font-weight: 900; }
+    .bolus-word { font-weight: 900; }
+    .bolus-total { font-weight: 800; font-size: 10pt; text-align: center; }
     .bolus-box {
-      border: 2px solid #000; border-radius: .06in; padding: 0.05in 0.07in; font-weight: 900; font-size: 10pt;
-      display: grid; gap: 0.02in; text-align: right; min-width: 0.9in;
+      border: 2px solid #000; border-radius: .06in; padding: 0.04in 0.06in 0.03in; font-weight: 900; font-size: 10pt;
+      display: grid; gap: 0.02in; text-align: right; min-width: 0.9in; height: 100%;
     }
+
+    /* ET tube box overrides/formatting */
+    .et-box { text-align: center; justify-self: end; padding-bottom: 0.02in; align-self: stretch; } /* anchor to right, equal height */
+    .et-label { font-weight: 800; font-size: 9pt; text-align: center; } /* centered label */
+    .et-row { display: flex; justify-content: center; align-items: baseline; gap: 0.04in; } /* tighter dash spacing */
+    .et-small { font-weight: 700; font-size: 9pt; opacity: .9; }
+    .et-big { font-weight: 900; font-size: 14pt; }
+    .dash { font-weight: 800; font-size: 11pt; line-height: 1; }
   }
 </style>
