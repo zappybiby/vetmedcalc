@@ -253,10 +253,9 @@
 
     <div class="field chk">
       <label>
-        <input type="checkbox" bind:checked={enableDilution} />
-        Dilute to map rate ↔ dose
+      <input type="checkbox" bind:checked={enableDilution} />
+      Dilute to map rate ↔ dose
       </label>
-      <div class="hint">Re-compound so a chosen pump rate delivers the entered dose exactly.</div>
     </div>
 
     {#if enableDilution}
