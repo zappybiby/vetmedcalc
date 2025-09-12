@@ -490,27 +490,31 @@
 </section>
 
 <style>
-  .cri { display: grid; gap: .9rem; }
+  .cri { display: grid; gap: .9rem; min-width: 0; }
   .hdr { font-weight: 900; font-size: 1.05rem; }
 
   .grid {
     display: grid;
     gap: .6rem;
     grid-template-columns: repeat(2, minmax(0, 1fr));
+    min-width: 0;
   }
-  .field { display: grid; gap: .3rem; }
+  .field { display: grid; gap: .3rem; min-width: 0; }
   .field.chk { grid-column: 1 / -1; }
   label { font-size: .85rem; font-weight: 700; }
   input, select {
     border: 1.5px solid #e5e7eb; border-radius: .4rem;
     padding: .4rem .5rem; font-size: .95rem;
     background: #0b1220; color: #e5e7eb;
+    max-width: 100%;
   }
-  .row { display: grid; grid-template-columns: 1fr auto; gap: .4rem; align-items: center; }
+  .row { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: .4rem; align-items: center; min-width: 0; }
+  .row > * { min-width: 0; }
 
   .results {
     border: 2px solid #e5e7eb; border-radius: .5rem;
     padding: .7rem .8rem; box-shadow: 2px 2px 0 #0b0b0b; background: #111827; color: #e5e7eb;
+    min-width: 0; max-width: 100%;
   }
   .sub { margin: 0 0 .4rem 0; font-size: .95rem; font-weight: 900; }
   /* .rows and .val were used by the old layout */
@@ -536,29 +540,36 @@
 
   /* New mapping layout */
 
-  .section { border: 1.5px solid #e5e7eb; border-radius: .45rem; padding: .55rem .6rem; background: #0b1220; color: #e5e7eb; margin-bottom: .6rem; }
+  .section { border: 1.5px solid #e5e7eb; border-radius: .45rem; padding: .55rem .6rem; background: #0b1220; color: #e5e7eb; margin-bottom: .6rem; min-width: 0; }
   .section-title { font-size: .8rem; font-weight: 900; margin-bottom: .35rem; }
-  .kv { display: grid; grid-template-columns: 1fr auto; row-gap: .35rem; column-gap: .6rem; align-items: center; }
+  .kv { display: grid; grid-template-columns: minmax(0, 1fr) auto; row-gap: .35rem; column-gap: .6rem; align-items: center; min-width: 0; }
   .kv .k { opacity: .9; }
   .kv .v { font-variant-numeric: tabular-nums; text-align: right; }
   .kv .v.strong { font-weight: 900; }
   .unit { opacity: .85; font-weight: 700; margin-left: .15rem; }
 
   /* Table-style alignment */
-  .kvtable { width: 100%; border-collapse: collapse; }
+  .kvtable { width: 100%; border-collapse: collapse; table-layout: fixed; }
   .kvtable th { text-align: left; padding: .2rem 0; font-weight: 700; opacity: .9; vertical-align: top; }
   .kvtable td { text-align: right; padding: .2rem 0; font-variant-numeric: tabular-nums; }
+  .kvtable th, .kvtable td { word-break: break-word; overflow-wrap: anywhere; }
   .kvtable td.num { font-weight: 700; }
   .kvtable td.num.strong { font-weight: 900; }
   .subnote { font-size: .85rem; opacity: .75; font-weight: 500; margin-top: .15rem; }
 
-  .draws { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: .6rem; }
-  .card { border: 1.5px solid #e5e7eb; border-radius: .45rem; padding: .6rem .65rem; background: #0b1220; color: #e5e7eb; }
+  .draws { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: .6rem; min-width: 0; }
+  .card { border: 1.5px solid #e5e7eb; border-radius: .45rem; padding: .6rem .65rem; background: #0b1220; color: #e5e7eb; min-width: 0; }
   .card-title { font-weight: 900; font-size: .85rem; margin-bottom: .25rem; }
   .big { font-variant-numeric: tabular-nums; font-weight: 900; font-size: 1.05rem; margin-bottom: .2rem; }
   .detail { font-variant-numeric: tabular-nums; }
 
   @media (max-width: 720px) {
     .draws { grid-template-columns: 1fr; }
+  }
+
+  /* Stack dose row on very narrow screens to keep unit text intact */
+  @media (max-width: 430px) {
+    .row { grid-template-columns: 1fr; }
+    .row select { justify-self: start; }
   }
 </style>

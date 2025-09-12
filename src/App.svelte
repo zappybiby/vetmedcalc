@@ -27,10 +27,14 @@
     display: grid;
     grid-template-columns: 320px 1fr;
     gap: 1rem;
+    width: 100%;
+    min-width: 0;
+    overflow-x: hidden;
   }
   .center {
     display: grid;
     place-items: start center;
+    min-width: 0;
   }
 
   /* Responsive: collapse to single column on narrow screens */

@@ -64,8 +64,12 @@
 
     const labelHTML = node.innerHTML;
     const styles = `
+      /* Remove browser margins; let printer use minimum hardware margins */
       @page { size: auto; margin: 0; }
-      html, body { margin: 0; padding: 0; overflow: hidden; }
+      /* Fill the page box and center the label */
+      html, body { margin: 0; padding: 0; height: 100%; }
+      body { display: grid; place-items: center; overflow: hidden; background: #fff; }
+      /* Fixed-size label area */
       #cpr-print-label { width: 2.625in; height: 2in; box-sizing: border-box; overflow: hidden; }
       .label-outer {
         width: 100%; height: 100%; box-sizing: border-box;
@@ -261,7 +265,9 @@
   /* ------------------- PRINT STYLES ------------------- */
   @media print {
     /* Hide the app; show only the label to avoid extra pages */
-    :global(html, body) { margin: 0; padding: 0; }
+    :global(html, body) { margin: 0; padding: 0; height: 100%; }
+    /* Center the single visible element (the label) */
+    :global(body) { display: grid; place-items: center; }
     :global(#app *) { display: none !important; }
     #cpr-print-label { display: block !important; }
 

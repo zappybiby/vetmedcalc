@@ -38,7 +38,7 @@
 </section>
 
 <style>
-  .shell { display: grid; gap: .75rem; }
+  .shell { display: grid; gap: .75rem; min-width: 0; }
   .tabs { display: flex; flex-wrap: wrap; gap: .5rem; }
   .tab {
     border: 2px solid #e5e7eb; background: #1f2937; color: #e5e7eb; padding: .4rem .7rem;
@@ -50,6 +50,7 @@
     min-height: 40vh;
     border: 2px solid #e5e7eb; border-radius: .5rem; padding: 1rem;
     box-shadow: 3px 3px 0 #0b0b0b; background: #111827; color: #e5e7eb;
+    max-width: 100%; min-width: 0; overflow-x: auto;
   }
   .placeholder { color: #cbd5e1; opacity: .9; }
   @media (max-width: 720px) {
