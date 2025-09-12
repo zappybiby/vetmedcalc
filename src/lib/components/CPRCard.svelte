@@ -249,7 +249,6 @@
   .rows { display: grid; gap: .5rem; }
   .row { display: grid; align-items: center; gap: .5rem; grid-template-columns: 1.5fr .9fr .9fr;
          background: #111827; color: #e5e7eb; border: 1.5px solid #e5e7eb; border-radius: .45rem; padding: .55rem .7rem; box-shadow: 2px 2px 0 #0b0b0b; }
-  .row.grid4 { grid-template-columns: 1.4fr .8fr .9fr .6fr; }
   /* Shock bolus: stack rate over time, right aligned */
   /* Match base row column widths for perfect alignment */
   .row.bolus { grid-template-columns: 1.5fr .9fr .9fr; }

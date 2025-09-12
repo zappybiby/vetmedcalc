@@ -131,6 +131,47 @@
         })
       : null;
 
+  // -------- Message/alert aggregation (severity + stacking) --------
+  type AlertSeverity = 'warn' | 'info';
+  type Alert = { severity: AlertSeverity; message: string };
+
+  function classifyWarning(msg: string): AlertSeverity {
+    const m = msg.toLowerCase();
+    if (m.startsWith('stock too weak')) return 'warn';
+    if (m.includes('exceeds tolerance')) return 'info';
+    if (m.includes('requires') && m.includes('fills')) return 'info';
+    if (m.startsWith('used simple rounding')) return 'info';
+    return 'info';
+  }
+
+  let alerts: Alert[] = [];
+  $: {
+    const arr: Alert[] = [];
+    if (enableDilution && plan) {
+      // Primary feasibility banner (styled as warn)
+      if (!plan.feasibleAtDesiredRate) {
+        arr.push({
+          severity: 'warn',
+          message:
+            `At ${fmt(plan.desiredRateMlPerHr, 2)} mL/hr stock is too weak to match the dose. ` +
+            `Use ${fmt(plan.mappingRateMlPerHr, 3)} mL/hr to hit the target.`,
+        });
+      }
+
+      // Include all helper warnings and classify, skipping duplicates of the feasibility banner
+      for (const w of plan.warnings) {
+        const low = w.toLowerCase();
+        if (!plan.feasibleAtDesiredRate && low.startsWith('stock too weak')) continue; // avoid redundancy
+        arr.push({ severity: classifyWarning(w), message: w });
+      }
+
+      // Sort by severity: warn first, then info
+      const rank: Record<AlertSeverity, number> = { warn: 0, info: 1 };
+      arr.sort((a, b) => rank[a.severity] - rank[b.severity]);
+    }
+    alerts = arr;
+  }
+
   // -------- Derived displays for dilution layout --------
   let dosePerKgHr: number | null = null;    // mg/kg/hr
   $: dosePerKgHr = desiredDose !== '' ? unitConstant(doseUnit) * Number(desiredDose) : null;
@@ -354,10 +395,11 @@
       <h3 class="sub">Dilution Plan</h3>
 
       {#if plan}
-        {#if !plan.feasibleAtDesiredRate}
-          <div class="banner warn">
-            At {fmt(plan.desiredRateMlPerHr, 2)} mL/hr stock is too weak to match the dose.
-            Use {fmt(plan.mappingRateMlPerHr, 3)} mL/hr to hit the target.
+        {#if alerts.length}
+          <div class="alerts" aria-live="polite">
+            {#each alerts as a}
+              <div class={`alert ${a.severity}`}>{a.message}</div>
+            {/each}
           </div>
         {/if}
 
@@ -475,13 +517,7 @@
           </table>
         </div>
 
-        {#if plan.warnings.length}
-          <ul class="warnings">
-            {#each plan.warnings as w}
-              <li>{w}</li>
-            {/each}
-          </ul>
-        {/if}
+        
       {:else}
         <p class="muted">Enter all inputs to see the dilution plan.</p>
       {/if}
@@ -519,10 +555,11 @@
   .sub { margin: 0 0 .4rem 0; font-size: .95rem; font-weight: 900; }
   /* .rows and .val were used by the old layout */
 
-  .banner.warn {
-    border: 2px dashed #facc15; padding: .5rem; border-radius: .4rem;
-    background: #3b2f00; color: #fef3c7; font-weight: 800;
-  }
+  /* Alerts (stacked at top) */
+  .alerts { display: grid; gap: .4rem; margin-bottom: .2rem; }
+  .alert { border: 2px solid; border-radius: .4rem; padding: .5rem .6rem; font-weight: 800; }
+  .alert.warn { border-color: #facc15; border-style: dashed; background: #3b2f00; color: #fef3c7; }
+  .alert.info { border-color: #93c5fd; background: #0b2545; color: #dbeafe; }
   .muted { opacity: .7; margin: 0 .2rem; }
   .warn { color: #b45309; font-weight: 800; margin-left: .25rem; }
   .pill {
@@ -531,8 +568,7 @@
   }
   .note { font-size: .8rem; opacity: .85; }
 
-  .warnings { margin: .5rem 0 0; padding-left: 1rem; }
-  .warnings li { margin: .2rem 0; }
+  /* (deprecated) formerly used for bottom warnings list */
 
   @media (max-width: 720px) {
     .grid { grid-template-columns: 1fr; }
