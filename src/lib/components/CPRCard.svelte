@@ -92,16 +92,11 @@
       .perkg { font-size: 8pt; opacity: .9; }
       .dose { display: grid; place-items: center; border-bottom: 2px solid #000; font-weight: 900; font-size: 14pt; }
       .dose:last-child { border-bottom: none; }
-      .label-bolus { display: grid; grid-template-columns: 1fr auto; align-items: stretch; gap: 0.06in; /* let grid row control height */ }
-      .bolus-rect { border: 2px solid #000; border-radius: .06in; padding: 0.04in 0.06in 0.03in; font-weight: 900; font-size: 9pt; display: grid; gap: 0.02in; text-align: center; justify-self: start; height: 100%; }
-      .bolus-main { font-size: 8pt; font-weight: 900; white-space: nowrap; }
-      .bolus-amount { font-weight: 900; }
-      .bolus-word { font-weight: 900; }
-      .bolus-total { font-weight: 800; font-size: 10pt; text-align: center; }
-      .bolus-box { border: 2px solid #000; border-radius: .06in; padding: 0.04in 0.06in 0.03in; font-weight: 900; font-size: 10pt; display: grid; gap: 0.02in; text-align: right; min-width: 0.9in; height: 100%; }
-      .et-box { text-align: center; justify-self: end; padding-bottom: 0.02in; align-self: stretch; }
+      .label-bolus { display: grid; grid-template-columns: 1fr; align-items: stretch; gap: 0; min-height: 0; }
+      .bolus-box { border: 2px solid #000; border-radius: .06in; padding: 0.04in; font-weight: 900; font-size: 10pt; display: grid; gap: 0.04in; box-sizing: border-box; max-width: 100%; }
+      .et-box { text-align: center; justify-self: stretch; align-self: stretch; display: grid; align-content: center; justify-items: center; }
       .et-label { font-weight: 800; font-size: 9pt; text-align: center; }
-      .et-row { display: flex; justify-content: center; align-items: baseline; gap: 0.04in; }
+      .et-row { display: flex; justify-content: center; align-items: baseline; gap: 0.08in; }
       .et-small { font-weight: 700; font-size: 9pt; opacity: .9; }
       .et-big { font-weight: 900; font-size: 14pt; }
       .dash { font-weight: 800; font-size: 11pt; line-height: 1; }
@@ -211,12 +206,7 @@
     </div>
 
     <div class="label-bolus">
-      <!-- Bottom-left: Bolus rectangular box -->
-      <div class="bolus-rect">
-        <div class="bolus-main"><span class="bolus-amount">{bolus?.mlPerKg ?? '—'} mL/kg</span> <span class="bolus-word">BOLUS</span></div>
-        <div class="bolus-total">Total {fmt0(totalBolusMl)} mL</div>
-      </div>
-      <!-- Bottom-right: ET Tube sizes box -->
+      <!-- ET Tube sizes: full-width, centered; bolus removed per request -->
       <div class="bolus-box et-box">
         <div class="et-label">ET Tube Size:</div>
         {#if et}
@@ -323,26 +313,19 @@
 
     .label-bolus {
       display: grid;
-      grid-template-columns: 1fr auto; /* bolus on left, ET box on right */
-      align-items: stretch;            /* ensure both boxes get equal height */
-      gap: 0.06in;
-      /* let grid row define the height; avoids overflow */
+      grid-template-columns: 1fr; /* single full-width area for ET */
+      align-items: stretch;
+      gap: 0;
+      min-height: 0;
     }
-    /* New rectangular bolus box (bottom-left) */
-    .bolus-rect { border: 2px solid #000; border-radius: .06in; padding: 0.04in 0.06in 0.03in; font-weight: 900; font-size: 9pt; display: grid; gap: 0.02in; text-align: center; justify-self: start; height: 100%; }
-    .bolus-main { font-size: 8pt; font-weight: 900; white-space: nowrap; }
-    .bolus-amount { font-weight: 900; }
-    .bolus-word { font-weight: 900; }
-    .bolus-total { font-weight: 800; font-size: 10pt; text-align: center; }
     .bolus-box {
-      border: 2px solid #000; border-radius: .06in; padding: 0.04in 0.06in 0.03in; font-weight: 900; font-size: 10pt;
-      display: grid; gap: 0.02in; text-align: right; min-width: 0.9in; height: 100%;
+      border: 2px solid #000; border-radius: .06in; padding: 0.04in; font-weight: 900; font-size: 10pt;
+      display: grid; gap: 0.04in; box-sizing: border-box; max-width: 100%;
     }
-
-    /* ET tube box overrides/formatting */
-    .et-box { text-align: center; justify-self: end; padding-bottom: 0.02in; align-self: stretch; } /* anchor to right, equal height */
-    .et-label { font-weight: 800; font-size: 9pt; text-align: center; } /* centered label */
-    .et-row { display: flex; justify-content: center; align-items: baseline; gap: 0.04in; } /* tighter dash spacing */
+    /* ET tube area: full-width, centered vertically/horizontally */
+    .et-box { text-align: center; justify-self: stretch; align-self: stretch; display: grid; align-content: center; justify-items: center; }
+    .et-label { font-weight: 800; font-size: 9pt; text-align: center; }
+    .et-row { display: flex; justify-content: center; align-items: baseline; gap: 0.06in; }
     .et-small { font-weight: 700; font-size: 9pt; opacity: .9; }
     .et-big { font-weight: 900; font-size: 14pt; }
     .dash { font-weight: 800; font-size: 11pt; line-height: 1; }

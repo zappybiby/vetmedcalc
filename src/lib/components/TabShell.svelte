@@ -1,12 +1,14 @@
 <script lang="ts">
   import CPRCard from './CPRCard.svelte';
   import CRICalculator from './CRICalculator.svelte';
+  import ReglanInBag from './ReglanInBag.svelte';
 
   type Tab = { id: string; label: string };
   const tabs: Tab[] = [
-    { id: 'cpr',   label: 'CPR CARD' },
-    { id: 'cri',   label: 'CRI CALCULATOR' },
-    { id: 'blood', label: 'BLOOD TRANSFUSION' }
+    { id: 'cpr',    label: 'CPR CARD' },
+    { id: 'cri',    label: 'CRI CALCULATOR' },
+    { id: 'reglan', label: 'REGLAN IN BAG' },
+    { id: 'blood',  label: 'BLOOD TRANSFUSION' }
   ];
 
   let active: Tab['id'] = 'cpr'; // default
@@ -31,6 +33,8 @@
       <CPRCard />
     {:else if active === 'cri'}
       <CRICalculator />
+    {:else if active === 'reglan'}
+      <ReglanInBag />
     {:else}
       <div class="placeholder">Blood Transfusion tool will appear here.</div>
     {/if}
