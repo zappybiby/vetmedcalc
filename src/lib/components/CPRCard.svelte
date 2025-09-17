@@ -148,71 +148,74 @@
   }
 </script>
 
-<section class="card" aria-label="CPR Card">
-  <header class="hdr">
+<section class="grid gap-[0.6rem]" aria-label="CPR Card">
+  <header class="flex items-center justify-between font-extrabold">
     <div>CPR Card</div>
-    <div class="screen-only">
-      <button class="btn" on:click={printLabel} disabled={!p.weightKg || !p.species}>
+    <div class="print:hidden">
+      <button
+        class="inline-flex items-center rounded-lg border-2 border-slate-200 bg-slate-800 px-3 py-1.5 font-bold text-slate-200 shadow-[2px_2px_0_#0b0b0b] transition disabled:cursor-not-allowed disabled:opacity-60"
+        on:click={printLabel}
+        disabled={!p.weightKg || !p.species}
+      >
         Print label
       </button>
     </div>
   </header>
 
-  <div class="rows">
+  <div class="grid gap-[0.5rem]">
     <!-- Epi -->
-    <div class="row">
-      <div class="col label">Epi {epiMed?.concentration.value} {epiMed?.concentration.units}</div>
-      <div class="col">{epiDose?.mgPerKg} mg/kg</div>
-      <div class="col strong">{fmtVolume(epiVolume)} mL</div>
+    <div class="grid grid-cols-[1.5fr_.9fr_.9fr] items-center gap-[0.5rem] rounded-[0.45rem] border border-slate-200 bg-slate-900 px-[0.7rem] py-[0.55rem] text-slate-200 shadow-[2px_2px_0_#0b0b0b]">
+      <div class="font-semibold">Epi {epiMed?.concentration.value} {epiMed?.concentration.units}</div>
+      <div>{epiDose?.mgPerKg} mg/kg</div>
+      <div class="font-extrabold">{fmtVolume(epiVolume)} mL</div>
     </div>
 
     <!-- Atropine -->
-    <div class="row">
-      <div class="col label">Atropine {atropineMed?.concentration.value} {atropineMed?.concentration.units}</div>
-      <div class="col">{atropineDose?.mgPerKg} mg/kg</div>
-      <div class="col strong">{fmtVolume(atropineVolume)} mL</div>
+    <div class="grid grid-cols-[1.5fr_.9fr_.9fr] items-center gap-[0.5rem] rounded-[0.45rem] border border-slate-200 bg-slate-900 px-[0.7rem] py-[0.55rem] text-slate-200 shadow-[2px_2px_0_#0b0b0b]">
+      <div class="font-semibold">Atropine {atropineMed?.concentration.value} {atropineMed?.concentration.units}</div>
+      <div>{atropineDose?.mgPerKg} mg/kg</div>
+      <div class="font-extrabold">{fmtVolume(atropineVolume)} mL</div>
     </div>
 
     <!-- Shock Bolus -->
-    <div class="row bolus">
-      <div class="col label">
+    <div class="grid grid-cols-[1.5fr_.9fr_.9fr] items-center gap-[0.5rem] rounded-[0.45rem] border border-slate-200 bg-slate-900 px-[0.7rem] py-[0.55rem] text-slate-200 shadow-[2px_2px_0_#0b0b0b]">
+      <div class="font-semibold">
         Qtr. Shock Bolus {#if bolus}({bolus.mlPerKg} mL/kg){/if}
       </div>
-      <div class="col">Total: <span class="strong">{fmt0(totalBolusMl)}</span> mL</div>
-      <div class="col rt">
-        <span class="rate-label">Rate:</span>
-        <span class="stack">
-          <span class="value">{fmtRate(rateRounded, rateRaw)} mL/hr</span>
-          <span class="time">{bolus?.overMinutes ?? '—'} min</span>
+      <div>Total: <span class="font-extrabold">{fmt0(totalBolusMl)}</span> mL</div>
+      <div class="flex items-center justify-end gap-[0.4rem]">
+        <span>Rate:</span>
+        <span class="inline-grid justify-items-center leading-tight">
+          <span class="border-b-2 border-slate-200 pb-px font-extrabold">{fmtRate(rateRounded, rateRaw)} mL/hr</span>
+          <span class="font-bold">{bolus?.overMinutes ?? '—'} min</span>
         </span>
       </div>
     </div>
 
     <!-- ET Tube (moved to bottom) -->
-    <div class="row">
-      <div class="col label">ET Tube (ID)</div>
-      <div class="col">
+    <div class="grid grid-cols-[1.5fr_.9fr_.9fr] items-center gap-[0.5rem] rounded-[0.45rem] border border-slate-200 bg-slate-900 px-[0.7rem] py-[0.55rem] text-slate-200 shadow-[2px_2px_0_#0b0b0b]">
+      <div class="font-semibold">ET Tube (ID)</div>
+      <div>
         {#if et}
           Range: {et.lowMm.toFixed(1)}–{et.highMm.toFixed(1)} mm
         {:else}
           —
         {/if}
       </div>
-      <div class="col strong">
+      <div class="font-extrabold">
         {#if et}{et.estimateMm.toFixed(1)} mm{:else}—{/if}
       </div>
     </div>
   </div>
 
-
-  <p class="hint">Enter weight and species, then “Print label”.</p>
+  <p class="m-0 text-[0.8rem] opacity-80">Enter weight and species, then “Print label”.</p>
 </section>
 
 <!-- PRINT-ONLY LABEL (unchanged) -->
 
 
 <!-- PRINT-ONLY LABEL -->
-<div id="cpr-print-label" class="printable" aria-hidden="true">
+<div id="cpr-print-label" class="printable hidden print:block" aria-hidden="true">
   <div class="label-outer">
     <div class="label-hdr">
       <div class="label-name">{p.name || 'NAME'}</div>
@@ -266,25 +269,6 @@
 </div>
 
 <style>
-  /* --- screen card (unchanged from earlier, trimmed for brevity) --- */
-  .card { display: grid; gap: .6rem; }
-  .hdr { display: flex; justify-content: space-between; align-items: center; font-weight: 800; }
-  .btn { border: 2px solid #e5e7eb; color: #e5e7eb; border-radius: .4rem; padding: .35rem .6rem; font-weight: 700; background: #1f2937; box-shadow: 2px 2px 0 #0b0b0b; }
-  .rows { display: grid; gap: .5rem; }
-  .row { display: grid; align-items: center; gap: .5rem; grid-template-columns: 1.5fr .9fr .9fr;
-         background: #111827; color: #e5e7eb; border: 1.5px solid #e5e7eb; border-radius: .45rem; padding: .55rem .7rem; box-shadow: 2px 2px 0 #0b0b0b; }
-  /* Shock bolus: stack rate over time, right aligned */
-  /* Match base row column widths for perfect alignment */
-  .row.bolus { grid-template-columns: 1.5fr .9fr .9fr; }
-  .row.bolus .rt { display: flex; justify-content: flex-end; align-items: center; gap: .4rem; }
-  .row.bolus .rt .stack { display: inline-grid; justify-items: center; line-height: 1.1; }
-  .row.bolus .rt .value { font-weight: 800; border-bottom: 2px solid #e5e7eb; padding-bottom: 1px; }
-  .row.bolus .rt .time { font-weight: 700; }
-  .label { font-weight: 700; }
-  .strong { font-weight: 800; }
-  .hint { margin: 0; font-size: .8rem; opacity: .8; }
-  .printable { display: none; }
-
   /* ------------------- PRINT STYLES ------------------- */
   @media print {
     /* Hide the app; show only the label to avoid extra pages */

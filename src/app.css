@@ -29,3 +29,85 @@
     outline-offset: 2px;
   }
 }
+
+@layer components {
+  .field-control,
+  .field-select {
+    color-scheme: dark;
+    @apply w-full min-w-0 rounded-lg px-3 py-2 text-sm text-slate-100 placeholder:text-slate-400 transition-colors disabled:cursor-not-allowed disabled:opacity-60;
+    border: 1px solid rgba(148, 197, 255, 0.75);
+    background-clip: padding-box;
+    box-shadow:
+      0 0 0 1px rgba(56, 189, 248, 0.3),
+      0 0 0 6px rgba(2, 6, 23, 0.55);
+    background-color: #0b1220;
+  }
+
+  .field-control:hover,
+  .field-select:hover {
+    border-color: rgba(148, 233, 255, 0.85);
+    box-shadow:
+      0 0 0 1px rgba(125, 211, 252, 0.45),
+      0 0 0 6px rgba(2, 6, 23, 0.55);
+  }
+
+  .field-control:focus-visible,
+  .field-select:focus-visible {
+    outline: 2px solid rgba(56, 189, 248, 0.95);
+    outline-offset: 2px;
+    border-color: rgba(125, 211, 252, 0.95);
+    box-shadow:
+      0 0 0 2px rgba(56, 189, 248, 0.65),
+      0 0 0 8px rgba(14, 32, 64, 0.6);
+  }
+
+  .field-select {
+    @apply appearance-none pr-10;
+    background-image: url('data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="%23cbd5f5"%3E%3Cpath fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.173l3.71-3.94a.75.75 0 011.08 1.04l-4.24 4.5a.75.75 0 01-1.08 0l-4.24-4.5a.75.75 0 01.02-1.06z" clip-rule="evenodd" /%3E%3C/svg%3E');
+    background-position: right 0.75rem center;
+    background-repeat: no-repeat;
+    background-size: 0.85rem;
+    padding-right: 2.5rem;
+  }
+
+  .field-select option {
+    background-color: #111827; /* surface.DEFAULT */
+    color: #f1f5f9; /* slate-100 */
+  }
+
+  .field-select optgroup {
+    background-color: #111827;
+    color: #e2e8f0; /* slate-200 */
+  }
+
+  .field-select option:checked,
+  .field-select option:hover,
+  .field-select option:focus {
+    background-color: #0ea5e9; /* sky-500 */
+    color: #020617; /* slate-950 */
+  }
+
+  .field-select:focus-visible option:checked {
+    outline: none;
+  }
+
+  .field-checkbox,
+  .field-radio {
+    @apply border-slate-500 text-sky-400;
+    background-color: #0b1220;
+  }
+}
+
+@layer utilities {
+  .bg-surface {
+    background-color: #111827;
+  }
+
+  .bg-surface-raised {
+    background-color: #1f2937;
+  }
+
+  .bg-surface-sunken {
+    background-color: #0b1220;
+  }
+}
