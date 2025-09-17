@@ -1,7 +1,8 @@
 <script lang="ts">
   // CRI Calculator with optional dilution mapping (rate ↔ dose).
   // Adjust the helper import path if needed:
-  import { computeMixturePlan, type DoseUnit, type MixturePlan } from '../helpers/doseMapping';
+  import type { DoseUnit } from '../helpers/doseMapping';
+  import { buildCRIViewModel, type CRIViewModel } from '../viewmodels/criViewModel';
 
   import { patient } from '../stores/patient';
   import type { Patient } from '../stores/patient';
@@ -25,20 +26,6 @@
   let desiredRateMlPerHr: number | '' = 5; // mapping rate for dilution mode
 
   // -------- Helpers --------
-  function unitConstant(u: DoseUnit) {
-    // Convert entered dose to mg/hr·kg
-    switch (u) {
-      case 'mcg/kg/min':
-        return 0.06;      // 60/1000
-      case 'mg/kg/day':
-        return 1 / 24;    // per day → per hour
-      case 'mcg/kg/hr':
-        return 1 / 1000;  // mcg → mg
-      case 'mg/kg/hr':
-      default:
-        return 1;
-    }
-  }
   function concMgPerMl(m?: MedicationDef | null) {
     if (!m) return null;
     return m.concentration.units === 'mg/mL'
@@ -55,190 +42,22 @@
     }
     return `${m.concentration.value} ${m.concentration.units}`;
   }
-  function roundToInc(v: number, inc: number) {
-    return Math.round(v / inc) * inc;
-  }
-  function chooseSyringeForVolume(volMl: number, syrs: readonly SyringeDef[]): SyringeDef {
-    const sorted = [...syrs].sort((a, b) => a.sizeCc - b.sizeCc || a.incrementMl - b.incrementMl);
-    const oneFill = sorted.filter((s) => s.sizeCc >= volMl);
-    if (oneFill.length) {
-      return oneFill.sort((a, b) => a.incrementMl - b.incrementMl || a.sizeCc - b.sizeCc)[0];
-    }
-    return sorted[sorted.length - 1];
-  }
   function fmt(x: number | null | undefined, digits = 2) {
     if (x == null || Number.isNaN(x)) return '—';
     return Number(x).toFixed(digits);
   }
 
-  // -------- STOCK (no dilution) calculations --------
-  let canStock: boolean = false;
-  $: canStock =
-    !!(p.weightKg && med && desiredDose !== '' && durationHr !== '');
-
-  let stockRateMlHr: number | null = null;
-  $: stockRateMlHr =
-    canStock && med
-      ? (unitConstant(doseUnit) * Number(desiredDose) * (p.weightKg as number)) /
-        (concMgPerMl(med) as number)
-      : null;
-
-  let stockTargetVolMl: number | null = null;
-  $: stockTargetVolMl =
-    stockRateMlHr != null && durationHr !== ''
-      ? stockRateMlHr * Number(durationHr)
-      : null;
-
-  let stockSyr: SyringeDef | null = null;
-  $: stockSyr =
-    stockTargetVolMl != null ? chooseSyringeForVolume(stockTargetVolMl, SYRINGES) : null;
-
-  let stockDrawVolMl: number | null = null;
-  $: stockDrawVolMl =
-    stockTargetVolMl != null && stockSyr
-      ? roundToInc(stockTargetVolMl, stockSyr.incrementMl)
-      : null;
-
-  let stockFills: number | null = null;
-  $: stockFills =
-    stockDrawVolMl != null && stockSyr
-      ? Math.ceil(stockDrawVolMl / stockSyr.sizeCc)
-      : null;
-
-  let stockDurationFromSnapHr: number | null = null;
-  $: stockDurationFromSnapHr =
-    stockRateMlHr != null && stockDrawVolMl != null
-      ? stockDrawVolMl / stockRateMlHr
-      : null;
-
-  // -------- DILUTION mapping (rate ↔ dose) --------
-  let canDilute: boolean = false;
-  $: canDilute =
-    enableDilution &&
-    !!(p.weightKg && med && desiredDose !== '' && durationHr !== '' && desiredRateMlPerHr !== '');
-
-  let plan: MixturePlan | null = null;
-  $: plan =
-    canDilute && med
-      ? computeMixturePlan({
-          weightKg: p.weightKg as number,
-          medication: med,
-          desiredDose: Number(desiredDose),
-          doseUnit,
-          desiredRateMlPerHr: Number(desiredRateMlPerHr),
-          desiredDurationHr: Number(durationHr),
-          syringes: SYRINGES
-        })
-      : null;
-
-  // -------- Message/alert aggregation (severity + stacking) --------
-  type AlertSeverity = 'warn' | 'info';
-  type Alert = { severity: AlertSeverity; message: string };
-
-  function classifyWarning(msg: string): AlertSeverity {
-    const m = msg.toLowerCase();
-    if (m.startsWith('stock too weak')) return 'warn';
-    if (m.includes('exceeds tolerance')) return 'info';
-    if (m.includes('requires') && m.includes('fills')) return 'info';
-    if (m.startsWith('used simple rounding')) return 'info';
-    return 'info';
-  }
-
-  let alerts: Alert[] = [];
-  $: {
-    const arr: Alert[] = [];
-    if (enableDilution && plan) {
-      // Primary feasibility banner (styled as warn)
-      if (!plan.feasibleAtDesiredRate) {
-        arr.push({
-          severity: 'warn',
-          message:
-            `At ${fmt(plan.desiredRateMlPerHr, 2)} mL/hr stock is too weak to match the dose. ` +
-            `Use ${fmt(plan.mappingRateMlPerHr, 3)} mL/hr to hit the target.`,
-        });
-      }
-
-      // Include all helper warnings and classify, skipping duplicates of the feasibility banner
-      for (const w of plan.warnings) {
-        const low = w.toLowerCase();
-        if (!plan.feasibleAtDesiredRate && low.startsWith('stock too weak')) continue; // avoid redundancy
-        arr.push({ severity: classifyWarning(w), message: w });
-      }
-
-      // Sort by severity: warn first, then info
-      const rank: Record<AlertSeverity, number> = { warn: 0, info: 1 };
-      arr.sort((a, b) => rank[a.severity] - rank[b.severity]);
-    }
-    alerts = arr;
-  }
-
-  // -------- Derived displays for dilution layout --------
-  let dosePerKgHr: number | null = null;    // mg/kg/hr
-  $: dosePerKgHr = desiredDose !== '' ? unitConstant(doseUnit) * Number(desiredDose) : null;
-
-  let dosePerKgDay: number | null = null;   // mg/kg/day
-  $: dosePerKgDay = dosePerKgHr != null ? dosePerKgHr * 24 : null;
-
-  // -------- Additional derived values used in NO-DILUTION breakdown --------
-  // Mass flow for the patient (mg/hr) and total mass over T hours (mg)
-  let stockMassRateMgHr: number | null = null;
-  $: stockMassRateMgHr = canStock && dosePerKgHr != null && p.weightKg != null
-    ? dosePerKgHr * (p.weightKg as number)
-    : null;
-
-  let stockMassTotalMg: number | null = null;
-  $: stockMassTotalMg = stockMassRateMgHr != null && durationHr !== ''
-    ? stockMassRateMgHr * Number(durationHr)
-    : null;
-
-  // Display mass unit mirrors user's dose unit (mg vs mcg)
-  let massUnit: 'mg' | 'mcg' = 'mg';
-  $: massUnit = doseUnit.includes('mcg') ? 'mcg' : 'mg';
-
-  // Display-scaled values based on massUnit
-  let dispMassRatePerHr: number | null = null;    // mg/hr or mcg/hr
-  $: dispMassRatePerHr = stockMassRateMgHr != null
-    ? (massUnit === 'mcg' ? stockMassRateMgHr * 1000 : stockMassRateMgHr)
-    : null;
-
-  let dispDosePerKgHr: number | null = null;      // mg/kg/hr or mcg/kg/hr
-  $: dispDosePerKgHr = dosePerKgHr != null
-    ? (massUnit === 'mcg' ? dosePerKgHr * 1000 : dosePerKgHr)
-    : null;
-
-  let dispMassTotal: number | null = null;        // mg or mcg over T hours
-  $: dispMassTotal = stockMassTotalMg != null
-    ? (massUnit === 'mcg' ? stockMassTotalMg * 1000 : stockMassTotalMg)
-    : null;
-
-  // Required concentration (ideal for requested mapping)
-  let requiredConcMgPerMl: number | null = null;
-  $: requiredConcMgPerMl = plan ? plan.neededConcentrationMgPerMl : null;
-
-  // Ideal bag targets (before snapping)
-  let targetVolMl: number | null = null;
-  $: targetVolMl = plan ? plan.targetTotalVolumeMl : null;
-
-  let idealDrugMg: number | null = null; // mg needed ideally at required concentration
-  $: idealDrugMg = plan ? plan.neededConcentrationMgPerMl * plan.targetTotalVolumeMl : null;
-
-  // Snapped/final values
-  let finalVolMl: number | null = null;
-  $: finalVolMl = plan ? plan.finalTotalVolumeMl : null;
-
-  let snappedStockMl: number | null = null;
-  $: snappedStockMl = plan ? plan.snappedStockVolumeMl : null;
-
-  let snappedDiluentMl: number | null = null;
-  $: snappedDiluentMl = plan ? plan.snappedDiluentVolumeMl : null;
-
-  // mg in final mix, computed from stock used (equivalently C_final * V_final)
-  let finalDrugMg: number | null = null;
-  $: finalDrugMg = plan ? plan.stockConcentrationMgPerMl * plan.snappedStockVolumeMl : null;
-
-  // Suggest a syringe for measuring total volume (for display only)
-  let totalMixSyr: SyringeDef | null = null;
-  $: totalMixSyr = finalVolMl != null ? chooseSyringeForVolume(finalVolMl, SYRINGES) : null;
+  // Unified view-model (presence-based)
+  let vm: CRIViewModel | null = null;
+  $: vm = buildCRIViewModel({
+    enableDilution,
+    p,
+    med,
+    desiredDose,
+    doseUnit,
+    durationHr,
+    desiredRateMlPerHr,
+  });
 </script>
 
 <section class="cri" aria-label="CRI Calculator">
@@ -315,214 +134,80 @@
     {/if}
   </div>
 
-  <!-- Results -->
-  {#if !enableDilution}
-    <div class="results">
-      <h3 class="sub">From Stock (no dilution)</h3>
+  <!-- Unified Results -->
+  <div class="results">
+    <h3 class="sub">{enableDilution ? 'Dilution Plan' : 'From Stock (no dilution)'}</h3>
 
-      {#if canStock}
-        <!-- How we calculated it -->
-        <div class="section">
-          <div class="section-title">How Calculated</div>
-          <table class="kvtable">
-            <tbody>
-              <tr>
-                <th>Hourly dose (per kg)</th>
-                <td class="num">{fmt(dispDosePerKgHr, 3)} <span class="unit">{massUnit}/kg/hr</span></td>
-              </tr>
-              <tr>
-                <th>Mass rate (patient)</th>
-                <td class="num">{fmt(dispMassRatePerHr, 3)} <span class="unit">{massUnit}/hr</span></td>
-              </tr>
-              <tr>
-                <th>Pump rate</th>
-                <td class="num strong">{fmt(stockRateMlHr ?? null, 2)} <span class="unit">mL/hr</span></td>
-              </tr>
-              <tr>
-                <th>Total mass for {fmt(Number(durationHr), 2)} hr</th>
-                <td class="num">{fmt(dispMassTotal, 3)} <span class="unit">{massUnit}</span></td>
-              </tr>
-              <tr>
-                <th>Target volume (unsnapped)</th>
-                <td class="num">{fmt(stockTargetVolMl ?? null, 2)} <span class="unit">mL</span></td>
-              </tr>
-            </tbody>
-          </table>
+    {#if vm}
+      {#if vm.alerts?.length}
+        <div class="alerts" aria-live="polite">
+          {#each vm.alerts as a}
+            <div class={`alert ${a.severity}`}>{a.message}</div>
+          {/each}
         </div>
+      {/if}
 
-        <!-- Summary -->
-        <div class="section">
-          <div class="section-title">Summary</div>
-
-          <div class="draws">
+      <div class="section">
+        <div class="section-title">Summary</div>
+        <div class="draws">
+          {#each vm.drawCards as card}
             <div class="card">
-              <div class="card-title">Stock to Draw Up</div>
-              <div class="big">{fmt(stockDrawVolMl ?? null, 2)} <span class="unit">mL</span></div>
+              <div class="card-title">{card.title}</div>
+              <div class="big">{card.volumeText}</div>
               <div class="detail">
-                {#if stockSyr}
-                  in <span class="pill">{stockSyr.label ?? `${stockSyr.sizeCc} cc`}</span>
-                  <span class="muted">(ticks {fmt(stockSyr.incrementMl, 2)} mL)</span>
-                  {#if stockFills && stockFills > 1}
-                    <span class="warn">� requires {stockFills} fills</span>
-                  {/if}
-                {:else}
-                  -
+                in <span class="pill">{card.syringeText}</span>
+                {#if card.fills && card.fills > 1}
+                  <span class="warn">· {card.fills} fills</span>
+                {/if}
+                {#if card.tickText}
+                  <span class="muted">({card.tickText})</span>
                 {/if}
               </div>
             </div>
-          </div>
-
-          <div class="kv" style="margin-top:.35rem;">
-            <div class="k">Final concentration in syringe</div>
-            <div class="v strong">{fmt(concMgPerMl(med), 4)} <span class="unit">mg/mL</span></div>
-            <div class="k">Infusion rate</div>
-            <div class="v strong">{fmt(stockRateMlHr ?? null, 2)} <span class="unit">mL/hr</span></div>
-            <div class="k">Delivers</div>
-            <div class="v">
-              <span class="strong">{fmt(dispMassRatePerHr, 3)} {massUnit}/hr</span>
-              <span class="muted"> (~{fmt(dispDosePerKgHr, 3)} {massUnit}/kg/hr)</span>
-            </div>
-            <div class="k">Estimated runtime</div>
-            <div class="v">{fmt(stockDurationFromSnapHr ?? null, 2)} <span class="unit">hr</span></div>
-          </div>
+          {/each}
         </div>
-      {:else}
-        <p class="muted">Enter all inputs to see the calculation.</p>
-      {/if}
-    </div>
-    {:else}
-    <div class="results">
-      <h3 class="sub">Dilution Plan</h3>
-
-      {#if plan}
-        {#if alerts.length}
-          <div class="alerts" aria-live="polite">
-            {#each alerts as a}
-              <div class={`alert ${a.severity}`}>{a.message}</div>
+        <div class="card result">
+          <div class="card-title">{vm.resultCard.title}</div>
+          <div class="kv">
+            <div class="k">Total volume</div>
+            <div class="v strong">{vm.resultCard.totalVolumeText}</div>
+            <div class="k">Final concentration</div>
+            <div class="v strong">{vm.resultCard.finalConcentrationText}</div>
+          </div>
+          <div class="divider" role="presentation"></div>
+          <div class="result-line">At <span class="strong">{vm.resultCard.pumpRateText}</span> this will deliver <span class="strong">{vm.resultCard.deliveredDoseText}</span></div>
+          <div class="result-line muted">Giving a dose of:</div>
+          <div class="divider" role="presentation"></div>
+          <div class="dose-lines">
+            {#each vm.resultCard.doseLines as ln}
+              <div class="dose">{ln}</div>
             {/each}
           </div>
-        {/if}
-
-        <!-- [Summary] moved to top -->
-        <div class="section">
-          <div class="section-title">Summary</div>
-
-          <div class="draws">
-            <div class="card">
-              <div class="card-title">Stock to Draw Up</div>
-              <div class="big">{fmt(snappedStockMl, 2)} <span class="unit">mL</span></div>
-              <div class="detail">
-                in <span class="pill">{plan.stockDraw.syringeLabel ?? `${plan.stockDraw.syringeSizeMl} cc`}</span>
-                {#if plan.stockDraw.fills > 1}
-                  <span class="warn">· {plan.stockDraw.fills} fills</span>
-                {/if}
-              </div>
-            </div>
-
-            <div class="card">
-              <div class="card-title">Diluent to Draw Up</div>
-              <div class="big">{fmt(snappedDiluentMl, 2)} <span class="unit">mL</span></div>
-              <div class="detail">
-                in <span class="pill">{plan.diluentDraw.syringeLabel ?? `${plan.diluentDraw.syringeSizeMl} cc`}</span>
-                {#if plan.diluentDraw.fills > 1}
-                  <span class="warn">· {plan.diluentDraw.fills} fills</span>
-                {/if}
-              </div>
-            </div>
-          </div>
-
-          <div class="kv" style="margin-top:.35rem;">
-            <div class="k">Total Volume</div>
-            <div class="v strong">{fmt(finalVolMl, 2)} <span class="unit">mL</span></div>
-            <div class="k">Final concentration</div>
-            <div class="v strong">{fmt(plan.chosenConcentrationMgPerMl, 4)} <span class="unit">mg/mL</span></div>
-            <div class="k">When infused at {fmt(plan.desiredRateMlPerHr, 2)} mL/hr</div>
-            <div class="v">
-              delivers <span class="strong">{fmt(plan.deliveredDoseAtDesiredRate, 3)} {plan.doseUnit}</span>
-            </div>
-          </div>
         </div>
-
-        <!-- [Dose Rate Needed] now follows Summary -->
-        <div class="section">
-          <div class="section-title">Dose Rate Needed</div>
+      </div>
+      {#if vm.roundingDetail}
+        <details class="rounding">
+          <summary>{vm.roundingDetail.title}</summary>
           <table class="kvtable">
             <tbody>
-              <tr>
-                <th>Daily dose</th>
-                <td class="num">{fmt(dosePerKgDay, 3)} <span class="unit">mg/kg/day</span></td>
-              </tr>
-              <tr>
-                <th>Hourly dose</th>
-                <td class="num">{fmt(dosePerKgHr, 3)} <span class="unit">mg/kg/hr</span></td>
-              </tr>
-              <tr>
-                <th>Required concentration</th>
-                <td class="num">{fmt(requiredConcMgPerMl, 4)} <span class="unit">mg/mL</span></td>
-              </tr>
+              {#each vm.roundingDetail.rows as r}
+                <tr>
+                  <th>{r.label}</th>
+                  <td class="num strong">{r.value}
+                    {#if r.subnote}
+                      <div class="subnote">{r.subnote}</div>
+                    {/if}
+                  </td>
+                </tr>
+              {/each}
             </tbody>
           </table>
-        </div>
-
-        <!-- [Details] -->
-        <div class="section">
-          <div class="section-title">Details</div>
-          <table class="kvtable">
-            <tbody>
-              <tr>
-                <th>
-                  Total volume to run in {fmt(Number(durationHr), 2)} hr<br/>
-                  at {fmt(plan.desiredRateMlPerHr, 2)} mL/hr
-                </th>
-                <td class="num strong">{fmt(targetVolMl, 2)} <span class="unit">mL</span></td>
-              </tr>
-              <tr>
-                <th>Drug needed in that volume</th>
-                <td class="num">
-                  {fmt(targetVolMl, 2)} <span class="unit">mL</span>
-                  × {fmt(requiredConcMgPerMl, 4)} <span class="unit">mg/mL</span>
-                  = <span class="strong">{fmt(idealDrugMg, 3)}</span> <span class="unit">mg</span>
-                </td>
-              </tr>
-              <tr>
-                <th>Volume of stock to get that mg</th>
-                <td class="num">
-                  {fmt(idealDrugMg, 3)} <span class="unit">mg</span>
-                  ÷ {fmt(plan.stockConcentrationMgPerMl, 4)} <span class="unit">mg/mL</span>
-                  = {fmt(plan.rawStockVolumeMl, 2)} <span class="unit">mL</span>
-                  <div class="subnote">in <span class="pill">{plan.stockDraw.syringeLabel ?? `${plan.stockDraw.syringeSizeMl} cc`}</span>
-                  {#if plan.stockDraw.fills > 1} · {plan.stockDraw.fills} fills{/if}
-                  </div>
-                </td>
-              </tr>
-              <tr>
-                <th>Add diluent</th>
-                <td class="num">
-                  <span class="strong">{fmt(snappedDiluentMl, 2)} mL diluent</span>
-                  <div class="subnote">in <span class="pill">{plan.diluentDraw.syringeLabel ?? `${plan.diluentDraw.syringeSizeMl} cc`}</span>
-                  {#if plan.diluentDraw.fills > 1} · {plan.diluentDraw.fills} fills{/if}
-                  </div>
-                </td>
-              </tr>
-              <tr>
-                <th>Final concentration</th>
-                <td class="num">
-                  {fmt(finalDrugMg, 3)} <span class="unit">mg</span>
-                  / {fmt(finalVolMl, 2)} <span class="unit">mL</span>
-                  = <span class="strong">{fmt(plan.chosenConcentrationMgPerMl, 4)} <span class="unit">mg/mL</span></span>
-                  <span class="muted">(±{fmt(plan.relConcentrationErrorPct, 2)}% vs required)</span>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-
-        
-      {:else}
-        <p class="muted">Enter all inputs to see the dilution plan.</p>
+        </details>
       {/if}
-    </div>
-  {/if}
+    {:else}
+      <p class="muted">Enter all inputs to see the {enableDilution ? 'dilution plan' : 'calculation'}.</p>
+    {/if}
+  </div>
 </section>
 
 <style>
@@ -598,6 +283,19 @@
   .card-title { font-weight: 900; font-size: .85rem; margin-bottom: .25rem; }
   .big { font-variant-numeric: tabular-nums; font-weight: 900; font-size: 1.05rem; margin-bottom: .2rem; }
   .detail { font-variant-numeric: tabular-nums; }
+  .card.result { margin-top: .65rem; display: grid; gap: .5rem; }
+  .card.result .kv { margin: 0; }
+  .divider { border-top: 1px solid #1f2937; margin: .2rem 0; }
+  .result-line { font-variant-numeric: tabular-nums; }
+  .result-line .strong { font-weight: 900; }
+  .dose-lines { display: grid; gap: .2rem; }
+  .dose { font-variant-numeric: tabular-nums; font-weight: 900; }
+  details.rounding { border: 1.5px solid #e5e7eb; border-radius: .45rem; padding: .55rem .6rem; background: #0b1220; color: #e5e7eb; margin-top: .65rem; }
+  details.rounding summary { font-weight: 900; cursor: pointer; }
+  details.rounding summary::-webkit-details-marker { display: none; }
+  details.rounding summary::after { content: '▾'; font-size: .75rem; margin-left: .35rem; }
+  details.rounding[open] summary::after { content: '▴'; }
+  details.rounding table { margin-top: .4rem; }
 
   @media (max-width: 720px) {
     .draws { grid-template-columns: 1fr; }

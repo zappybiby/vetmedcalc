@@ -199,7 +199,7 @@
   .card-title { font-weight: 900; font-size: .85rem; margin-bottom: .25rem; }
   .big { font-variant-numeric: tabular-nums; font-weight: 900; font-size: 1.05rem; margin-bottom: .2rem; }
   .detail { font-variant-numeric: tabular-nums; }
-
+ 
   @media (max-width: 720px) {
     .grid { grid-template-columns: 1fr; }
     .draws { grid-template-columns: 1fr; }
