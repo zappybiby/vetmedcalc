@@ -1,6 +1,7 @@
 <script lang="ts">
   import { patient } from '../stores/patient';
-  import { MEDICATIONS, CPR_DRUG_DOSES, CPR_FLUID_BOLUS } from '@defs';
+  import { MEDICATIONS, CPR_DRUG_DOSES, CPR_FLUID_BOLUS, SYRINGES } from '@defs';
+  import type { SyringeDef } from '@defs';
 
   // ⬇️ NEW: ET tube helper
   import { estimateEtForPatient } from '../helpers/etTube';
@@ -11,13 +12,46 @@
   const epiDose = CPR_DRUG_DOSES.find(d => d.name.toLowerCase() === 'epinephrine');
   const atropineDose = CPR_DRUG_DOSES.find(d => d.name.toLowerCase() === 'atropine');
 
-  const r2 = (x: number) => Math.round(x * 100) / 100;
+  type VolumeInfo = {
+    ml: number;
+    syringe: SyringeDef;
+    decimals: number;
+  };
+
+  function roundToIncrement(value: number, increment: number): number {
+    return Math.round(value / increment) * increment;
+  }
+
+  function decimalsForIncrement(increment: number): number {
+    const str = increment.toString();
+    const decimalPart = str.split('.')[1];
+    return decimalPart ? decimalPart.length : 0;
+  }
+
+  function chooseSyringeForVolume(volMl: number, syrs: readonly SyringeDef[]): SyringeDef {
+    const sorted = [...syrs].sort((a, b) => a.sizeCc - b.sizeCc || a.incrementMl - b.incrementMl);
+    const oneFill = sorted.filter(s => s.sizeCc >= volMl);
+    if (oneFill.length) {
+      return oneFill.sort((a, b) => a.incrementMl - b.incrementMl || a.sizeCc - b.sizeCc)[0];
+    }
+    return sorted[sorted.length - 1];
+  }
+
+  function computeRoundedVolume(mgPerKg: number, weightKg: number, concentrationMgPerMl: number): VolumeInfo {
+    const rawMl = (mgPerKg * weightKg) / concentrationMgPerMl;
+    const syringe = chooseSyringeForVolume(rawMl, SYRINGES);
+    const decimals = decimalsForIncrement(syringe.incrementMl);
+    const rounded = roundToIncrement(rawMl, syringe.incrementMl);
+    const ml = Number(rounded.toFixed(decimals));
+    return { ml, syringe, decimals };
+  }
+
   const r0 = (x: number) => Math.round(x);
   function roundRateMlHr(x: number) {
     return x < 100 ? Math.round(x) : Math.round(x / 10) * 10;
   }
 
-  const fmt2 = (x: number | null) => x == null ? '—' : x.toFixed(2);
+  const fmtVolume = (info: VolumeInfo | null) => info == null ? '—' : info.ml.toFixed(info.decimals);
   const fmt0 = (x: number | null) => x == null ? '—' : String(r0(x));
   function fmtRate(xRounded: number | null, raw: number | null) {
     if (xRounded == null || raw == null) return '—';
@@ -30,14 +64,14 @@
   let et: EtTubeEstimate | null = null;
   $: et = estimateEtForPatient(p);
 
-  $: epiMl =
+  $: epiVolume =
     p.weightKg && epiDose && epiMed
-      ? r2((epiDose.mgPerKg * p.weightKg) / epiMed.concentration.value)
+      ? computeRoundedVolume(epiDose.mgPerKg, p.weightKg, epiMed.concentration.value)
       : null;
 
-  $: atropineMl =
+  $: atropineVolume =
     p.weightKg && atropineDose && atropineMed
-      ? r2((atropineDose.mgPerKg * p.weightKg) / atropineMed.concentration.value)
+      ? computeRoundedVolume(atropineDose.mgPerKg, p.weightKg, atropineMed.concentration.value)
       : null;
 
   $: bolus = CPR_FLUID_BOLUS.find(b => b.species === p.species);
@@ -129,14 +163,14 @@
     <div class="row">
       <div class="col label">Epi {epiMed?.concentration.value} {epiMed?.concentration.units}</div>
       <div class="col">{epiDose?.mgPerKg} mg/kg</div>
-      <div class="col strong">{fmt2(epiMl)} mL</div>
+      <div class="col strong">{fmtVolume(epiVolume)} mL</div>
     </div>
 
     <!-- Atropine -->
     <div class="row">
       <div class="col label">Atropine {atropineMed?.concentration.value} {atropineMed?.concentration.units}</div>
       <div class="col">{atropineDose?.mgPerKg} mg/kg</div>
-      <div class="col strong">{fmt2(atropineMl)} mL</div>
+      <div class="col strong">{fmtVolume(atropineVolume)} mL</div>
     </div>
 
     <!-- Shock Bolus -->
@@ -200,8 +234,8 @@
         </div>
       </div>
       <div class="lt-right">
-        <div class="dose">{fmt2(epiMl)} mL</div>
-        <div class="dose">{fmt2(atropineMl)} mL</div>
+        <div class="dose">{fmtVolume(epiVolume)} mL</div>
+        <div class="dose">{fmtVolume(atropineVolume)} mL</div>
       </div>
     </div>
 
