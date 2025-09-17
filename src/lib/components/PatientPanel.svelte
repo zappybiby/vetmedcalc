@@ -18,71 +18,48 @@
   }));
 </script>
 
-<aside class="panel" aria-label="Patient inputs">
-  <h2 class="panel__title">Patient</h2>
+<aside
+  class="self-stretch rounded-md border bg-surface p-3 text-slate-100 shadow-card sm:rounded-lg sm:border-2 sm:p-4 md:sticky md:top-4 md:self-start"
+  aria-label="Patient inputs"
+>
+  <h2 class="mb-3 text-sm font-semibold uppercase tracking-wide text-slate-200">Patient</h2>
 
-  <div class="fields">  
-    <div class="field">
-      <label for="weight">Weight (kg)</label>
-      <input id="weight" type="number" min="0" step="0.1" bind:value={weight} inputmode="decimal" />
+  <div class="grid grid-cols-2 gap-x-2 gap-y-3 sm:grid-cols-1 sm:gap-3">
+    <div class="flex flex-col gap-2">
+      <label class="text-xs font-semibold uppercase tracking-wide text-slate-300" for="weight">Weight (kg)</label>
+      <input
+        id="weight"
+        class="rounded-md border border-slate-300/60 bg-surface-sunken px-3 py-2 text-base text-slate-100 shadow-inner placeholder:text-slate-400 focus:border-sky-400 focus:outline-none"
+        type="number"
+        min="0"
+        step="0.1"
+        bind:value={weight}
+        inputmode="decimal"
+      />
     </div>
 
-    <div class="field">
-      <label for="species">Species</label>
-      <select id="species" bind:value={species}>
-        <option value="" disabled selected>Select…</option>
+    <div class="flex flex-col gap-2">
+      <label class="text-xs font-semibold uppercase tracking-wide text-slate-300" for="species">Species</label>
+      <select
+        id="species"
+        class="rounded-md border border-slate-300/60 bg-surface-sunken px-3 py-2 text-base text-slate-100 shadow-inner focus:border-sky-400 focus:outline-none"
+        bind:value={species}
+      >
+        <option value="" disabled>Select...</option>
         <option value="dog">Dog</option>
         <option value="cat">Cat</option>
       </select>
     </div>
 
-    <div class="field field--full">
-      <label for="name">Patient name (optional)</label>
-      <input id="name" type="text" placeholder="e.g., Bella" bind:value={name} />
+    <div class="col-span-2 flex flex-col gap-2 sm:col-span-1">
+      <label class="text-xs font-semibold uppercase tracking-wide text-slate-300" for="name">Patient name (optional)</label>
+      <input
+        id="name"
+        class="rounded-md border border-slate-300/60 bg-surface-sunken px-3 py-2 text-base text-slate-100 shadow-inner placeholder:text-slate-400 focus:border-sky-400 focus:outline-none"
+        type="text"
+        placeholder="e.g., Bella"
+        bind:value={name}
+      />
     </div>
   </div>
 </aside>
-
-<style>
-  .panel {
-    position: sticky;
-    top: 1rem;
-    align-self: start;
-    background: #111827;
-    border: 2px solid #e5e7eb;
-    border-radius: .5rem;
-    padding: .75rem .9rem;
-    box-shadow: 2px 2px 0 #0b0b0b;
-    color: #e5e7eb;
-  }
-  .panel__title {
-    font-size: 0.95rem;
-    margin: 0 0 .5rem 0;
-    letter-spacing: .02em;
-  }
-  .fields { display: grid; gap: .6rem; }
-  .field { display: grid; gap: .25rem; margin-bottom: .6rem; }
-  label { font-size: .8rem; font-weight: 600; }
-  input, select {
-    border: 1.5px solid #e5e7eb; border-radius: .4rem; padding: .4rem .5rem; font-size: .95rem;
-    background: #0b1220; color: #e5e7eb;
-  }
-
-  /* Compact, two-column layout on small screens */
-  @media (max-width: 640px) {
-    .panel { padding: .5rem .6rem; top: .5rem; border-width: 1.5px; border-radius: .45rem; }
-    .panel__title { font-size: .85rem; margin: 0 0 .35rem 0; }
-
-    .fields { grid-template-columns: 1fr 1fr; gap: .35rem .5rem; }
-    .field { margin: 0; gap: .2rem; }
-    .field--full { grid-column: 1 / -1; }
-
-    label { font-size: .72rem; }
-    input, select { padding: .3rem .4rem; font-size: .9rem; border-radius: .35rem; }
-  }
-
-  /* Disable sticky behavior on mobile/tablet */
-  @media (max-width: 900px) {
-    .panel { position: static; top: auto; }
-  }
-</style>

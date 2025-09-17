@@ -3,44 +3,12 @@
   import TabShell from './lib/components/TabShell.svelte';
 </script>
 
-<main class="page">
-  <div class="layout">
+<main class="min-h-screen py-6">
+  <div class="mx-auto grid min-w-0 max-w-5xl gap-4 px-4 sm:px-6 md:grid-cols-[320px_1fr]">
     <PatientPanel />
 
-    <div class="center">
+    <div class="flex min-w-0 justify-center md:justify-start">
       <TabShell />
     </div>
   </div>
 </main>
-
-<style>
-  .page {
-    min-height: 100vh;
-    /* Inherit global dark styles */
-    background: transparent;
-    color: inherit;
-  }
-  .layout {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 1rem;
-    display: grid;
-    grid-template-columns: 320px 1fr;
-    gap: 1rem;
-    width: 100%;
-    min-width: 0;
-    overflow-x: hidden;
-  }
-  .center {
-    display: grid;
-    place-items: start center;
-    min-width: 0;
-  }
-
-  /* Responsive: collapse to single column on narrow screens */
-  @media (max-width: 900px) {
-    .layout {
-      grid-template-columns: 1fr;
-    }
-  }
-</style>
