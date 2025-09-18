@@ -1,27 +1,50 @@
 <script lang="ts">
   import { patient } from '../stores/patient';
   import type { Patient } from '../stores/patient';
-  import { SYRINGES } from '@defs';
-  import type { SyringeDef } from '@defs';
+  import { MEDICATIONS, SYRINGES } from '@defs';
+  import type { MedicationDef, SyringeDef } from '@defs';
 
-  // Constants
-  const REGLAN_CONC_MG_PER_ML = 5; // Reglan 5 mg/mL
+  type DoseUnit = 'mg/kg/day' | 'mg/kg/hr' | 'mcg/kg/min';
 
-  // Patient
-  let p: Patient = { weightKg: null, species: '', name: '' };
-  $: p = $patient;
+  type DrugOption = {
+    id: MedicationDef['id'];
+    label: string;
+    defaultDoseUnit: DoseUnit;
+  };
 
-  // Inputs
-  let dose: number | '' = '';
-  let doseUnit: 'mg/kg/day' | 'mg/kg/hr' = 'mg/kg/day';
-  let bagVolumeMl: number | '' = '';
-  let maintRateMlHr: number | '' = '';
+  const DRUG_OPTIONS: readonly DrugOption[] = [
+    { id: 'metoclopramide-5', label: 'Reglan (metoclopramide)', defaultDoseUnit: 'mg/kg/day' },
+    { id: 'norepinephrine-1', label: 'Norepinephrine', defaultDoseUnit: 'mcg/kg/min' },
+  ] as const;
 
-  // Helpers
+  const DEFAULT_DOSE_UNIT: Record<DrugOption['id'], DoseUnit> = {
+    'metoclopramide-5': 'mg/kg/day',
+    'norepinephrine-1': 'mcg/kg/min',
+  };
+
+  const UNIT_FACTOR_DETAILS: Record<DoseUnit, string> = {
+    'mg/kg/day': 'bag hours ÷ 24',
+    'mg/kg/hr': 'bag hours',
+    'mcg/kg/min': '(bag hours × 60) ÷ 1000',
+  };
+
+  function concMgPerMl(m?: MedicationDef | null): number | null {
+    if (!m) return null;
+    if (m.concentration.units === 'mg/mL') return m.concentration.value;
+    if (m.concentration.units === 'mcg/mL') return m.concentration.value / 1000;
+    return null;
+  }
+
+  function formatConcDisplay(m?: MedicationDef | null): string {
+    if (!m) return '—';
+    return `${m.concentration.value} ${m.concentration.units}`;
+  }
+
   function fmt(x: number | null | undefined, digits = 2) {
     if (x == null || Number.isNaN(x)) return '—';
     return Number(x).toFixed(digits);
   }
+
   function chooseSyringeForVolume(volMl: number, syrs: readonly SyringeDef[]): SyringeDef {
     const sorted = [...syrs].sort((a, b) => a.sizeCc - b.sizeCc || a.incrementMl - b.incrementMl);
     const oneFill = sorted.filter((s) => s.sizeCc >= volMl);
@@ -31,39 +54,81 @@
     return sorted[sorted.length - 1];
   }
 
-  // Derived/calculation according to: mL_to_add = (Dose × Wt × (V_bag / Rate) / H) / 5
-  // where H = 24 if dose is mg/kg/day, else 1 for mg/kg/hr
-  let H: number | null = null;
-  $: H = doseUnit === 'mg/kg/day' ? 24 : 1;
+  // Patient
+  let p: Patient = { weightKg: null, species: '', name: '' };
+  $: p = $patient;
+
+  // Inputs
+  let selectedDrugId: DrugOption['id'] = DRUG_OPTIONS[0]?.id ?? 'metoclopramide-5';
+  let dose: number | '' = '';
+  let doseUnit: DoseUnit = DEFAULT_DOSE_UNIT[selectedDrugId];
+  let bagVolumeMl: number | '' = '';
+  let maintRateMlHr: number | '' = '';
+
+  let selectedDrug = DRUG_OPTIONS[0];
+  $: selectedDrug = DRUG_OPTIONS.find((d) => d.id === selectedDrugId) ?? DRUG_OPTIONS[0];
+
+  let med: MedicationDef | undefined;
+  $: med = MEDICATIONS.find((m) => m.id === selectedDrugId);
+
+  let concentrationMgPerMl: number | null = null;
+  $: concentrationMgPerMl = concMgPerMl(med);
+
+  let previousDrugId: DrugOption['id'] = selectedDrugId;
+  $: if (selectedDrugId !== previousDrugId) {
+    doseUnit = DEFAULT_DOSE_UNIT[selectedDrugId];
+    previousDrugId = selectedDrugId;
+  }
 
   let bagHours: number | null = null;
   $: bagHours = (bagVolumeMl !== '' && maintRateMlHr !== '' && Number(maintRateMlHr) > 0)
     ? Number(bagVolumeMl) / Number(maintRateMlHr)
     : null;
 
-  let mlToAdd: number | null = null;
-  $: mlToAdd = (p.weightKg && dose !== '' && bagHours != null && H != null)
-    ? ((Number(dose) * (p.weightKg as number) * bagHours) / H) / REGLAN_CONC_MG_PER_ML
-    : null;
+  function calcUnitFactor(unit: DoseUnit, hours: number | null): number | null {
+    if (hours == null) return null;
+    if (unit === 'mg/kg/day') return hours / 24;
+    if (unit === 'mg/kg/hr') return hours;
+    if (unit === 'mcg/kg/min') return (hours * 60) / 1000;
+    return null;
+  }
+
+  let unitFactor: number | null = null;
+  $: unitFactor = calcUnitFactor(doseUnit, bagHours);
 
   let mgToAdd: number | null = null;
-  $: mgToAdd = mlToAdd != null ? mlToAdd * REGLAN_CONC_MG_PER_ML : null;
+  $: mgToAdd = (p.weightKg != null && dose !== '' && unitFactor != null)
+    ? Number(dose) * Number(p.weightKg) * unitFactor
+    : null;
 
-  // Syringe suggestion for drawing drug volume
+  let mlToAdd: number | null = null;
+  $: mlToAdd = (mgToAdd != null && concentrationMgPerMl != null && concentrationMgPerMl > 0)
+    ? mgToAdd / concentrationMgPerMl
+    : null;
+
   let syr: SyringeDef | null = null;
   $: syr = mlToAdd != null ? chooseSyringeForVolume(mlToAdd, SYRINGES) : null;
+
   let fills: number | null = null;
   $: fills = mlToAdd != null && syr ? Math.ceil(mlToAdd / syr.sizeCc) : null;
 
-  // Validation flags
   let ready: boolean = false;
   $: ready = !!(p.weightKg && dose !== '' && bagVolumeMl !== '' && maintRateMlHr !== '');
 </script>
 
-<section class="reglan" aria-label="Reglan in bag calculator">
-  <header class="hdr">Reglan in Bag</header>
+<section class="drug" aria-label="Drug in bag calculator">
+  <header class="hdr">Drug in Bag</header>
 
   <div class="grid">
+    <div class="field">
+      <label for="drug">Drug</label>
+      <select id="drug" bind:value={selectedDrugId}>
+        {#each DRUG_OPTIONS as option}
+          <option value={option.id}>{option.label}</option>
+        {/each}
+      </select>
+    </div>
+
     <div class="field">
       <label for="dose">Dose</label>
       <div class="row">
@@ -71,8 +136,10 @@
         <select bind:value={doseUnit} aria-label="Dose unit">
           <option value="mg/kg/day">mg/kg/day</option>
           <option value="mg/kg/hr">mg/kg/hr</option>
+          <option value="mcg/kg/min">mcg/kg/min</option>
         </select>
       </div>
+      <div class="muted small">Defaults to {DEFAULT_DOSE_UNIT[selectedDrugId]} for {selectedDrug.label}</div>
     </div>
 
     <div class="field">
@@ -98,7 +165,7 @@
         <div class="card">
           <div class="card-title">Add to bag</div>
           <div class="big">{fmt(mlToAdd, 2)} <span class="unit">mL</span></div>
-          <div class="detail">Reglan {REGLAN_CONC_MG_PER_ML} mg/mL
+          <div class="detail">{selectedDrug.label} {formatConcDisplay(med)}
             {#if syr}
               · in <span class="pill">{syr.label ?? `${syr.sizeCc} cc`}</span>
               <span class="muted">(ticks {fmt(syr.incrementMl, 2)} mL)</span>
@@ -115,8 +182,8 @@
         <div class="v strong">{fmt(mgToAdd, 2)} <span class="unit">mg</span></div>
         <div class="k">Bag runtime at rate</div>
         <div class="v">{fmt(bagHours, 2)} <span class="unit">hr</span></div>
-        <div class="k">Reglan concentration</div>
-        <div class="v">{REGLAN_CONC_MG_PER_ML} <span class="unit">mg/mL</span></div>
+        <div class="k">Stock concentration</div>
+        <div class="v">{formatConcDisplay(med)}</div>
       </div>
 
       <div class="section">
@@ -124,16 +191,22 @@
         <table class="kvtable"><tbody>
           <tr>
             <th>Hours the bag runs</th>
-            <td class="num">{fmt(Number(bagVolumeMl) / Number(maintRateMlHr), 3)} <span class="unit">hr</span></td>
+            <td class="num">{fmt(bagHours, 3)} <span class="unit">hr</span></td>
           </tr>
           <tr>
-            <th>Unit factor H</th>
-            <td class="num">{H}</td>
+            <th>Unit conversion factor</th>
+            <td class="num">
+              {fmt(unitFactor, 4)}
+              <span class="unit">({UNIT_FACTOR_DETAILS[doseUnit]})</span>
+            </td>
           </tr>
           <tr>
             <th>mL to add</th>
             <td class="num">
-              (<span class="strong">{dose || 0}</span> × <span class="strong">{fmt(p.weightKg ?? 0, 2)}</span> × <span class="strong">{fmt(bagHours, 3)}</span> ÷ <span class="strong">{H}</span>) ÷ <span class="strong">{REGLAN_CONC_MG_PER_ML}</span>
+              (<span class="strong">{dose || 0}</span>
+              × <span class="strong">{fmt(p.weightKg ?? 0, 2)}</span>
+              × <span class="strong">{fmt(unitFactor, 4)}</span>)
+              ÷ <span class="strong">{fmt(concentrationMgPerMl, 2)}</span>
               = <span class="strong">{fmt(mlToAdd, 2)}</span> <span class="unit">mL</span>
             </td>
           </tr>
@@ -146,7 +219,7 @@
 </section>
 
 <style>
-  .reglan { display: grid; gap: .9rem; min-width: 0; }
+  .drug { display: grid; gap: .9rem; min-width: 0; }
   .hdr { font-weight: 900; font-size: 1.05rem; }
 
   .grid {
@@ -167,6 +240,7 @@
   }
   .row { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: .4rem; align-items: center; min-width: 0; }
   .row > * { min-width: 0; }
+  .small { font-size: .72rem; margin-top: .15rem; }
 
   .results {
     border: 2px solid #e5e7eb; border-radius: .5rem;
@@ -198,16 +272,4 @@
   .card { border: 1.5px solid #e5e7eb; border-radius: .45rem; padding: .6rem .65rem; background: #0b1220; color: #e5e7eb; min-width: 0; }
   .card-title { font-weight: 900; font-size: .85rem; margin-bottom: .25rem; }
   .big { font-variant-numeric: tabular-nums; font-weight: 900; font-size: 1.05rem; margin-bottom: .2rem; }
-  .detail { font-variant-numeric: tabular-nums; }
- 
-  @media (max-width: 720px) {
-    .grid { grid-template-columns: 1fr; }
-    .draws { grid-template-columns: 1fr; }
-  }
-
-  /* Stack dose row on very narrow screens */
-  @media (max-width: 430px) {
-    .row { grid-template-columns: 1fr; }
-    .row select { justify-self: start; }
-  }
 </style>

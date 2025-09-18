@@ -22,8 +22,12 @@
   let desiredDose: number | '' = '';
   let durationHr: number | '' = '';
 
+  let desiredRateMlPerHr: number | '' = '';
   let enableDilution = false;
-  let desiredRateMlPerHr: number | '' = 5; // mapping rate for dilution mode
+  $: {
+    const rate = desiredRateMlPerHr;
+    enableDilution = rate !== '' && rate != null && !Number.isNaN(typeof rate === 'number' ? rate : Number(rate));
+  }
 
   // -------- Helpers --------
   function concMgPerMl(m?: MedicationDef | null) {
@@ -111,27 +115,18 @@
       />
     </div>
 
-    <div class="field chk">
-      <label>
-      <input type="checkbox" bind:checked={enableDilution} />
-      Dilute to map rate ↔ dose
-      </label>
+    <div class="field">
+      <label for="rate">Target pump rate (mL/hr)</label>
+      <input
+        id="rate"
+        type="number"
+        min="0"
+        step="0.1"
+        bind:value={desiredRateMlPerHr}
+        inputmode="decimal"
+        placeholder="e.g., 5"
+      />
     </div>
-
-    {#if enableDilution}
-      <div class="field">
-        <label for="rate">Target pump rate (mL/hr)</label>
-        <input
-          id="rate"
-          type="number"
-          min="0"
-          step="0.1"
-          bind:value={desiredRateMlPerHr}
-          inputmode="decimal"
-          placeholder="e.g., 5"
-        />
-      </div>
-    {/if}
   </div>
 
   <!-- Unified Results -->
@@ -221,7 +216,6 @@
     min-width: 0;
   }
   .field { display: grid; gap: .3rem; min-width: 0; }
-  .field.chk { grid-column: 1 / -1; }
   label { font-size: .85rem; font-weight: 700; }
   input, select {
     border: 1.5px solid #e5e7eb; border-radius: .4rem;
