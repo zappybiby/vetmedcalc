@@ -62,30 +62,40 @@
     durationHr,
     desiredRateMlPerHr,
   });
+
+  const alertBase = 'rounded-lg border-2 px-3 py-2 font-bold';
+  const defaultAlert = 'border-slate-200 bg-surface text-slate-200';
+  const alertStyles: Record<string, string> = {
+    warn: 'border-amber-300 border-dashed bg-amber-900/60 text-amber-100',
+    info: 'border-sky-300 bg-sky-950/60 text-sky-100'
+  };
 </script>
 
-<section class="cri" aria-label="CRI Calculator">
-  <header class="hdr">CRI Calculator</header>
+<section class="grid min-w-0 gap-4 text-slate-200" aria-label="CRI Calculator">
+  <header class="text-base font-black uppercase tracking-wide text-slate-100">CRI Calculator</header>
 
   <!-- Inputs -->
-  <div class="grid">
-    <div class="field">
-      <label for="med">Medication</label>
-      <select id="med" bind:value={medId}>
+  <div class="grid min-w-0 gap-3 md:grid-cols-2">
+    <div class="flex min-w-0 flex-col gap-2">
+      <label class="text-xs font-semibold uppercase tracking-wide text-slate-300" for="med">Medication</label>
+      <select id="med" bind:value={medId} class="field-select">
         {#each MEDICATIONS as m}
           <option value={m.id}>
             {m.name} — {formatConcDisplay(m)}
           </option>
         {/each}
       </select>
-      {#if med?.notes}<div class="note">⚠ {med.notes}</div>{/if}
+      {#if med?.notes}
+        <div class="text-xs text-slate-400">⚠ {med.notes}</div>
+      {/if}
     </div>
 
-    <div class="field">
-      <label for="dose">Dose</label>
-      <div class="row">
+    <div class="flex min-w-0 flex-col gap-2">
+      <label class="text-xs font-semibold uppercase tracking-wide text-slate-300" for="dose">Dose</label>
+      <div class="grid min-w-0 grid-cols-[minmax(0,1fr)_auto] items-center gap-2">
         <input
           id="dose"
+          class="field-control"
           type="number"
           min="0"
           step="0.001"
@@ -93,7 +103,7 @@
           inputmode="decimal"
           placeholder="e.g., 0.4"
         />
-        <select bind:value={doseUnit} aria-label="Dose unit">
+        <select bind:value={doseUnit} aria-label="Dose unit" class="field-select">
           <option value="mg/kg/hr">mg/kg/hr</option>
           <option value="mg/kg/day">mg/kg/day</option>
           <option value="mcg/kg/hr">mcg/kg/hr</option>
@@ -102,10 +112,11 @@
       </div>
     </div>
 
-    <div class="field">
-      <label for="duration">Duration (hr)</label>
+    <div class="flex min-w-0 flex-col gap-2">
+      <label class="text-xs font-semibold uppercase tracking-wide text-slate-300" for="duration">Duration (hr)</label>
       <input
         id="duration"
+        class="field-control"
         type="number"
         min="0"
         step="0.1"
@@ -115,10 +126,11 @@
       />
     </div>
 
-    <div class="field">
-      <label for="rate">Target pump rate (mL/hr)</label>
+    <div class="flex min-w-0 flex-col gap-2">
+      <label class="text-xs font-semibold uppercase tracking-wide text-slate-300" for="rate">Target pump rate (mL/hr)</label>
       <input
         id="rate"
+        class="field-control"
         type="number"
         min="0"
         step="0.1"
@@ -130,174 +142,88 @@
   </div>
 
   <!-- Unified Results -->
-  <div class="results">
-    <h3 class="sub">{enableDilution ? 'Dilution Plan' : 'From Stock (no dilution)'}</h3>
+  <div class="min-w-0 rounded-lg border-2 border-slate-200 bg-surface p-4 text-slate-200 shadow-panel">
+    <h3 class="text-sm font-black uppercase tracking-wide text-slate-200">{enableDilution ? 'Dilution Plan' : 'From Stock (no dilution)'}</h3>
 
     {#if vm}
       {#if vm.alerts?.length}
-        <div class="alerts" aria-live="polite">
+        <div class="grid gap-2" aria-live="polite">
           {#each vm.alerts as a}
-            <div class={`alert ${a.severity}`}>{a.message}</div>
+            <div class={`${alertBase} ${alertStyles[a.severity] ?? defaultAlert}`}>{a.message}</div>
           {/each}
         </div>
       {/if}
 
-      <div class="section">
-        <div class="section-title">Summary</div>
-        <div class="draws">
-          {#each vm.drawCards as card}
-            <div class="card">
-              <div class="card-title">{card.title}</div>
-              <div class="big">{card.volumeText}</div>
-              <div class="detail">
-                in <span class="pill">{card.syringeText}</span>
-                {#if card.fills && card.fills > 1}
-                  <span class="warn">· {card.fills} fills</span>
-                {/if}
-                {#if card.tickText}
-                  <span class="muted">({card.tickText})</span>
-                {/if}
+      <div class="space-y-4">
+        <div class="rounded-lg border border-slate-200 bg-surface-sunken p-4">
+          <div class="text-xs font-black uppercase tracking-wide text-slate-300">Summary</div>
+          <div class="mt-3 grid min-w-0 gap-3 [grid-template-columns:repeat(auto-fit,minmax(220px,1fr))]">
+            {#each vm.drawCards as card}
+              <div class="rounded-lg border border-slate-200 bg-surface p-4">
+                <div class="text-sm font-black uppercase tracking-wide text-slate-300">{card.title}</div>
+                <div class="mt-2 text-lg font-black tabular-nums text-slate-100">{card.volumeText}</div>
+                <div class="text-sm tabular-nums text-slate-300">
+                  in <span class="inline-flex items-center rounded-full border border-slate-200 bg-surface-sunken px-2 py-0.5 text-xs font-semibold uppercase tracking-wide text-slate-200">{card.syringeText}</span>
+                  {#if card.fills && card.fills > 1}
+                    <span class="ml-2 font-semibold text-amber-500">· {card.fills} fills</span>
+                  {/if}
+                  {#if card.tickText}
+                    <span class="ml-2 text-slate-400">({card.tickText})</span>
+                  {/if}
+                </div>
               </div>
-            </div>
-          {/each}
-        </div>
-        <div class="card result">
-          <div class="card-title">{vm.resultCard.title}</div>
-          <div class="kv">
-            <div class="k">Total volume</div>
-            <div class="v strong">{vm.resultCard.totalVolumeText}</div>
-            <div class="k">Final concentration</div>
-            <div class="v strong">{vm.resultCard.finalConcentrationText}</div>
-          </div>
-          <div class="divider" role="presentation"></div>
-          <div class="result-line">At <span class="strong">{vm.resultCard.pumpRateText}</span> this will deliver <span class="strong">{vm.resultCard.deliveredDoseText}</span></div>
-          <div class="result-line muted">Giving a dose of:</div>
-          <div class="divider" role="presentation"></div>
-          <div class="dose-lines">
-            {#each vm.resultCard.doseLines as ln}
-              <div class="dose">{ln}</div>
             {/each}
           </div>
-        </div>
-      </div>
-      {#if vm.roundingDetail}
-        <details class="rounding">
-          <summary>{vm.roundingDetail.title}</summary>
-          <table class="kvtable">
-            <tbody>
-              {#each vm.roundingDetail.rows as r}
-                <tr>
-                  <th>{r.label}</th>
-                  <td class="num strong">{r.value}
-                    {#if r.subnote}
-                      <div class="subnote">{r.subnote}</div>
-                    {/if}
-                  </td>
-                </tr>
+
+          <div class="mt-4 grid gap-3 rounded-lg border border-slate-200 bg-surface p-4">
+            <div class="text-sm font-black uppercase tracking-wide text-slate-300">{vm.resultCard.title}</div>
+            <div class="grid items-center gap-x-4 gap-y-2 text-sm [grid-template-columns:minmax(0,1fr)_auto]">
+              <div class="text-slate-300">Total volume</div>
+              <div class="text-right font-black tabular-nums text-slate-100">{vm.resultCard.totalVolumeText}</div>
+              <div class="text-slate-300">Final concentration</div>
+              <div class="text-right font-black tabular-nums text-slate-100">{vm.resultCard.finalConcentrationText}</div>
+            </div>
+            <div class="h-px bg-slate-700" role="presentation"></div>
+            <div class="tabular-nums text-sm text-slate-200">
+              At <span class="font-black text-slate-100">{vm.resultCard.pumpRateText}</span> this will deliver
+              <span class="font-black text-slate-100">{vm.resultCard.deliveredDoseText}</span>
+            </div>
+            <div class="text-sm text-slate-400">Giving a dose of:</div>
+            <div class="h-px bg-slate-700" role="presentation"></div>
+            <div class="grid gap-1 text-sm">
+              {#each vm.resultCard.doseLines as ln}
+                <div class="font-black tabular-nums text-slate-100">{ln}</div>
               {/each}
-            </tbody>
-          </table>
-        </details>
-      {/if}
+            </div>
+          </div>
+        </div>
+
+        {#if vm.roundingDetail}
+          <details class="rounded-lg border border-slate-200 bg-surface-sunken p-4 text-slate-200">
+            <summary class="flex cursor-pointer items-center justify-between text-sm font-black uppercase tracking-wide text-slate-200">
+              <span>{vm.roundingDetail.title}</span>
+              <span class="text-xs text-slate-400">▾</span>
+            </summary>
+            <table class="mt-3 w-full table-fixed border-collapse text-sm">
+              <tbody>
+                {#each vm.roundingDetail.rows as r}
+                  <tr>
+                    <th class="py-1 pr-3 text-left font-semibold text-slate-300">{r.label}</th>
+                    <td class="py-1 text-right font-semibold tabular-nums text-slate-100">
+                      {r.value}
+                      {#if r.subnote}
+                        <div class="mt-1 text-xs text-slate-400">{r.subnote}</div>
+                      {/if}
+                    </td>
+                  </tr>
+                {/each}
+              </tbody>
+            </table>
+          </details>
+        {/if}
+      </div>
     {:else}
-      <p class="muted">Enter all inputs to see the {enableDilution ? 'dilution plan' : 'calculation'}.</p>
+      <p class="text-sm text-slate-400">Enter all inputs to see the {enableDilution ? 'dilution plan' : 'calculation'}.</p>
     {/if}
   </div>
 </section>
-
-<style>
-  .cri { display: grid; gap: .9rem; min-width: 0; }
-  .hdr { font-weight: 900; font-size: 1.05rem; }
-
-  .grid {
-    display: grid;
-    gap: .6rem;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    min-width: 0;
-  }
-  .field { display: grid; gap: .3rem; min-width: 0; }
-  label { font-size: .85rem; font-weight: 700; }
-  input, select {
-    border: 1.5px solid #e5e7eb; border-radius: .4rem;
-    padding: .4rem .5rem; font-size: .95rem;
-    background: #0b1220; color: #e5e7eb;
-    max-width: 100%;
-  }
-  .row { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: .4rem; align-items: center; min-width: 0; }
-  .row > * { min-width: 0; }
-
-  .results {
-    border: 2px solid #e5e7eb; border-radius: .5rem;
-    padding: .7rem .8rem; box-shadow: 2px 2px 0 #0b0b0b; background: #111827; color: #e5e7eb;
-    min-width: 0; max-width: 100%;
-  }
-  .sub { margin: 0 0 .4rem 0; font-size: .95rem; font-weight: 900; }
-  /* .rows and .val were used by the old layout */
-
-  /* Alerts (stacked at top) */
-  .alerts { display: grid; gap: .4rem; margin-bottom: .2rem; }
-  .alert { border: 2px solid; border-radius: .4rem; padding: .5rem .6rem; font-weight: 800; }
-  .alert.warn { border-color: #facc15; border-style: dashed; background: #3b2f00; color: #fef3c7; }
-  .alert.info { border-color: #93c5fd; background: #0b2545; color: #dbeafe; }
-  .muted { opacity: .7; margin: 0 .2rem; }
-  .warn { color: #b45309; font-weight: 800; margin-left: .25rem; }
-  .pill {
-    border: 1.5px solid #e5e7eb; border-radius: 999px;
-    padding: .08rem .4rem; font-weight: 800; background: #0b1220; color: #e5e7eb;
-  }
-  .note { font-size: .8rem; opacity: .85; }
-
-  /* (deprecated) formerly used for bottom warnings list */
-
-  @media (max-width: 720px) {
-    .grid { grid-template-columns: 1fr; }
-  }
-
-  /* New mapping layout */
-
-  .section { border: 1.5px solid #e5e7eb; border-radius: .45rem; padding: .55rem .6rem; background: #0b1220; color: #e5e7eb; margin-bottom: .6rem; min-width: 0; }
-  .section-title { font-size: .8rem; font-weight: 900; margin-bottom: .35rem; }
-  .kv { display: grid; grid-template-columns: minmax(0, 1fr) auto; row-gap: .35rem; column-gap: .6rem; align-items: center; min-width: 0; }
-  .kv .k { opacity: .9; }
-  .kv .v { font-variant-numeric: tabular-nums; text-align: right; }
-  .kv .v.strong { font-weight: 900; }
-  .unit { opacity: .85; font-weight: 700; margin-left: .15rem; }
-
-  /* Table-style alignment */
-  .kvtable { width: 100%; border-collapse: collapse; table-layout: fixed; }
-  .kvtable th { text-align: left; padding: .2rem 0; font-weight: 700; opacity: .9; vertical-align: top; }
-  .kvtable td { text-align: right; padding: .2rem 0; font-variant-numeric: tabular-nums; }
-  .kvtable th, .kvtable td { word-break: break-word; overflow-wrap: anywhere; }
-  .kvtable td.num { font-weight: 700; }
-  .kvtable td.num.strong { font-weight: 900; }
-  .subnote { font-size: .85rem; opacity: .75; font-weight: 500; margin-top: .15rem; }
-
-  .draws { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: .6rem; min-width: 0; }
-  .card { border: 1.5px solid #e5e7eb; border-radius: .45rem; padding: .6rem .65rem; background: #0b1220; color: #e5e7eb; min-width: 0; }
-  .card-title { font-weight: 900; font-size: .85rem; margin-bottom: .25rem; }
-  .big { font-variant-numeric: tabular-nums; font-weight: 900; font-size: 1.05rem; margin-bottom: .2rem; }
-  .detail { font-variant-numeric: tabular-nums; }
-  .card.result { margin-top: .65rem; display: grid; gap: .5rem; }
-  .card.result .kv { margin: 0; }
-  .divider { border-top: 1px solid #1f2937; margin: .2rem 0; }
-  .result-line { font-variant-numeric: tabular-nums; }
-  .result-line .strong { font-weight: 900; }
-  .dose-lines { display: grid; gap: .2rem; }
-  .dose { font-variant-numeric: tabular-nums; font-weight: 900; }
-  details.rounding { border: 1.5px solid #e5e7eb; border-radius: .45rem; padding: .55rem .6rem; background: #0b1220; color: #e5e7eb; margin-top: .65rem; }
-  details.rounding summary { font-weight: 900; cursor: pointer; }
-  details.rounding summary::-webkit-details-marker { display: none; }
-  details.rounding summary::after { content: '▾'; font-size: .75rem; margin-left: .35rem; }
-  details.rounding[open] summary::after { content: '▴'; }
-  details.rounding table { margin-top: .4rem; }
-
-  @media (max-width: 720px) {
-    .draws { grid-template-columns: 1fr; }
-  }
-
-  /* Stack dose row on very narrow screens to keep unit text intact */
-  @media (max-width: 430px) {
-    .row { grid-template-columns: 1fr; }
-    .row select { justify-self: start; }
-  }
-</style>

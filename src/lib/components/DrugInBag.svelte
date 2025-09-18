@@ -185,180 +185,169 @@
   $: ready = !!(p.weightKg && dose !== '' && bagVolumeMl !== '' && maintRateMlHr !== '');
 </script>
 
-<section class="drug" aria-label="Drug in bag calculator">
-  <header class="hdr">Drug in Bag</header>
+<section class="grid min-w-0 gap-4 text-slate-200" aria-label="Drug in bag calculator">
+  <header class="text-base font-black uppercase tracking-wide text-slate-100">Drug in Bag</header>
 
-  <div class="grid">
-    <div class="field">
-      <label for="drug">Drug</label>
-      <select id="drug" bind:value={selectedDrugId}>
+  <div class="grid min-w-0 gap-3 md:grid-cols-2">
+    <div class="flex min-w-0 flex-col gap-2">
+      <label class="text-xs font-semibold uppercase tracking-wide text-slate-300" for="drug">Drug</label>
+      <select id="drug" class="field-select" bind:value={selectedDrugId}>
         {#each DRUG_OPTIONS as option}
           <option value={option.id}>{option.label}</option>
         {/each}
       </select>
     </div>
 
-    <div class="field">
-      <label for="dose">Dose</label>
-      <div class="row">
-        <input id="dose" type="number" min="0" step="0.01" bind:value={dose} inputmode="decimal" placeholder="e.g., 1" />
-        <select bind:value={doseUnit} aria-label="Dose unit">
+    <div class="flex min-w-0 flex-col gap-2">
+      <label class="text-xs font-semibold uppercase tracking-wide text-slate-300" for="dose">Dose</label>
+      <div class="grid min-w-0 grid-cols-[minmax(0,1fr)_auto] items-center gap-2">
+        <input
+          id="dose"
+          class="field-control"
+          type="number"
+          min="0"
+          step="0.01"
+          bind:value={dose}
+          inputmode="decimal"
+          placeholder="e.g., 1"
+        />
+        <select bind:value={doseUnit} aria-label="Dose unit" class="field-select">
           <option value="mg/kg/day">mg/kg/day</option>
           <option value="mg/kg/hr">mg/kg/hr</option>
           <option value="mcg/kg/min">mcg/kg/min</option>
         </select>
       </div>
-      <div class="muted small">Defaults to {DEFAULT_DOSE_UNIT[selectedDrugId]} for {selectedDrug.label}</div>
+      <div class="text-xs text-slate-400">Defaults to {DEFAULT_DOSE_UNIT[selectedDrugId]} for {selectedDrug.label}</div>
     </div>
 
-    <div class="field">
-      <label for="bag">Fluid bag volume (mL)</label>
-      <input id="bag" type="number" min="0" step="1" bind:value={bagVolumeMl} inputmode="decimal" placeholder="e.g., 1000" />
+    <div class="flex min-w-0 flex-col gap-2">
+      <label class="text-xs font-semibold uppercase tracking-wide text-slate-300" for="bag">Fluid bag volume (mL)</label>
+      <input
+        id="bag"
+        class="field-control"
+        type="number"
+        min="0"
+        step="1"
+        bind:value={bagVolumeMl}
+        inputmode="decimal"
+        placeholder="e.g., 1000"
+      />
     </div>
 
-    <div class="field">
-      <label for="rate">Maintenance rate (mL/hr)</label>
-      <input id="rate" type="number" min="0" step="0.1" bind:value={maintRateMlHr} inputmode="decimal" placeholder="e.g., 60" />
+    <div class="flex min-w-0 flex-col gap-2">
+      <label class="text-xs font-semibold uppercase tracking-wide text-slate-300" for="rate">Maintenance rate (mL/hr)</label>
+      <input
+        id="rate"
+        class="field-control"
+        type="number"
+        min="0"
+        step="0.1"
+        bind:value={maintRateMlHr}
+        inputmode="decimal"
+        placeholder="e.g., 60"
+      />
     </div>
 
-    <div class="field readonly">
-      <span class="labeltext">Patient weight</span>
-      <div class="pill">{p.weightKg != null ? `${p.weightKg.toFixed(2)} kg` : 'Enter in Patient panel'}</div>
+    <div class="flex min-w-0 flex-col gap-2 md:col-span-2 md:flex-row md:items-center md:justify-between">
+      <span class="text-xs font-semibold uppercase tracking-wide text-slate-300">Patient weight</span>
+      <div class="inline-flex items-center rounded-full border border-slate-200 bg-surface px-3 py-1 text-sm font-semibold text-slate-200">
+        {p.weightKg != null ? `${p.weightKg.toFixed(2)} kg` : 'Enter in Patient panel'}
+      </div>
     </div>
   </div>
 
-  <div class="results">
-    <h3 class="sub">Summary</h3>
+  <div class="min-w-0 rounded-lg border-2 border-slate-200 bg-surface p-4 text-slate-200 shadow-panel">
+    <h3 class="text-sm font-black uppercase tracking-wide text-slate-200">Summary</h3>
     {#if ready && snappedMlToAdd != null}
-      <div class="draws">
-        <div class="card">
-          <div class="card-title">Add to bag</div>
-          <div class="big">{fmt(snappedMlToAdd, volumeDigits)} <span class="unit">mL</span></div>
-          <div class="detail">{selectedDrug.label} {formatConcDisplay(med)}
+      <div class="mt-3 grid min-w-0 gap-3 [grid-template-columns:repeat(auto-fit,minmax(220px,1fr))]">
+        <div class="rounded-lg border border-slate-200 bg-surface p-4">
+          <div class="text-sm font-black uppercase tracking-wide text-slate-300">Add to bag</div>
+          <div class="mt-2 text-lg font-black tabular-nums text-slate-100">
+            {fmt(snappedMlToAdd, volumeDigits)} <span class="ml-1 text-xs font-semibold uppercase tracking-wide text-slate-400">mL</span>
+          </div>
+          <div class="text-sm tabular-nums text-slate-300">
+            {selectedDrug.label} {formatConcDisplay(med)}
             {#if syr}
-              · in <span class="pill">{syr.label ?? `${syr.sizeCc} cc`}</span>
-              <span class="muted">(ticks {fmt(syr.incrementMl, 2)} mL)</span>
+              · in <span class="ml-1 inline-flex items-center rounded-full border border-slate-200 bg-surface-sunken px-2 py-0.5 text-xs font-semibold uppercase tracking-wide text-slate-200">{syr.label ?? `${syr.sizeCc} cc`}</span>
+              <span class="ml-2 text-slate-400">(ticks {fmt(syr.incrementMl, 2)} mL)</span>
               {#if fills && fills > 1}
-                <span class="warn">requires {fills} fills</span>
+                <span class="ml-2 font-semibold text-amber-500">requires {fills} fills</span>
               {/if}
             {/if}
           </div>
           {#if hasRoundingChange && rawMlToAdd != null}
-            <div class="muted small">Rounded from {fmt(rawMlToAdd, volumeDigits)} mL</div>
+            <div class="mt-2 text-xs text-slate-400">Rounded from {fmt(rawMlToAdd, volumeDigits)} mL</div>
           {/if}
         </div>
       </div>
 
-      <div class="kv" style="margin-top:.45rem;">
-        <div class="k">Drug amount drawn</div>
-        <div class="v strong">{fmt(snappedMgToAdd, 2)} <span class="unit">mg</span></div>
-        <div class="k">Bag runtime at rate</div>
-        <div class="v">{fmt(bagHours, 2)} <span class="unit">hr</span></div>
-        <div class="k">Stock concentration</div>
-        <div class="v">{formatConcDisplay(med)}</div>
-        <div class="k">Bag concentration (rounded)</div>
-        <div class="v">{fmt(finalConcMgPerMl, 4)} <span class="unit">mg/mL</span></div>
-        <div class="k">Delivered dose at rate</div>
-        <div class="v">
-          <strong>{formatDeliveredDose(deliveredDoseMgPerKgHr, doseUnit)}</strong>
+      <div class="mt-4 grid items-center gap-x-4 gap-y-2 text-sm [grid-template-columns:minmax(0,1fr)_auto]">
+        <div class="text-slate-300">Drug amount drawn</div>
+        <div class="text-right font-black tabular-nums text-slate-100">
+          {fmt(snappedMgToAdd, 2)} <span class="ml-1 text-xs font-semibold uppercase tracking-wide text-slate-400">mg</span>
+        </div>
+        <div class="text-slate-300">Bag runtime at rate</div>
+        <div class="text-right tabular-nums text-slate-100">
+          {fmt(bagHours, 2)} <span class="ml-1 text-xs font-semibold uppercase tracking-wide text-slate-400">hr</span>
+        </div>
+        <div class="text-slate-300">Stock concentration</div>
+        <div class="text-right tabular-nums text-slate-100">{formatConcDisplay(med)}</div>
+        <div class="text-slate-300">Bag concentration (rounded)</div>
+        <div class="text-right tabular-nums text-slate-100">
+          {fmt(finalConcMgPerMl, 4)} <span class="ml-1 text-xs font-semibold uppercase tracking-wide text-slate-400">mg/mL</span>
+        </div>
+        <div class="text-slate-300">Delivered dose at rate</div>
+        <div class="text-right text-slate-100">
+          <span class="font-black tabular-nums">{formatDeliveredDose(deliveredDoseMgPerKgHr, doseUnit)}</span>
           {#if deliveredDoseMgPerKgHr != null}
-            <div class="muted small">= {formatDeliveredDose(deliveredDoseMgPerKgHr, 'mg/kg/hr')}</div>
+            <div class="mt-1 text-xs text-slate-400">= {formatDeliveredDose(deliveredDoseMgPerKgHr, 'mg/kg/hr')}</div>
           {/if}
         </div>
       </div>
 
-      <div class="section">
-        <div class="section-title">How calculated</div>
-        <table class="kvtable"><tbody>
-          <tr>
-            <th>Hours the bag runs</th>
-            <td class="num">{fmt(bagHours, 3)} <span class="unit">hr</span></td>
-          </tr>
-          <tr>
-            <th>Unit conversion factor</th>
-            <td class="num">
-              {fmt(unitFactor, 4)}
-              <span class="unit">({UNIT_FACTOR_DETAILS[doseUnit]})</span>
-            </td>
-          </tr>
-          <tr>
-            <th>mL to add</th>
-            <td class="num">
-              (<span class="strong">{dose || 0}</span>
-              × <span class="strong">{fmt(p.weightKg ?? 0, 2)}</span>
-              × <span class="strong">{fmt(unitFactor, 4)}</span>)
-              ÷ <span class="strong">{fmt(concentrationMgPerMl, 2)}</span>
-              = <span class="strong">{fmt(rawMlToAdd, 3)}</span> <span class="unit">mL</span>
-            </td>
-          </tr>
-          {#if hasRoundingChange}
+      <div class="mt-4 rounded-lg border border-slate-200 bg-surface-sunken p-4">
+        <div class="text-xs font-black uppercase tracking-wide text-slate-300">How calculated</div>
+        <table class="mt-3 w-full table-fixed border-collapse text-sm">
+          <tbody>
             <tr>
-              <th>Rounded to syringe ticks</th>
-              <td class="num strong">{fmt(snappedMlToAdd, volumeDigits)} <span class="unit">mL</span>
-                <div class="muted small">Δ {fmt(roundingDeltaMl, volumeDigits)} mL</div>
+              <th class="py-1 pr-3 text-left font-semibold text-slate-300">Hours the bag runs</th>
+              <td class="py-1 text-right tabular-nums text-slate-100">
+                {fmt(bagHours, 3)} <span class="ml-1 text-xs font-semibold uppercase tracking-wide text-slate-400">hr</span>
               </td>
             </tr>
-          {/if}
-        </tbody></table>
+            <tr>
+              <th class="py-1 pr-3 text-left font-semibold text-slate-300">Unit conversion factor</th>
+              <td class="py-1 text-right tabular-nums text-slate-100">
+                {fmt(unitFactor, 4)}
+                <span class="ml-1 text-xs font-semibold uppercase tracking-wide text-slate-400">({UNIT_FACTOR_DETAILS[doseUnit]})</span>
+              </td>
+            </tr>
+            <tr>
+              <th class="py-1 pr-3 text-left font-semibold text-slate-300">mL to add</th>
+              <td class="py-1 text-right tabular-nums text-slate-100">
+                (<span class="font-black">{dose || 0}</span>
+                × <span class="font-black">{fmt(p.weightKg ?? 0, 2)}</span>
+                × <span class="font-black">{fmt(unitFactor, 4)}</span>)
+                ÷ <span class="font-black">{fmt(concentrationMgPerMl, 2)}</span>
+                = <span class="font-black">{fmt(rawMlToAdd, 3)}</span>
+                <span class="ml-1 text-xs font-semibold uppercase tracking-wide text-slate-400">mL</span>
+              </td>
+            </tr>
+            {#if hasRoundingChange}
+              <tr>
+                <th class="py-1 pr-3 text-left font-semibold text-slate-300">Rounded to syringe ticks</th>
+                <td class="py-1 text-right font-black tabular-nums text-slate-100">
+                  {fmt(snappedMlToAdd, volumeDigits)}
+                  <span class="ml-1 text-xs font-semibold uppercase tracking-wide text-slate-400">mL</span>
+                  <div class="mt-1 text-xs text-slate-400">Δ {fmt(roundingDeltaMl, volumeDigits)} mL</div>
+                </td>
+              </tr>
+            {/if}
+          </tbody>
+        </table>
       </div>
     {:else}
-      <p class="muted">Enter dose, bag volume, rate, and patient weight.</p>
+      <p class="mt-3 text-sm text-slate-400">Enter dose, bag volume, rate, and patient weight.</p>
     {/if}
   </div>
 </section>
-
-<style>
-  .drug { display: grid; gap: .9rem; min-width: 0; }
-  .hdr { font-weight: 900; font-size: 1.05rem; }
-
-  .grid {
-    display: grid;
-    gap: .6rem;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    min-width: 0;
-  }
-  .field { display: grid; gap: .3rem; min-width: 0; }
-  .field.readonly { align-content: end; }
-  label { font-size: .85rem; font-weight: 700; }
-  .labeltext { font-size: .85rem; font-weight: 700; }
-  input, select {
-    border: 1.5px solid #e5e7eb; border-radius: .4rem;
-    padding: .4rem .5rem; font-size: .95rem;
-    background: #0b1220; color: #e5e7eb;
-    max-width: 100%;
-  }
-  .row { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: .4rem; align-items: center; min-width: 0; }
-  .row > * { min-width: 0; }
-  .small { font-size: .72rem; margin-top: .15rem; }
-
-  .results {
-    border: 2px solid #e5e7eb; border-radius: .5rem;
-    padding: .7rem .8rem; box-shadow: 2px 2px 0 #0b0b0b; background: #111827; color: #e5e7eb;
-    min-width: 0; max-width: 100%;
-  }
-  .sub { margin: 0 0 .4rem 0; font-size: .95rem; font-weight: 900; }
-  .muted { opacity: .7; margin: 0 .2rem; }
-  .warn { color: #b45309; font-weight: 800; margin-left: .25rem; }
-  .pill {
-    border: 1.5px solid #e5e7eb; border-radius: 999px;
-    padding: .08rem .4rem; font-weight: 800; background: #0b1220; color: #e5e7eb;
-  }
-
-  .section { border: 1.5px solid #e5e7eb; border-radius: .45rem; padding: .55rem .6rem; background: #0b1220; color: #e5e7eb; margin-bottom: .6rem; min-width: 0; }
-  .section-title { font-size: .8rem; font-weight: 900; margin-bottom: .35rem; }
-  .kv { display: grid; grid-template-columns: minmax(0, 1fr) auto; row-gap: .35rem; column-gap: .6rem; align-items: center; min-width: 0; }
-  .kv .k { opacity: .9; }
-  .kv .v { font-variant-numeric: tabular-nums; text-align: right; }
-  .kv .v.strong { font-weight: 900; }
-  .unit { opacity: .85; font-weight: 700; margin-left: .15rem; }
-  .kvtable { width: 100%; border-collapse: collapse; table-layout: fixed; }
-  .kvtable th { text-align: left; padding: .2rem 0; font-weight: 700; opacity: .9; vertical-align: top; }
-  .kvtable td { text-align: right; padding: .2rem 0; font-variant-numeric: tabular-nums; }
-  .kvtable th, .kvtable td { word-break: break-word; overflow-wrap: anywhere; }
-  .kvtable td.num { font-weight: 700; }
-
-  .draws { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: .6rem; min-width: 0; }
-  .card { border: 1.5px solid #e5e7eb; border-radius: .45rem; padding: .6rem .65rem; background: #0b1220; color: #e5e7eb; min-width: 0; }
-  .card-title { font-weight: 900; font-size: .85rem; margin-bottom: .25rem; }
-  .big { font-variant-numeric: tabular-nums; font-weight: 900; font-size: 1.05rem; margin-bottom: .2rem; }
-</style>
