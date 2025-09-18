@@ -54,6 +54,33 @@
     return sorted[sorted.length - 1];
   }
 
+  function roundToIncrement(value: number, increment: number): number {
+    if (!Number.isFinite(value)) return value;
+    if (increment <= 0) return value;
+    const rounded = Math.round(value / increment) * increment;
+    return Math.max(0, rounded);
+  }
+
+  function convertMgPerKgHrToUnit(value: number, unit: DoseUnit): number {
+    if (!Number.isFinite(value)) return value;
+    switch (unit) {
+      case 'mg/kg/day':
+        return value * 24;
+      case 'mcg/kg/min':
+        return (value * 1000) / 60;
+      case 'mg/kg/hr':
+      default:
+        return value;
+    }
+  }
+
+  function formatDeliveredDose(value: number | null, unit: DoseUnit): string {
+    if (value == null || Number.isNaN(value)) return '—';
+    const converted = convertMgPerKgHrToUnit(value, unit);
+    if (!Number.isFinite(converted)) return '—';
+    return `${Number(converted).toFixed(3)} ${unit}`;
+  }
+
   // Patient
   let p: Patient = { weightKg: null, species: '', name: '' };
   $: p = $patient;
@@ -80,9 +107,15 @@
     previousDrugId = selectedDrugId;
   }
 
+  let bagVolumeValue: number | null = null;
+  $: bagVolumeValue = bagVolumeMl !== '' ? Number(bagVolumeMl) : null;
+
+  let maintRateValue: number | null = null;
+  $: maintRateValue = maintRateMlHr !== '' ? Number(maintRateMlHr) : null;
+
   let bagHours: number | null = null;
-  $: bagHours = (bagVolumeMl !== '' && maintRateMlHr !== '' && Number(maintRateMlHr) > 0)
-    ? Number(bagVolumeMl) / Number(maintRateMlHr)
+  $: bagHours = (bagVolumeValue != null && maintRateValue != null && maintRateValue > 0)
+    ? bagVolumeValue / maintRateValue
     : null;
 
   function calcUnitFactor(unit: DoseUnit, hours: number | null): number | null {
@@ -101,16 +134,52 @@
     ? Number(dose) * Number(p.weightKg) * unitFactor
     : null;
 
-  let mlToAdd: number | null = null;
-  $: mlToAdd = (mgToAdd != null && concentrationMgPerMl != null && concentrationMgPerMl > 0)
+  let rawMlToAdd: number | null = null;
+  $: rawMlToAdd = (mgToAdd != null && concentrationMgPerMl != null && concentrationMgPerMl > 0)
     ? mgToAdd / concentrationMgPerMl
     : null;
 
   let syr: SyringeDef | null = null;
-  $: syr = mlToAdd != null ? chooseSyringeForVolume(mlToAdd, SYRINGES) : null;
+  $: syr = rawMlToAdd != null ? chooseSyringeForVolume(rawMlToAdd, SYRINGES) : null;
+
+  let snappedMlToAdd: number | null = null;
+  $: snappedMlToAdd = (rawMlToAdd != null && syr)
+    ? roundToIncrement(rawMlToAdd, syr.incrementMl)
+    : rawMlToAdd;
 
   let fills: number | null = null;
-  $: fills = mlToAdd != null && syr ? Math.ceil(mlToAdd / syr.sizeCc) : null;
+  $: fills = snappedMlToAdd != null && syr ? Math.ceil(snappedMlToAdd / syr.sizeCc) : null;
+
+  let snappedMgToAdd: number | null = null;
+  $: snappedMgToAdd = (snappedMlToAdd != null && concentrationMgPerMl != null)
+    ? snappedMlToAdd * concentrationMgPerMl
+    : null;
+
+  let volumeDigits: number = 2;
+  $: volumeDigits = syr && syr.incrementMl < 0.1 ? 3 : 2;
+
+  let finalConcMgPerMl: number | null = null;
+  $: finalConcMgPerMl = (snappedMgToAdd != null && bagVolumeValue != null && bagVolumeValue > 0)
+    ? snappedMgToAdd / bagVolumeValue
+    : null;
+
+  let deliveredMgPerHr: number | null = null;
+  $: deliveredMgPerHr = (finalConcMgPerMl != null && maintRateValue != null && maintRateValue > 0)
+    ? finalConcMgPerMl * maintRateValue
+    : null;
+
+  let deliveredDoseMgPerKgHr: number | null = null;
+  $: deliveredDoseMgPerKgHr = (deliveredMgPerHr != null && p.weightKg)
+    ? deliveredMgPerHr / Number(p.weightKg)
+    : null;
+
+  let roundingDeltaMl: number | null = null;
+  $: roundingDeltaMl = (rawMlToAdd != null && snappedMlToAdd != null)
+    ? snappedMlToAdd - rawMlToAdd
+    : null;
+
+  let hasRoundingChange: boolean = false;
+  $: hasRoundingChange = !!(roundingDeltaMl != null && Math.abs(roundingDeltaMl) > 1e-6);
 
   let ready: boolean = false;
   $: ready = !!(p.weightKg && dose !== '' && bagVolumeMl !== '' && maintRateMlHr !== '');
@@ -160,11 +229,11 @@
 
   <div class="results">
     <h3 class="sub">Summary</h3>
-    {#if ready && mlToAdd != null}
+    {#if ready && snappedMlToAdd != null}
       <div class="draws">
         <div class="card">
           <div class="card-title">Add to bag</div>
-          <div class="big">{fmt(mlToAdd, 2)} <span class="unit">mL</span></div>
+          <div class="big">{fmt(snappedMlToAdd, volumeDigits)} <span class="unit">mL</span></div>
           <div class="detail">{selectedDrug.label} {formatConcDisplay(med)}
             {#if syr}
               · in <span class="pill">{syr.label ?? `${syr.sizeCc} cc`}</span>
@@ -174,16 +243,28 @@
               {/if}
             {/if}
           </div>
+          {#if hasRoundingChange && rawMlToAdd != null}
+            <div class="muted small">Rounded from {fmt(rawMlToAdd, volumeDigits)} mL</div>
+          {/if}
         </div>
       </div>
 
       <div class="kv" style="margin-top:.45rem;">
-        <div class="k">Drug amount</div>
-        <div class="v strong">{fmt(mgToAdd, 2)} <span class="unit">mg</span></div>
+        <div class="k">Drug amount drawn</div>
+        <div class="v strong">{fmt(snappedMgToAdd, 2)} <span class="unit">mg</span></div>
         <div class="k">Bag runtime at rate</div>
         <div class="v">{fmt(bagHours, 2)} <span class="unit">hr</span></div>
         <div class="k">Stock concentration</div>
         <div class="v">{formatConcDisplay(med)}</div>
+        <div class="k">Bag concentration (rounded)</div>
+        <div class="v">{fmt(finalConcMgPerMl, 4)} <span class="unit">mg/mL</span></div>
+        <div class="k">Delivered dose at rate</div>
+        <div class="v">
+          <strong>{formatDeliveredDose(deliveredDoseMgPerKgHr, doseUnit)}</strong>
+          {#if deliveredDoseMgPerKgHr != null}
+            <div class="muted small">= {formatDeliveredDose(deliveredDoseMgPerKgHr, 'mg/kg/hr')}</div>
+          {/if}
+        </div>
       </div>
 
       <div class="section">
@@ -207,9 +288,17 @@
               × <span class="strong">{fmt(p.weightKg ?? 0, 2)}</span>
               × <span class="strong">{fmt(unitFactor, 4)}</span>)
               ÷ <span class="strong">{fmt(concentrationMgPerMl, 2)}</span>
-              = <span class="strong">{fmt(mlToAdd, 2)}</span> <span class="unit">mL</span>
+              = <span class="strong">{fmt(rawMlToAdd, 3)}</span> <span class="unit">mL</span>
             </td>
           </tr>
+          {#if hasRoundingChange}
+            <tr>
+              <th>Rounded to syringe ticks</th>
+              <td class="num strong">{fmt(snappedMlToAdd, volumeDigits)} <span class="unit">mL</span>
+                <div class="muted small">Δ {fmt(roundingDeltaMl, volumeDigits)} mL</div>
+              </td>
+            </tr>
+          {/if}
         </tbody></table>
       </div>
     {:else}
