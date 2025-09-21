@@ -104,7 +104,7 @@
       html, body { margin: 0; padding: 0; height: 100%; }
       body { display: grid; place-items: center; overflow: hidden; background: #fff; }
       /* Fixed-size label area */
-      #cpr-print-label { width: 2.625in; height: 2in; box-sizing: border-box; overflow: hidden; }
+      #cpr-print-label { width: 2.13in; height: 2in; box-sizing: border-box; overflow: hidden; }
       .label-outer {
         width: 100%; height: 100%; box-sizing: border-box;
         border: 2px solid #000;
@@ -280,7 +280,7 @@
 
     /* Size the label; keep static positioning to prevent repeating per page */
     #cpr-print-label {
-      width: 2.625in;       /* 2-5/8" width */
+      width: 2.13in;        /* 2.13" width */
       height: 2in;          /* 2" height */
       margin: 0;
       padding: 0;
