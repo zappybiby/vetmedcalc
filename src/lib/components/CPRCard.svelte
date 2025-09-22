@@ -108,31 +108,31 @@
       .label-outer {
         width: 100%; height: 100%; box-sizing: border-box;
         border: 2px solid #000;
-        padding: 0.08in 0.08in;
-        display: grid; grid-template-rows: auto auto 1fr; gap: 0.06in;
+        padding: 0.05in 0.05in;
+        display: grid; grid-template-rows: auto auto auto; gap: 0.04in; align-content: start;
         font-family: system-ui, Arial, Helvetica, sans-serif;
         color: #000;
         -webkit-print-color-adjust: exact; print-color-adjust: exact;
       }
-      .label-hdr { display: grid; grid-template-columns: 1fr 1fr; gap: 0.06in; border: 2px solid #000; border-radius: .06in; padding: 0.04in 0.06in; font-weight: 800; font-size: 10pt; line-height: 1.1; }
+      .label-hdr { display: grid; grid-template-columns: 1fr 1fr; gap: 0.04in; border: 2px solid #000; border-radius: .06in; padding: 0.03in 0.045in; font-weight: 800; font-size: 9.3pt; line-height: 1.08; }
       .label-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
       .label-weight { text-align: right; }
-      .label-table { display: grid; grid-template-columns: 1.6fr 0.8fr; border: 2px solid #000; border-radius: .06in; }
-      .lt-left { padding: 0.05in 0.06in; display: grid; grid-template-rows: 1fr 1fr; gap: 0; border-right: none; }
-      .lt-right { display: grid; grid-template-rows: 1fr 1fr; align-items: stretch; }
-      .lt-row { display: grid; grid-template-rows: auto auto; align-content: center; border-bottom: 2px solid #000; }
-      .lt-row:last-child { border-bottom: none; }
-      .drug { font-weight: 800; font-size: 9pt; line-height: 1.05; }
-      .perkg { font-size: 8pt; opacity: .9; }
-      .dose { display: grid; place-items: center; border-bottom: 2px solid #000; font-weight: 900; font-size: 14pt; }
-      .dose:last-child { border-bottom: none; }
-      .label-bolus { display: grid; grid-template-columns: 1fr; align-items: stretch; gap: 0; min-height: 0; }
-      .bolus-box { border: 2px solid #000; border-radius: .06in; padding: 0.04in; font-weight: 900; font-size: 10pt; display: grid; gap: 0.04in; box-sizing: border-box; max-width: 100%; }
+      .label-table { display: grid; border: 2px solid #000; border-radius: .06in; overflow: hidden; }
+      .label-row { display: grid; grid-template-columns: 1.48fr 0.92fr; align-items: stretch; border-bottom: 2px solid #000; }
+      .label-row:last-child { border-bottom: none; }
+      .med { padding: 0.035in 0.05in; display: grid; grid-template-rows: auto auto; row-gap: 0.01in; align-content: center; }
+      .drug { font-weight: 800; font-size: 8.6pt; line-height: 1.05; }
+      .perkg { font-size: 7.8pt; line-height: 1; opacity: .9; }
+      .dose { border-left: 2px solid #000; display: grid; justify-items: center; align-content: center; gap: 0.01in; padding: 0.02in 0.035in; font-weight: 900; }
+      .dose-value { font-size: 12.3pt; line-height: 1; white-space: nowrap; }
+      .dose-unit { font-size: 8.4pt; font-weight: 800; line-height: 1; }
+      .label-bolus { display: grid; grid-template-columns: 1fr; align-items: start; align-content: start; gap: 0; min-height: 0; }
+      .bolus-box { border: 2px solid #000; border-radius: .06in; padding: 0.028in; font-weight: 900; font-size: 9.2pt; display: grid; gap: 0.024in; box-sizing: border-box; max-width: 100%; justify-items: center; }
       .et-box { text-align: center; justify-self: stretch; align-self: stretch; display: grid; align-content: center; justify-items: center; }
       .et-label { font-weight: 800; font-size: 9pt; text-align: center; }
-      .et-row { display: flex; justify-content: center; align-items: baseline; gap: 0.08in; }
+      .et-row { display: flex; justify-content: center; align-items: baseline; gap: 0.045in; }
       .et-small { font-weight: 700; font-size: 9pt; opacity: .9; }
-      .et-big { font-weight: 900; font-size: 14pt; }
+      .et-big { font-weight: 900; font-size: 13pt; }
       .dash { font-weight: 800; font-size: 11pt; line-height: 1; }
     `;
 
@@ -226,19 +226,25 @@
     </div>
 
     <div class="label-table">
-      <div class="lt-left">
-        <div class="lt-row">
+      <div class="label-row">
+        <div class="med">
           <div class="drug">EPI {epiMed?.concentration.value} {epiMed?.concentration.units}</div>
           <div class="perkg">{epiDose?.mgPerKg} mg/kg</div>
         </div>
-        <div class="lt-row">
+        <div class="dose">
+          <span class="dose-value">{fmtVolume(epiVolume)}</span>
+          <span class="dose-unit">mL</span>
+        </div>
+      </div>
+      <div class="label-row">
+        <div class="med">
           <div class="drug">ATROPINE {atropineMed?.concentration.value} {atropineMed?.concentration.units}</div>
           <div class="perkg">{atropineDose?.mgPerKg} mg/kg</div>
         </div>
-      </div>
-      <div class="lt-right">
-        <div class="dose">{fmtVolume(epiVolume)} mL</div>
-        <div class="dose">{fmtVolume(atropineVolume)} mL</div>
+        <div class="dose">
+          <span class="dose-value">{fmtVolume(atropineVolume)}</span>
+          <span class="dose-unit">mL</span>
+        </div>
       </div>
     </div>
 
@@ -298,54 +304,53 @@
     .label-outer {
       width: 100%; height: 100%; box-sizing: border-box;
       border: 2px solid #000;
-      padding: 0.08in 0.08in;
-      /* Make header + meds stack to content height, and let bottom row stretch */
-      display: grid; grid-template-rows: auto auto 1fr; gap: 0.06in;
+      padding: 0.05in 0.05in;
+      /* Make header + meds stack to content height, and keep ET box compact */
+      display: grid; grid-template-rows: auto auto auto; gap: 0.04in; align-content: start;
       font-family: system-ui, Arial, Helvetica, sans-serif;
       color: #000;
     }
     .label-hdr {
-      display: grid; grid-template-columns: 1fr 1fr; gap: 0.06in;
-      border: 2px solid #000; border-radius: .06in; padding: 0.04in 0.06in; font-weight: 800;
-      font-size: 10pt; line-height: 1.1;
+      display: grid; grid-template-columns: 1fr 1fr; gap: 0.04in;
+      border: 2px solid #000; border-radius: .06in; padding: 0.03in 0.045in; font-weight: 800;
+      font-size: 9.3pt; line-height: 1.08;
     }
     .label-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
     .label-weight { text-align: right; }
 
     .label-table {
-      display: grid; grid-template-columns: 1.6fr 0.8fr; border: 2px solid #000; border-radius: .06in;
+      display: grid; border: 2px solid #000; border-radius: .06in; overflow: hidden;
       /* remove rigid min-height to avoid pushing content below label bottom */
     }
-    /* Left column holds two medication rows; remove internal gap so the
-       horizontal divider lines align perfectly with the right column. */
-    .lt-left { padding: 0.05in 0.06in; display: grid; grid-template-rows: 1fr 1fr; gap: 0; border-right: none; }
-    .lt-right { display: grid; grid-template-rows: 1fr 1fr; align-items: stretch; }
-    /* Center contents within each medication row so text has
-       balanced space above/below the divider lines. */
-    .lt-row { display: grid; grid-template-rows: auto auto; align-content: center; border-bottom: 2px solid #000; }
-    .lt-row:last-child { border-bottom: none; }
-    .drug { font-weight: 800; font-size: 9pt; line-height: 1.05; }
-    .perkg { font-size: 8pt; opacity: .9; }
-    .dose { display: grid; place-items: center; border-bottom: 2px solid #000; font-weight: 900; font-size: 14pt; }
-    .dose:last-child { border-bottom: none; }
+    .label-row {
+      display: grid; grid-template-columns: 1.48fr 0.92fr; align-items: stretch; border-bottom: 2px solid #000;
+    }
+    .label-row:last-child { border-bottom: none; }
+    .med { padding: 0.035in 0.05in; display: grid; grid-template-rows: auto auto; row-gap: 0.01in; align-content: center; }
+    .drug { font-weight: 800; font-size: 8.6pt; line-height: 1.05; }
+    .perkg { font-size: 7.8pt; line-height: 1; opacity: .9; }
+    .dose { border-left: 2px solid #000; display: grid; justify-items: center; align-content: center; gap: 0.01in; padding: 0.02in 0.035in; font-weight: 900; }
+    .dose-value { font-size: 12.3pt; line-height: 1; white-space: nowrap; }
+    .dose-unit { font-size: 8.4pt; font-weight: 800; line-height: 1; }
 
     .label-bolus {
       display: grid;
       grid-template-columns: 1fr; /* single full-width area for ET */
-      align-items: stretch;
+      align-items: start;
+      align-content: start;
       gap: 0;
       min-height: 0;
     }
     .bolus-box {
-      border: 2px solid #000; border-radius: .06in; padding: 0.04in; font-weight: 900; font-size: 10pt;
-      display: grid; gap: 0.04in; box-sizing: border-box; max-width: 100%;
+      border: 2px solid #000; border-radius: .06in; padding: 0.028in; font-weight: 900; font-size: 9.2pt;
+      display: grid; gap: 0.024in; box-sizing: border-box; max-width: 100%; justify-items: center;
     }
     /* ET tube area: full-width, centered vertically/horizontally */
     .et-box { text-align: center; justify-self: stretch; align-self: stretch; display: grid; align-content: center; justify-items: center; }
     .et-label { font-weight: 800; font-size: 9pt; text-align: center; }
-    .et-row { display: flex; justify-content: center; align-items: baseline; gap: 0.06in; }
+    .et-row { display: flex; justify-content: center; align-items: baseline; gap: 0.045in; }
     .et-small { font-weight: 700; font-size: 9pt; opacity: .9; }
-    .et-big { font-weight: 900; font-size: 14pt; }
+    .et-big { font-weight: 900; font-size: 13pt; }
     .dash { font-weight: 800; font-size: 11pt; line-height: 1; }
   }
 </style>
