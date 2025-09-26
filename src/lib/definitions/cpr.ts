@@ -7,5 +7,5 @@ export const CPR_FLUID_BOLUS: readonly CPRFluidBolus[] = [
 
 export const CPR_DRUG_DOSES: readonly CPRDrugDose[] = [
   { name: 'Epinephrine', mgPerKg: 0.01, route: 'IV' },
-  { name: 'Atropine',    mgPerKg: 0.05, route: 'IV' },
+  { name: 'Atropine',    mgPerKg: 0.04, route: 'IV' },
 ] as const;

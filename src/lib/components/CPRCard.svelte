@@ -99,12 +99,12 @@
     const labelHTML = node.innerHTML;
     const styles = `
       /* Remove browser margins; lock label sheet size in landscape */
-      @page { size: 3.25in 2.25in; margin: 0; }
+      @page { size: 3in 2.25in; margin: 0; }
       /* Fill the page box and center the label */
       html, body { margin: 0; padding: 0; height: 100%; }
       body { display: grid; place-items: center; overflow: hidden; background: #fff; }
       /* Fixed-size label area */
-      #cpr-print-label { width: 3.25in; height: 2.25in; box-sizing: border-box; overflow: hidden; }
+      #cpr-print-label { width: 3in; height: 2.25in; box-sizing: border-box; overflow: hidden; }
       .label-outer {
         width: 100%; height: 100%; box-sizing: border-box;
         border: 2px solid #000;
@@ -255,7 +255,7 @@
     <div class="label-bolus">
       <!-- ET Tube sizes: full-width, centered; bolus removed per request -->
       <div class="bolus-box et-box">
-        <div class="et-label">ET Tube Size:</div>
+        <div class="et-label">Est. ET Tube Size</div>
         {#if et}
           <div class="et-row" aria-label="ET tube size range">
             <span class="et-small">{et.lowMm.toFixed(1)}</span>
@@ -290,7 +290,7 @@
 
     /* Size the label; keep static positioning to prevent repeating per page */
     #cpr-print-label {
-      width: 3.25in;        /* match label width */
+      width: 3in;           /* match label width */
       height: 2.25in;       /* match label height */
       margin: 0;
       padding: 0;
@@ -301,8 +301,8 @@
       page-break-inside: avoid;
     }
 
-    /* Lock paper size and orientation for 3.25"x2.25" landscape stock */
-    @page { size: 3.25in 2.25in; margin: 0; }
+    /* Lock paper size and orientation for 3"x2.25" landscape stock */
+    @page { size: 3in 2.25in; margin: 0; }
 
     /* Label design */
     .label-outer {
