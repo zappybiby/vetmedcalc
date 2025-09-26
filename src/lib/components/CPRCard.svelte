@@ -64,6 +64,46 @@
   let et: EtTubeEstimate | null = null;
   $: et = estimateEtForPatient(p);
 
+  type EtLabelDisplaySegment = {
+    role: 'low' | 'mid' | 'high';
+    className: 'et-small' | 'et-big';
+    display: string;
+  };
+
+  type EtLabelCandidate = EtLabelDisplaySegment & {
+    priority: number;
+    index: number;
+  };
+
+  let etLabelSegments: EtLabelDisplaySegment[] | null = null;
+  $: etLabelSegments = et
+    ? (() => {
+        const candidates: EtLabelCandidate[] = [
+          { role: 'low', className: 'et-small', display: et.lowMm.toFixed(1), priority: 1, index: 0 },
+          { role: 'mid', className: 'et-big', display: et.estimateMm.toFixed(1), priority: 0, index: 1 },
+          { role: 'high', className: 'et-small', display: et.highMm.toFixed(1), priority: 1, index: 2 },
+        ];
+
+        const deduped: EtLabelCandidate[] = [];
+        for (const entry of candidates) {
+          const existingIdx = deduped.findIndex(item => item.display === entry.display);
+          if (existingIdx === -1) {
+            deduped.push(entry);
+          } else if (entry.priority < deduped[existingIdx].priority) {
+            deduped[existingIdx] = entry;
+          }
+        }
+
+        return deduped
+          .sort((a, b) => a.index - b.index)
+          .map<EtLabelDisplaySegment>(({ role, className, display }) => ({
+            role,
+            className,
+            display,
+          }));
+      })()
+    : null;
+
   $: epiVolume =
     p.weightKg && epiDose && epiMed
       ? computeRoundedVolume(epiDose.mgPerKg, p.weightKg, epiMed.concentration.value)
@@ -256,13 +296,14 @@
       <!-- ET Tube sizes: full-width, centered; bolus removed per request -->
       <div class="bolus-box et-box">
         <div class="et-label">Est. ET Tube Size</div>
-        {#if et}
+        {#if etLabelSegments?.length}
           <div class="et-row" aria-label="ET tube size range">
-            <span class="et-small">{et.lowMm.toFixed(1)}</span>
-            <span class="dash">-</span>
-            <span class="et-big">{et.estimateMm.toFixed(1)}</span>
-            <span class="dash">-</span>
-            <span class="et-small">{et.highMm.toFixed(1)}</span>
+            {#each etLabelSegments as segment, index (segment.role)}
+              <span class={segment.className}>{segment.display}</span>
+              {#if index < etLabelSegments.length - 1}
+                <span class="dash">-</span>
+              {/if}
+            {/each}
           </div>
         {:else}
           <div class="et-row" aria-label="ET tube size unavailable">
