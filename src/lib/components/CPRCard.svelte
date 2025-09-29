@@ -64,21 +64,6 @@
       <div class="font-extrabold">{fmtVolume(label.atropineVolume)} mL</div>
     </div>
 
-    <!-- Shock Bolus -->
-    <div class="grid grid-cols-[1.5fr_.9fr_.9fr] items-center gap-[0.5rem] rounded-[0.45rem] border border-slate-200 bg-slate-900 px-[0.7rem] py-[0.55rem] text-slate-200 shadow-[2px_2px_0_#0b0b0b]">
-      <div class="font-semibold">
-        Qtr. Shock Bolus {#if label.bolus}({label.bolus.mlPerKg} mL/kg){/if}
-      </div>
-      <div>Total: <span class="font-extrabold">{fmt0(label.totalBolusMl)}</span> mL</div>
-      <div class="flex items-center justify-end gap-[0.4rem]">
-        <span>Rate:</span>
-        <span class="inline-grid justify-items-center leading-tight">
-          <span class="border-b-2 border-slate-200 pb-px font-extrabold">{fmtRate(label.rateRounded, label.rateRaw)} mL/hr</span>
-          <span class="font-bold">{label.bolus?.overMinutes ?? '—'} min</span>
-        </span>
-      </div>
-    </div>
-
     <!-- ET Tube (moved to bottom) -->
     <div class="grid grid-cols-[1.5fr_.9fr_.9fr] items-center gap-[0.5rem] rounded-[0.45rem] border border-slate-200 bg-slate-900 px-[0.7rem] py-[0.55rem] text-slate-200 shadow-[2px_2px_0_#0b0b0b]">
       <div class="font-semibold">ET Tube (ID)</div>
