@@ -1,5 +1,6 @@
 <script lang="ts">
   import CPRCard from './CPRCard.svelte';
+  import BatchCPRLabels from './BatchCPRLabels.svelte';
   import CRICalculator from './CRICalculator.svelte';
   import DrugInBag from './DrugInBag.svelte';
   import InsOuts from './InsOuts.svelte';
@@ -7,6 +8,7 @@
   type Tab = { id: string; label: string };
   const tabs: Tab[] = [
     { id: 'cpr',     label: 'CPR CARD' },
+    { id: 'batch',   label: 'BATCH CPR LABELS' },
     { id: 'cri',     label: 'CRI CALCULATOR' },
     { id: 'drugbag', label: 'DRUG IN BAG' },
     { id: 'insouts', label: 'INS / OUTS' },
@@ -39,6 +41,8 @@
   >
     {#if active === 'cpr'}
       <CPRCard />
+    {:else if active === 'batch'}
+      <BatchCPRLabels />
     {:else if active === 'cri'}
       <CRICalculator />
     {:else if active === 'drugbag'}
