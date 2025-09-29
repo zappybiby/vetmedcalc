@@ -25,12 +25,6 @@ export type MedicationDef = {
   criDoseRange?: CRIDoseRange;
 };
 
-export type CPRFluidBolus = {
-  species: Species;
-  mlPerKg: number;
-  overMinutes: number;
-};
-
 export type CPRDrugDose = {
   name: string;
   mgPerKg: number;

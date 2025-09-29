@@ -1,5 +1,5 @@
-import { CPR_DRUG_DOSES, CPR_FLUID_BOLUS, CPR_MEDICATIONS, SYRINGES } from '@defs';
-import type { CPRDrugDose, CPRFluidBolus, MedicationDef, Species, SyringeDef } from '@defs';
+import { CPR_DRUG_DOSES, CPR_MEDICATIONS, SYRINGES } from '@defs';
+import type { CPRDrugDose, MedicationDef, Species, SyringeDef } from '@defs';
 import { estimateEtForPatient } from '../helpers/etTube';
 import type { EtTubeEstimate } from '../helpers/etTube';
 
@@ -29,10 +29,6 @@ export type CPRLabelComputed = {
   atropineDose: CPRDrugDose | undefined;
   epiVolume: VolumeInfo | null;
   atropineVolume: VolumeInfo | null;
-  bolus: CPRFluidBolus | undefined;
-  totalBolusMl: number | null;
-  rateRaw: number | null;
-  rateRounded: number | null;
   etEstimate: EtTubeEstimate | null;
   etLabelSegments: EtLabelDisplaySegment[] | null;
 };
@@ -72,16 +68,8 @@ function computeRoundedVolume(mgPerKg: number, weightKg: number, concentrationMg
 
 const r0 = (x: number) => Math.round(x);
 
-function roundRateMlHr(x: number) {
-  return x < 100 ? Math.round(x) : Math.round(x / 10) * 10;
-}
-
 export const fmtVolume = (info: VolumeInfo | null) => (info == null ? '—' : info.ml.toFixed(info.decimals));
 export const fmt0 = (x: number | null) => (x == null ? '—' : String(r0(x)));
-export function fmtRate(xRounded: number | null, raw: number | null) {
-  if (xRounded == null || raw == null) return '—';
-  return raw < 99 ? xRounded.toFixed(1) : String(xRounded);
-}
 
 function buildEtSegments(et: EtTubeEstimate | null): EtLabelDisplaySegment[] | null {
   if (!et) return null;
@@ -127,16 +115,6 @@ export function computeCprLabel(patient: CPRLabelPatient): CPRLabelComputed {
       ? computeRoundedVolume(atropineDose.mgPerKg, patient.weightKg, atropineMed.concentration.value)
       : null;
 
-  const bolus = CPR_FLUID_BOLUS.find(b => b.species === patient.species);
-
-  const totalBolusMl = patient.weightKg && bolus ? r0(patient.weightKg * bolus.mlPerKg) : null;
-
-  const rateRaw = patient.weightKg && bolus
-    ? (patient.weightKg * bolus.mlPerKg) / bolus.overMinutes * 60
-    : null;
-
-  const rateRounded = rateRaw == null ? null : roundRateMlHr(rateRaw);
-
   return {
     patient,
     epiMed,
@@ -145,10 +123,6 @@ export function computeCprLabel(patient: CPRLabelPatient): CPRLabelComputed {
     atropineDose,
     epiVolume,
     atropineVolume,
-    bolus,
-    totalBolusMl,
-    rateRaw,
-    rateRounded,
     etEstimate,
     etLabelSegments,
   };

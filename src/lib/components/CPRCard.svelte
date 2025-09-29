@@ -2,9 +2,7 @@
   import { patient } from '../stores/patient';
   import {
     computeCprLabel,
-    fmtRate,
     fmtVolume,
-    fmt0,
     renderCprLabelMarkup,
     CPR_LABEL_PRINT_STYLES,
   } from '../labels/cprLabel';
