@@ -1,4 +1,4 @@
-import { MEDICATIONS, CPR_DRUG_DOSES, CPR_FLUID_BOLUS, SYRINGES } from '@defs';
+import { CPR_DRUG_DOSES, CPR_FLUID_BOLUS, CPR_MEDICATIONS, SYRINGES } from '@defs';
 import type { CPRDrugDose, CPRFluidBolus, MedicationDef, Species, SyringeDef } from '@defs';
 import { estimateEtForPatient } from '../helpers/etTube';
 import type { EtTubeEstimate } from '../helpers/etTube';
@@ -37,8 +37,8 @@ export type CPRLabelComputed = {
   etLabelSegments: EtLabelDisplaySegment[] | null;
 };
 
-const epiMed = MEDICATIONS.find(m => m.name.toLowerCase() === 'epinephrine') ?? null;
-const atropineMed = MEDICATIONS.find(m => m.name.toLowerCase() === 'atropine') ?? null;
+const epiMed = CPR_MEDICATIONS.find(m => m.name.toLowerCase() === 'epinephrine') ?? null;
+const atropineMed = CPR_MEDICATIONS.find(m => m.name.toLowerCase() === 'atropine') ?? null;
 const epiDose = CPR_DRUG_DOSES.find(d => d.name.toLowerCase() === 'epinephrine');
 const atropineDose = CPR_DRUG_DOSES.find(d => d.name.toLowerCase() === 'atropine');
 

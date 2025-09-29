@@ -12,11 +12,17 @@ export type MedicationConcentration = {
   units: 'mg/mL' | 'mcg/mL';  // normalize by declaring units
 };
 
+export type CRIDoseRange = {
+  minMgPerKgHr: number;       // lower bound of typical CRI dose (mg/kg/hr)
+  maxMgPerKgHr: number;       // upper bound of typical CRI dose (mg/kg/hr)
+};
+
 export type MedicationDef = {
   id: string;
   name: string;
   concentration: MedicationConcentration;
   notes?: string;
+  criDoseRange?: CRIDoseRange;
 };
 
 export type CPRFluidBolus = {
