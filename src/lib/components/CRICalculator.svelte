@@ -187,10 +187,10 @@
   </div>
 
   <!-- Unified Results -->
-  <div class="min-w-0 rounded-lg border-2 border-slate-200 bg-surface p-4 text-slate-200 shadow-panel">
-    <h3 class="text-sm font-black uppercase tracking-wide text-slate-200">{enableDilution ? 'Dilution Plan' : 'From Stock (no dilution)'}</h3>
+  {#if vm}
+    <div class="min-w-0 rounded-lg border-2 border-slate-200 bg-surface p-4 text-slate-200 shadow-panel">
+      <h3 class="text-sm font-black uppercase tracking-wide text-slate-200">{enableDilution ? 'Dilution Plan' : 'From Stock (no dilution)'}</h3>
 
-    {#if vm}
       {#if vm.alerts?.length}
         <div class="grid gap-2" aria-live="polite">
           {#each vm.alerts as a}
@@ -267,8 +267,6 @@
           </details>
         {/if}
       </div>
-    {:else}
-      <p class="text-sm text-slate-400">Enter all inputs to see the {enableDilution ? 'dilution plan' : 'calculation'}.</p>
-    {/if}
-  </div>
+    </div>
+  {/if}
 </section>
