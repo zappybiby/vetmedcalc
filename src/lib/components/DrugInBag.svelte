@@ -269,7 +269,9 @@
             {selectedDrug.label} {formatConcDisplay(med)}
             {#if syr}
               · in <span class="ml-1 inline-flex items-center rounded-full border border-slate-200 bg-surface-sunken px-2 py-0.5 text-xs font-semibold uppercase tracking-wide text-slate-200">{syr.label ?? `${syr.sizeCc} cc`}</span>
-              <span class="ml-2 text-slate-400">(ticks {fmt(syr.incrementMl, 2)} mL)</span>
+              {#if !syr.label}
+                <span class="ml-2 text-slate-400">(ticks {fmt(syr.incrementMl, 2)} mL)</span>
+              {/if}
               {#if fills && fills > 1}
                 <span class="ml-2 font-semibold text-amber-500">requires {fills} fills</span>
               {/if}
