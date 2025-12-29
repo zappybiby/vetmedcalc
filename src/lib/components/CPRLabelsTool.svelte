@@ -15,9 +15,11 @@
     Batch mode
   </label>
 
-  {#if $cprBatchMode}
+  <div hidden={!$cprBatchMode}>
     <BatchCPRLabels />
-  {:else}
+  </div>
+
+  <div hidden={$cprBatchMode}>
     <CPRCard />
-  {/if}
+  </div>
 </section>
