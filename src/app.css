@@ -61,6 +61,10 @@
       0 0 0 8px rgba(14, 32, 64, 0.6);
   }
 
+  .field-select.unit-flash {
+    animation: unit-flash 0.65s ease-out;
+  }
+
   .field-select {
     @apply appearance-none pr-10;
     background-image: url('data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="%23cbd5f5"%3E%3Cpath fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.173l3.71-3.94a.75.75 0 011.08 1.04l-4.24 4.5a.75.75 0 01-1.08 0l-4.24-4.5a.75.75 0 01.02-1.06z" clip-rule="evenodd" /%3E%3C/svg%3E');
@@ -89,6 +93,21 @@
 
   .field-select:focus-visible option:checked {
     outline: none;
+  }
+
+  @keyframes unit-flash {
+    0% {
+      border-color: rgba(250, 204, 21, 0.8);
+      box-shadow:
+        0 0 0 1px rgba(250, 204, 21, 0.45),
+        0 0 0 6px rgba(250, 204, 21, 0.12);
+    }
+    100% {
+      border-color: rgba(148, 197, 255, 0.75);
+      box-shadow:
+        0 0 0 1px rgba(56, 189, 248, 0.3),
+        0 0 0 6px rgba(2, 6, 23, 0.55);
+    }
   }
 
   .field-checkbox,

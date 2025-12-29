@@ -57,6 +57,8 @@ function unitConstant(u: DoseUnit) {
   switch (u) {
     case 'mcg/kg/min':
       return 0.06;
+    case 'mg/kg/min':
+      return 60;
     case 'mg/kg/day':
       return 1 / 24;
     case 'mcg/kg/hr':
@@ -104,6 +106,8 @@ function convertMgPerKgHr(value: number, unit: DoseUnit): number {
       return value * 1000;
     case 'mcg/kg/min':
       return (value * 1000) / 60;
+    case 'mg/kg/min':
+      return value / 60;
     case 'mg/kg/hr':
     default:
       return value;
@@ -155,6 +159,7 @@ export function buildCRIViewModel(params: BuildParams): CRIViewModel | null {
       deliveredDoseText: formatDose(actualDoseMgPerKgHr, doseUnit),
       doseLines: [
         formatDose(actualDoseMgPerKgHr, 'mg/kg/hr'),
+        formatDose(actualDoseMgPerKgHr, 'mg/kg/min'),
         formatDose(actualDoseMgPerKgHr, 'mg/kg/day'),
         formatDose(actualDoseMgPerKgHr, 'mcg/kg/min'),
         formatDose(actualDoseMgPerKgHr, 'mcg/kg/hr'),
@@ -231,12 +236,13 @@ export function buildCRIViewModel(params: BuildParams): CRIViewModel | null {
     finalConcentrationText: `${fmt(plan.chosenConcentrationMgPerMl, 4)} mg/mL`,
     pumpRateText: `${fmt(plan.desiredRateMlPerHr, 2)} mL/hr`,
     deliveredDoseText: formatDose(actualDoseMgPerKgHr, doseUnit),
-    doseLines: [
-      formatDose(actualDoseMgPerKgHr, 'mg/kg/hr'),
-      formatDose(actualDoseMgPerKgHr, 'mg/kg/day'),
-      formatDose(actualDoseMgPerKgHr, 'mcg/kg/min'),
-      formatDose(actualDoseMgPerKgHr, 'mcg/kg/hr'),
-    ],
+      doseLines: [
+        formatDose(actualDoseMgPerKgHr, 'mg/kg/hr'),
+        formatDose(actualDoseMgPerKgHr, 'mg/kg/min'),
+        formatDose(actualDoseMgPerKgHr, 'mg/kg/day'),
+        formatDose(actualDoseMgPerKgHr, 'mcg/kg/min'),
+        formatDose(actualDoseMgPerKgHr, 'mcg/kg/hr'),
+      ],
   };
 
   // Rounding and tolerance (collapsible)

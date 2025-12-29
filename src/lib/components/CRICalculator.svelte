@@ -1,6 +1,7 @@
 <script lang="ts">
   // CRI Calculator with optional dilution mapping (rate ↔ dose).
   // Adjust the helper import path if needed:
+  import { onDestroy } from 'svelte';
   import type { DoseUnit } from '../helpers/doseMapping';
   import { buildCRIViewModel, type CRIViewModel } from '../viewmodels/criViewModel';
 
@@ -18,7 +19,22 @@
   let med: MedicationDef | undefined;
   $: med = MEDICATIONS.find((m) => m.id === medId);
 
-  let doseUnit: DoseUnit = 'mg/kg/hr';
+  const DEFAULT_DOSE_UNIT: Record<MedicationDef['id'], DoseUnit> = {
+    'diazepam-5': 'mg/kg/hr',
+    'dobutamine-12-5': 'mcg/kg/min',
+    'dopamine-40': 'mcg/kg/min',
+    'fentanyl-50': 'mcg/kg/hr',
+    'furosemide-50': 'mg/kg/hr',
+    'midazolam-5': 'mg/kg/hr',
+    'metoclopramide-5': 'mg/kg/hr',
+    'norepinephrine-1': 'mcg/kg/min',
+    'propofol-10': 'mg/kg/min',
+    'lidocaine-20': 'mcg/kg/min',
+    'ketamine-100': 'mcg/kg/min',
+  };
+  const FALLBACK_DOSE_UNIT: DoseUnit = 'mg/kg/hr';
+
+  let doseUnit: DoseUnit = DEFAULT_DOSE_UNIT[medId] ?? FALLBACK_DOSE_UNIT;
   let desiredDose: number | '' = '';
   let durationHr: number | '' = '';
 
@@ -27,6 +43,34 @@
   $: {
     const rate = desiredRateMlPerHr;
     enableDilution = rate !== '' && rate != null && !Number.isNaN(typeof rate === 'number' ? rate : Number(rate));
+  }
+
+  let unitFlash = false;
+  let unitFlashTimer: ReturnType<typeof setTimeout> | null = null;
+  const unitFlashDurationMs = 650;
+
+  function triggerUnitFlash() {
+    unitFlash = false;
+    if (unitFlashTimer) clearTimeout(unitFlashTimer);
+    requestAnimationFrame(() => {
+      unitFlash = true;
+      unitFlashTimer = setTimeout(() => {
+        unitFlash = false;
+      }, unitFlashDurationMs);
+    });
+  }
+
+  onDestroy(() => {
+    if (unitFlashTimer) clearTimeout(unitFlashTimer);
+  });
+
+  let previousMedId = medId;
+  $: if (medId !== previousMedId) {
+    const nextUnit = DEFAULT_DOSE_UNIT[medId] ?? FALLBACK_DOSE_UNIT;
+    const shouldFlash = doseUnit !== nextUnit;
+    doseUnit = nextUnit;
+    previousMedId = medId;
+    if (shouldFlash) triggerUnitFlash();
   }
 
   // -------- Helpers --------
@@ -103,8 +147,9 @@
           inputmode="decimal"
           placeholder="e.g., 0.4"
         />
-        <select bind:value={doseUnit} aria-label="Dose unit" class="field-select">
+        <select bind:value={doseUnit} aria-label="Dose unit" class="field-select" class:unit-flash={unitFlash}>
           <option value="mg/kg/hr">mg/kg/hr</option>
+          <option value="mg/kg/min">mg/kg/min</option>
           <option value="mg/kg/day">mg/kg/day</option>
           <option value="mcg/kg/hr">mcg/kg/hr</option>
           <option value="mcg/kg/min">mcg/kg/min</option>
