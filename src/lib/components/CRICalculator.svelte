@@ -77,8 +77,8 @@
   <!-- Inputs -->
   <div class="grid min-w-0 gap-3 md:grid-cols-2">
     <div class="flex min-w-0 flex-col gap-2">
-      <label class="text-xs font-semibold uppercase tracking-wide text-slate-300" for="med">Medication</label>
-      <select id="med" bind:value={medId} class="field-select">
+      <label class="text-xs font-semibold uppercase tracking-wide text-slate-300" for="cri-med">Medication</label>
+      <select id="cri-med" bind:value={medId} class="field-select">
         {#each MEDICATIONS as m}
           <option value={m.id}>
             {m.name} — {formatConcDisplay(m)}
@@ -91,10 +91,10 @@
     </div>
 
     <div class="flex min-w-0 flex-col gap-2">
-      <label class="text-xs font-semibold uppercase tracking-wide text-slate-300" for="dose">Dose</label>
+      <label class="text-xs font-semibold uppercase tracking-wide text-slate-300" for="cri-dose">Dose</label>
       <div class="grid min-w-0 grid-cols-[minmax(0,1fr)_auto] items-center gap-2">
         <input
-          id="dose"
+          id="cri-dose"
           class="field-control"
           type="number"
           min="0"
@@ -113,9 +113,9 @@
     </div>
 
     <div class="flex min-w-0 flex-col gap-2">
-      <label class="text-xs font-semibold uppercase tracking-wide text-slate-300" for="duration">Duration (hr)</label>
+      <label class="text-xs font-semibold uppercase tracking-wide text-slate-300" for="cri-duration">Duration (hr)</label>
       <input
-        id="duration"
+        id="cri-duration"
         class="field-control"
         type="number"
         min="0"
@@ -127,9 +127,9 @@
     </div>
 
     <div class="flex min-w-0 flex-col gap-2">
-      <label class="text-xs font-semibold uppercase tracking-wide text-slate-300" for="rate">Target pump rate (mL/hr)</label>
+      <label class="text-xs font-semibold uppercase tracking-wide text-slate-300" for="cri-rate">Target pump rate (mL/hr)</label>
       <input
-        id="rate"
+        id="cri-rate"
         class="field-control"
         type="number"
         min="0"

@@ -190,8 +190,8 @@
 
   <div class="grid min-w-0 gap-3 md:grid-cols-2">
     <div class="flex min-w-0 flex-col gap-2">
-      <label class="text-xs font-semibold uppercase tracking-wide text-slate-300" for="drug">Drug</label>
-      <select id="drug" class="field-select" bind:value={selectedDrugId}>
+      <label class="text-xs font-semibold uppercase tracking-wide text-slate-300" for="drugbag-drug">Drug</label>
+      <select id="drugbag-drug" class="field-select" bind:value={selectedDrugId}>
         {#each DRUG_OPTIONS as option}
           <option value={option.id}>{option.label}</option>
         {/each}
@@ -199,10 +199,10 @@
     </div>
 
     <div class="flex min-w-0 flex-col gap-2">
-      <label class="text-xs font-semibold uppercase tracking-wide text-slate-300" for="dose">Dose</label>
+      <label class="text-xs font-semibold uppercase tracking-wide text-slate-300" for="drugbag-dose">Dose</label>
       <div class="grid min-w-0 grid-cols-[minmax(0,1fr)_auto] items-center gap-2">
         <input
-          id="dose"
+          id="drugbag-dose"
           class="field-control"
           type="number"
           min="0"
@@ -221,9 +221,9 @@
     </div>
 
     <div class="flex min-w-0 flex-col gap-2">
-      <label class="text-xs font-semibold uppercase tracking-wide text-slate-300" for="bag">Fluid bag volume (mL)</label>
+      <label class="text-xs font-semibold uppercase tracking-wide text-slate-300" for="drugbag-bag">Fluid bag volume (mL)</label>
       <input
-        id="bag"
+        id="drugbag-bag"
         class="field-control"
         type="number"
         min="0"
@@ -235,9 +235,9 @@
     </div>
 
     <div class="flex min-w-0 flex-col gap-2">
-      <label class="text-xs font-semibold uppercase tracking-wide text-slate-300" for="rate">Maintenance rate (mL/hr)</label>
+      <label class="text-xs font-semibold uppercase tracking-wide text-slate-300" for="drugbag-rate">Maintenance rate (mL/hr)</label>
       <input
-        id="rate"
+        id="drugbag-rate"
         class="field-control"
         type="number"
         min="0"

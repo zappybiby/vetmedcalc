@@ -16,10 +16,10 @@
   let active: Tab['id'] = 'cpr'; // default
 
   function selectTab(id: Tab['id']) {
-    active = id;
-    if (id !== 'cpr') {
+    if (active === 'cpr' && id !== 'cpr' && $cprBatchMode) {
       cprBatchMode.set(false);
     }
+    active = id;
   }
 
   const tabBase = 'rounded-md border-2 border-slate-200 px-3 py-1 text-sm font-semibold tracking-wide text-slate-200 shadow-card transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-400';
@@ -45,14 +45,17 @@
     class="min-h-[40vh] max-w-full min-w-0 overflow-x-auto rounded-lg border-2 border-slate-200 bg-surface p-4 text-slate-200 shadow-panel"
     role="tabpanel"
   >
-    {#if active === 'cpr'}
+    <div hidden={active !== 'cpr'}>
       <CPRLabelsTool />
-    {:else if active === 'cri'}
+    </div>
+    <div hidden={active !== 'cri'}>
       <CRICalculator />
-    {:else if active === 'drugbag'}
+    </div>
+    <div hidden={active !== 'drugbag'}>
       <DrugInBag />
-    {:else if active === 'insouts'}
+    </div>
+    <div hidden={active !== 'insouts'}>
       <InsOuts />
-    {/if}
+    </div>
   </div>
 </section>
