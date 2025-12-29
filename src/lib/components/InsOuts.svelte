@@ -100,16 +100,12 @@
               />
             </label>
 
-            <div class="grid min-w-0 gap-2 rounded-lg border border-slate-700/60 bg-surface-sunken p-3 text-sm text-slate-300">
-              <div class="font-semibold uppercase tracking-wide text-slate-300">Patient weight</div>
-              <div class="text-lg font-black text-slate-100">
-                {#if weightKg}
-                  {weightKg.toFixed(2)} kg
-                {:else}
-                  Enter weight in Patient panel
-                {/if}
+            {#if weightKg}
+              <div class="grid min-w-0 gap-2 rounded-lg border border-slate-700/60 bg-surface-sunken p-3 text-sm text-slate-300">
+                <div class="font-semibold uppercase tracking-wide text-slate-300">Patient weight</div>
+                <div class="text-lg font-black text-slate-100">{weightKg.toFixed(2)} kg</div>
               </div>
-            </div>
+            {/if}
           </div>
         </div>
       </div>

@@ -248,17 +248,11 @@
       />
     </div>
 
-    <div class="flex min-w-0 flex-col gap-2 md:col-span-2 md:flex-row md:items-center md:justify-between">
-      <span class="text-xs font-semibold uppercase tracking-wide text-slate-300">Patient weight</span>
-      <div class="inline-flex items-center rounded-full border border-slate-200 bg-surface px-3 py-1 text-sm font-semibold text-slate-200">
-        {p.weightKg != null ? `${p.weightKg.toFixed(2)} kg` : 'Enter in Patient panel'}
-      </div>
-    </div>
   </div>
 
-  <div class="min-w-0 rounded-lg border-2 border-slate-200 bg-surface p-4 text-slate-200 shadow-panel">
-    <h3 class="text-sm font-black uppercase tracking-wide text-slate-200">Summary</h3>
-    {#if ready && snappedMlToAdd != null}
+  {#if ready && snappedMlToAdd != null}
+    <div class="min-w-0 rounded-lg border-2 border-slate-200 bg-surface p-4 text-slate-200 shadow-panel">
+      <h3 class="text-sm font-black uppercase tracking-wide text-slate-200">Summary</h3>
       <div class="mt-3 grid min-w-0 gap-3 [grid-template-columns:repeat(auto-fit,minmax(220px,1fr))]">
         <div class="rounded-lg border border-slate-200 bg-surface p-4">
           <div class="text-sm font-black uppercase tracking-wide text-slate-300">Add to bag</div>
@@ -348,8 +342,6 @@
           </tbody>
         </table>
       </div>
-    {:else}
-      <p class="mt-3 text-sm text-slate-400">Enter dose, bag volume, rate, and patient weight.</p>
-    {/if}
-  </div>
+    </div>
+  {/if}
 </section>
