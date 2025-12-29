@@ -23,17 +23,11 @@ export type ResultCard = {
   doseLines: string[];
 };
 
-export type RoundingDetail = {
-  title: string;
-  rows: { label: string; value: string; subnote?: string }[];
-};
-
 export type CRIViewModel = {
   mode: 'stock' | 'dilution';
   alerts: VMAlert[];
   drawCards: DrawCard[];
   resultCard: ResultCard;
-  roundingDetail?: RoundingDetail | null;
 };
 
 export type BuildParams = {
@@ -166,21 +160,7 @@ export function buildCRIViewModel(params: BuildParams): CRIViewModel | null {
       ],
     };
 
-    // Rounding/tolerance (only if snap changed volume)
-    const volDelta = Math.abs(drawVol - targetVol);
-    let roundingDetail: RoundingDetail | null = null;
-    if (volDelta > 1e-6) {
-      roundingDetail = {
-        title: 'Rounding',
-        rows: [
-          { label: 'Target volume (unsnapped)', value: `${fmt(targetVol, 2)} mL` },
-          { label: 'Snapped volume', value: `${fmt(drawVol, 2)} mL (Δ ${fmt(drawVol - targetVol, 2)} mL)` },
-          { label: 'Syringe ticks', value: `${fmt(syr.incrementMl, 2)} mL` },
-        ],
-      };
-    }
-
-    return { mode: 'stock', alerts, drawCards: [drawCard], resultCard, roundingDetail };
+    return { mode: 'stock', alerts, drawCards: [drawCard], resultCard };
   }
 
   // ---------- Dilution path ----------
@@ -245,43 +225,5 @@ export function buildCRIViewModel(params: BuildParams): CRIViewModel | null {
       ],
   };
 
-  // Rounding and tolerance (collapsible)
-  const roundingRows: { label: string; value: string; subnote?: string }[] = [];
-  const targetVol = plan.targetTotalVolumeMl;
-  const finalVol = plan.finalTotalVolumeMl;
-  const volDelta = finalVol - targetVol;
-  if (Math.abs(volDelta) > 1e-6) {
-    roundingRows.push({
-      label: 'Target total volume',
-      value: `${fmt(targetVol, 2)} mL`,
-    });
-    roundingRows.push({
-      label: 'Snapped total volume',
-      value: `${fmt(finalVol, 2)} mL (Δ ${fmt(volDelta, 2)} mL)`,
-    });
-  }
-  if (Math.abs(plan.rawStockVolumeMl - plan.snappedStockVolumeMl) > 1e-6) {
-    roundingRows.push({
-      label: 'Stock volume',
-      value: `${fmt(plan.rawStockVolumeMl, 2)} → ${fmt(plan.snappedStockVolumeMl, 2)} mL (Δ ${fmt(plan.snappedStockVolumeMl - plan.rawStockVolumeMl, 2)} mL)`,
-      subnote: `ticks ${fmt(plan.stockDraw.incrementMl, 2)} mL${plan.stockDraw.fills > 1 ? ` · ${plan.stockDraw.fills} fills` : ''}`,
-    });
-  }
-  if (Math.abs(plan.rawDiluentVolumeMl - plan.snappedDiluentVolumeMl) > 1e-6) {
-    roundingRows.push({
-      label: 'Diluent volume',
-      value: `${fmt(plan.rawDiluentVolumeMl, 2)} → ${fmt(plan.snappedDiluentVolumeMl, 2)} mL (Δ ${fmt(plan.snappedDiluentVolumeMl - plan.rawDiluentVolumeMl, 2)} mL)`,
-      subnote: `ticks ${fmt(plan.diluentDraw.incrementMl, 2)} mL${plan.diluentDraw.fills > 1 ? ` · ${plan.diluentDraw.fills} fills` : ''}`,
-    });
-  }
-  const concErr = Math.abs(plan.relConcentrationErrorPct);
-  const volErr = Math.abs(plan.relTotalVolumeErrorPct);
-  if (concErr > 0) roundingRows.push({ label: 'Concentration error', value: `±${fmt(concErr, 2)} %` });
-  if (volErr > 0) roundingRows.push({ label: 'Total volume error', value: `±${fmt(volErr, 2)} %` });
-
-  const roundingDetail = roundingRows.length
-    ? { title: 'Rounding & Tolerance', rows: roundingRows }
-    : null;
-
-  return { mode: 'dilution', alerts, drawCards, resultCard, roundingDetail };
+  return { mode: 'dilution', alerts, drawCards, resultCard };
 }

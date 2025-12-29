@@ -243,29 +243,6 @@
           </div>
         </div>
 
-        {#if vm.roundingDetail}
-          <details class="rounded-lg border border-slate-200 bg-surface-sunken p-4 text-slate-200">
-            <summary class="flex cursor-pointer items-center justify-between text-sm font-black uppercase tracking-wide text-slate-200">
-              <span>{vm.roundingDetail.title}</span>
-              <span class="text-xs text-slate-400">▾</span>
-            </summary>
-            <table class="mt-3 w-full table-fixed border-collapse text-sm">
-              <tbody>
-                {#each vm.roundingDetail.rows as r}
-                  <tr>
-                    <th class="py-1 pr-3 text-left font-semibold text-slate-300">{r.label}</th>
-                    <td class="py-1 text-right font-semibold tabular-nums text-slate-100">
-                      {r.value}
-                      {#if r.subnote}
-                        <div class="mt-1 text-xs text-slate-400">{r.subnote}</div>
-                      {/if}
-                    </td>
-                  </tr>
-                {/each}
-              </tbody>
-            </table>
-          </details>
-        {/if}
       </div>
     </div>
   {/if}
