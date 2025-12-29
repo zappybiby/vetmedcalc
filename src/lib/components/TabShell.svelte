@@ -1,4 +1,5 @@
 <script lang="ts">
+  import BloodTransfusion from './BloodTransfusion.svelte';
   import CPRLabelsTool from './CPRLabelsTool.svelte';
   import CRICalculator from './CRICalculator.svelte';
   import DrugInBag from './DrugInBag.svelte';
@@ -11,6 +12,7 @@
     { id: 'cri',     label: 'CRI CALCULATOR' },
     { id: 'drugbag', label: 'DRUG IN BAG' },
     { id: 'insouts', label: 'INS / OUTS' },
+    { id: 'blood',   label: 'BLOOD TRANSFUSION' },
   ];
 
   let active: Tab['id'] = 'cpr'; // default
@@ -56,6 +58,9 @@
     </div>
     <div hidden={active !== 'insouts'}>
       <InsOuts />
+    </div>
+    <div hidden={active !== 'blood'}>
+      <BloodTransfusion />
     </div>
   </div>
 </section>
