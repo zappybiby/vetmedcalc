@@ -114,73 +114,75 @@
       </div>
     </div>
 
-    <div class="min-w-0 rounded-lg border-2 border-slate-200 bg-surface p-4 shadow-card">
-      <h2 class="text-sm font-black uppercase tracking-wide text-slate-200">Summary</h2>
-      {#if plan}
-        <div class="mt-3 grid gap-3 text-sm">
-          <div class="grid grid-cols-[minmax(0,1fr)_auto] items-baseline gap-2">
-            <span class="text-slate-300">Ideal final rate</span>
-            <span class="font-black tabular-nums text-slate-100">{fmt(plan.summary.idealFinalRateMlHr, 2)} mL/hr</span>
+    <div class="grid min-w-0 gap-4">
+      <div class="min-w-0 rounded-lg border-2 border-slate-200 bg-surface p-4 shadow-panel">
+        <h3 class="text-sm font-black uppercase tracking-wide text-slate-200">Step-by-step plan</h3>
+        {#if plan}
+          <div class="mt-3 overflow-x-auto">
+            <table class="min-w-full text-sm">
+              <thead class="text-xs font-semibold uppercase tracking-wide text-slate-400">
+                <tr class="border-b border-slate-700">
+                  <th class="px-3 py-2 text-left">Interval</th>
+                  <th class="px-3 py-2 text-right">Rate (mL/hr)</th>
+                  <th class="px-3 py-2 text-right">Volume (mL)</th>
+                  <th class="px-3 py-2 text-right">Cumulative (mL)</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-slate-800">
+                {#each plan.steps as step}
+                  <tr class="text-slate-200">
+                    <td class="px-3 py-2 font-semibold text-slate-100">{intervalLabel(step)}</td>
+                    <td class="px-3 py-2 text-right tabular-nums">{fmt(step.rateMlHr, 0)}</td>
+                    <td class="px-3 py-2 text-right tabular-nums">{fmt(step.volumeMl, 2)}</td>
+                    <td class="px-3 py-2 text-right tabular-nums">{fmt(step.cumulativeMl, 2)}</td>
+                  </tr>
+                {/each}
+              </tbody>
+            </table>
           </div>
-          <div class="grid grid-cols-[minmax(0,1fr)_auto] items-baseline gap-2">
-            <span class="text-slate-300">Final rate (rounded)</span>
-            <span class="font-black tabular-nums text-slate-100">{fmt(plan.summary.finalRateMlHr, 0)} mL/hr</span>
-          </div>
-          <div class="grid grid-cols-[minmax(0,1fr)_auto] items-baseline gap-2">
-            <span class="text-slate-300">Total time</span>
-            <span class="font-black tabular-nums text-slate-100">{fmt(plan.summary.totalHours, 2)} hr</span>
-          </div>
-          <div class="grid grid-cols-[minmax(0,1fr)_auto] items-baseline gap-2">
-            <span class="text-slate-300">Target volume</span>
-            <span class="font-black tabular-nums text-slate-100">{fmt(plan.summary.targetVolumeMl, 2)} mL</span>
-          </div>
-          <div class="grid grid-cols-[minmax(0,1fr)_auto] items-baseline gap-2">
-            <span class="text-slate-300">Delivered volume</span>
-            <span class="font-black tabular-nums text-slate-100">{fmt(plan.summary.deliveredVolumeMl, 2)} mL</span>
-          </div>
-          <div class="grid grid-cols-[minmax(0,1fr)_auto] items-baseline gap-2">
-            <span class="text-slate-300">Delta vs target</span>
-            <span class="font-black tabular-nums text-slate-100">{fmtSigned(plan.summary.deltaMl, 2)} mL</span>
-          </div>
-        </div>
-        <div class="mt-3 text-xs text-slate-400">
-          Rates are rounded to whole mL/hr (minimum 1). Delivered volume can differ slightly from target.
-        </div>
-      {:else}
-        <div class="mt-3 text-sm text-slate-400">
-          Enter a total volume and a total time greater than 1 hour.
-        </div>
-      {/if}
-    </div>
-  </div>
-
-  <div class="min-w-0 rounded-lg border-2 border-slate-200 bg-surface p-4 shadow-panel">
-    <h3 class="text-sm font-black uppercase tracking-wide text-slate-200">Step-by-step plan</h3>
-    {#if plan}
-      <div class="mt-3 overflow-x-auto">
-        <table class="min-w-full text-sm">
-          <thead class="text-xs font-semibold uppercase tracking-wide text-slate-400">
-            <tr class="border-b border-slate-700">
-              <th class="px-3 py-2 text-left">Interval</th>
-              <th class="px-3 py-2 text-right">Rate (mL/hr)</th>
-              <th class="px-3 py-2 text-right">Volume (mL)</th>
-              <th class="px-3 py-2 text-right">Cumulative (mL)</th>
-            </tr>
-          </thead>
-          <tbody class="divide-y divide-slate-800">
-            {#each plan.steps as step}
-              <tr class="text-slate-200">
-                <td class="px-3 py-2 font-semibold text-slate-100">{intervalLabel(step)}</td>
-                <td class="px-3 py-2 text-right tabular-nums">{fmt(step.rateMlHr, 0)}</td>
-                <td class="px-3 py-2 text-right tabular-nums">{fmt(step.volumeMl, 2)}</td>
-                <td class="px-3 py-2 text-right tabular-nums">{fmt(step.cumulativeMl, 2)}</td>
-              </tr>
-            {/each}
-          </tbody>
-        </table>
+        {:else}
+          <div class="mt-3 text-sm text-slate-400">Plan details will appear here once inputs are set.</div>
+        {/if}
       </div>
-    {:else}
-      <div class="mt-3 text-sm text-slate-400">Plan details will appear here once inputs are set.</div>
-    {/if}
+
+      <div class="min-w-0 rounded-lg border-2 border-slate-200 bg-surface p-4 shadow-card">
+        <h2 class="text-sm font-black uppercase tracking-wide text-slate-200">Summary</h2>
+        {#if plan}
+          <div class="mt-3 grid gap-3 text-sm">
+            <div class="grid grid-cols-[minmax(0,1fr)_auto] items-baseline gap-2">
+              <span class="text-slate-300">Ideal final rate</span>
+              <span class="font-black tabular-nums text-slate-100">{fmt(plan.summary.idealFinalRateMlHr, 2)} mL/hr</span>
+            </div>
+            <div class="grid grid-cols-[minmax(0,1fr)_auto] items-baseline gap-2">
+              <span class="text-slate-300">Final rate (rounded)</span>
+              <span class="font-black tabular-nums text-slate-100">{fmt(plan.summary.finalRateMlHr, 0)} mL/hr</span>
+            </div>
+            <div class="grid grid-cols-[minmax(0,1fr)_auto] items-baseline gap-2">
+              <span class="text-slate-300">Total time</span>
+              <span class="font-black tabular-nums text-slate-100">{fmt(plan.summary.totalHours, 2)} hr</span>
+            </div>
+            <div class="grid grid-cols-[minmax(0,1fr)_auto] items-baseline gap-2">
+              <span class="text-slate-300">Target volume</span>
+              <span class="font-black tabular-nums text-slate-100">{fmt(plan.summary.targetVolumeMl, 2)} mL</span>
+            </div>
+            <div class="grid grid-cols-[minmax(0,1fr)_auto] items-baseline gap-2">
+              <span class="text-slate-300">Delivered volume</span>
+              <span class="font-black tabular-nums text-slate-100">{fmt(plan.summary.deliveredVolumeMl, 2)} mL</span>
+            </div>
+            <div class="grid grid-cols-[minmax(0,1fr)_auto] items-baseline gap-2">
+              <span class="text-slate-300">Delta vs target</span>
+              <span class="font-black tabular-nums text-slate-100">{fmtSigned(plan.summary.deltaMl, 2)} mL</span>
+            </div>
+          </div>
+          <div class="mt-3 text-xs text-slate-400">
+            Rates are rounded to whole mL/hr (minimum 1). Delivered volume can differ slightly from target.
+          </div>
+        {:else}
+          <div class="mt-3 text-sm text-slate-400">
+            Enter a total volume and a total time greater than 1 hour.
+          </div>
+        {/if}
+      </div>
+    </div>
   </div>
 </section>
