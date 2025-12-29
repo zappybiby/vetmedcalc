@@ -212,7 +212,7 @@ export function renderCprLabelMarkup(ctx: CPRLabelComputed): string {
 
       <div class="label-bolus">
         <div class="bolus-box et-box">
-          <div class="et-label">Est. ET Tube Size</div>
+          <div class="et-label">Estimated ET Tube Size</div>
           ${renderEtRow(ctx.etLabelSegments)}
         </div>
       </div>

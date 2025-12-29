@@ -64,7 +64,7 @@
 
     <!-- ET Tube (moved to bottom) -->
     <div class="grid grid-cols-[1.5fr_.9fr_.9fr] items-center gap-[0.5rem] rounded-[0.45rem] border border-slate-200 bg-slate-900 px-[0.7rem] py-[0.55rem] text-slate-200 shadow-[2px_2px_0_#0b0b0b]">
-      <div class="font-semibold">ET Tube (ID)</div>
+      <div class="font-semibold">ET Tube Estimated Size</div>
       <div>
         {#if label.etEstimate}
           Range: {label.etEstimate.lowMm.toFixed(1)}–{label.etEstimate.highMm.toFixed(1)} mm
@@ -78,7 +78,11 @@
     </div>
   </div>
 
-  <p class="m-0 text-[0.8rem] opacity-80">Enter weight and species, then “Print label”.</p>
+  <p class="m-0 text-[0.8rem] opacity-80">
+    ET Tube sizing for dogs is calculated from the formula <code>3.85 * (kg)^(1/3)</code> derived from a
+    <a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC6625165/" target="_blank" rel="noreferrer">2019 study</a>
+    published in the Canadian Veterinary Journal.
+  </p>
 </section>
 
 <!-- PRINT-ONLY LABEL (unchanged) -->
