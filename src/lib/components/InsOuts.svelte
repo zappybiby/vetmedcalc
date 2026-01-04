@@ -1,7 +1,7 @@
 <script lang="ts">
   import { patient, type Patient } from '../stores/patient';
 
-  const HOURS_WINDOW = 4;
+  const DEFAULT_HOURS_WINDOW = 4;
 
   // Patient context
   let p: Patient = { weightKg: null, species: '', name: '' };
@@ -10,8 +10,9 @@
   $: weightKg = p.weightKg != null && !Number.isNaN(p.weightKg) && p.weightKg > 0 ? p.weightKg : null;
 
   // Inputs
-  let insFourHours: number | '' = '';
-  let urineFourHours: number | '' = '';
+  let hoursWindow: number | '' = DEFAULT_HOURS_WINDOW;
+  let insMl: number | '' = '';
+  let urineOutMl: number | '' = '';
 
   function numeric(value: number | '' | null | undefined): number | null {
     if (value == null || value === '') return null;
@@ -26,6 +27,13 @@
     return num.toFixed(digits);
   }
 
+  function fmtCompact(value: number | null | undefined, maxDigits = 2) {
+    if (value == null || Number.isNaN(value)) return '—';
+    const num = Number(value);
+    const rounded = Number(num.toFixed(maxDigits));
+    return rounded.toString();
+  }
+
   function fmtSigned(value: number | null | undefined, digits = 2) {
     if (value == null || Number.isNaN(value)) return '—';
     const num = Number(value);
@@ -36,10 +44,12 @@
   }
 
   // Core numbers
+  let windowHours: number | null = null;
   let totalInsMl: number | null = null;
   let totalOutMl: number | null = null;
-  $: totalInsMl = numeric(insFourHours);
-  $: totalOutMl = numeric(urineFourHours);
+  $: windowHours = numeric(hoursWindow);
+  $: totalInsMl = numeric(insMl);
+  $: totalOutMl = numeric(urineOutMl);
 
   // Derived rates
   let insMlPerHr: number | null = null;
@@ -49,10 +59,10 @@
   let netMlPerHr: number | null = null;
   let balanceDescriptor = '—';
 
-  $: insMlPerHr = totalInsMl == null ? null : totalInsMl / HOURS_WINDOW;
+  $: insMlPerHr = totalInsMl == null || windowHours == null || windowHours <= 0 ? null : totalInsMl / windowHours;
   $: insMlPerKgHr = insMlPerHr == null || !weightKg ? null : insMlPerHr / weightKg;
 
-  $: outMlPerHr = totalOutMl == null ? null : totalOutMl / HOURS_WINDOW;
+  $: outMlPerHr = totalOutMl == null || windowHours == null || windowHours <= 0 ? null : totalOutMl / windowHours;
   $: outMlPerKgHr = outMlPerHr == null || !weightKg ? null : outMlPerHr / weightKg;
 
   $: netMlPerHr = insMlPerHr == null || outMlPerHr == null ? null : insMlPerHr - outMlPerHr;
@@ -72,7 +82,9 @@
     <div class="min-w-0 rounded-lg border-2 border-slate-200 bg-surface p-4 shadow-card">
       <div class="grid min-w-0 gap-4 md:grid-cols-2 md:divide-x md:divide-slate-800">
         <div class="min-w-0 md:col-span-2">
-          <h2 class="text-sm font-semibold uppercase tracking-wide text-slate-200">Inputs (last 4 hours)</h2>
+          <h2 class="text-sm font-semibold uppercase tracking-wide text-slate-200">
+            Inputs (last {fmtCompact(windowHours)} {windowHours === 1 ? 'hour' : 'hours'})
+          </h2>
           <div class="mt-3 grid gap-3">
             <label class="grid gap-2">
               <span class="text-xs font-semibold uppercase tracking-wide text-slate-300">Fluid ins (mL)</span>
@@ -81,7 +93,7 @@
                 type="number"
                 min="0"
                 step="1"
-                bind:value={insFourHours}
+                bind:value={insMl}
                 inputmode="decimal"
                 placeholder="e.g., 400"
               />
@@ -94,18 +106,23 @@
                 type="number"
                 min="0"
                 step="1"
-                bind:value={urineFourHours}
+                bind:value={urineOutMl}
                 inputmode="decimal"
                 placeholder="e.g., 320"
               />
             </label>
 
-            {#if weightKg}
-              <div class="grid min-w-0 gap-2 rounded-lg border border-slate-700/60 bg-surface-sunken p-3 text-sm text-slate-300">
-                <div class="font-semibold uppercase tracking-wide text-slate-300">Patient weight</div>
-                <div class="text-lg font-black text-slate-100">{weightKg.toFixed(2)} kg</div>
-              </div>
-            {/if}
+            <label class="grid min-w-0 gap-2 rounded-lg border border-slate-700/60 bg-surface-sunken p-3 text-sm text-slate-300">
+              <span class="font-semibold uppercase tracking-wide text-slate-300">Duration (hours)</span>
+              <input
+                class="field-control"
+                type="number"
+                min="0.25"
+                step="0.25"
+                bind:value={hoursWindow}
+                inputmode="decimal"
+              />
+            </label>
           </div>
         </div>
       </div>
