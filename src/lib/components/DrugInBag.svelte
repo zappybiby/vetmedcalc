@@ -13,7 +13,7 @@
   };
 
   const DRUG_OPTIONS: readonly DrugOption[] = [
-    { id: 'metoclopramide-5', label: 'Reglan (metoclopramide)', defaultDoseUnit: 'mg/kg/day' },
+    { id: 'metoclopramide-5', label: 'Metoclopramide', defaultDoseUnit: 'mg/kg/day' },
     { id: 'norepinephrine-1', label: 'Norepinephrine', defaultDoseUnit: 'mcg/kg/min' },
   ] as const;
 
@@ -194,7 +194,7 @@
       <select id="drugbag-drug" class="field-select" bind:value={selectedDrugId}>
         {#each DRUG_OPTIONS as option}
           <option value={option.id}>
-            {option.label} — {formatConcDisplay(MEDICATIONS.find((m) => m.id === option.id))}
+            {option.label} {formatConcDisplay(MEDICATIONS.find((m) => m.id === option.id))}
           </option>
         {/each}
       </select>
