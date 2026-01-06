@@ -30,11 +30,7 @@
 </script>
 
 <section class="grid min-w-0 w-full gap-3" aria-label="Main tools">
-  <div
-    class="flex gap-2 overflow-x-auto pb-1 [-webkit-overflow-scrolling:touch] md:flex-wrap md:overflow-visible"
-    role="tablist"
-    aria-label="Tool tabs"
-  >
+  <div class="flex flex-wrap gap-2" role="tablist" aria-label="Tool tabs">
     {#each tabs as t}
       <button
         class={`${tabBase} ${active === t.id ? tabActive : tabInactive}`}
