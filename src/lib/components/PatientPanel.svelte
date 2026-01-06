@@ -78,7 +78,7 @@
         <div class="text-xs font-black uppercase tracking-wide text-slate-300">Patient</div>
         <div class="mt-0.5 truncate text-sm font-semibold text-slate-100">{summaryText}</div>
       </div>
-      <svg class="h-4 w-4 flex-none text-slate-400 transition group-open:rotate-180" viewBox="0 0 20 20" aria-hidden="true">
+      <svg class="h-6 w-6 flex-none text-slate-400 transition group-open:rotate-180" viewBox="0 0 20 20" aria-hidden="true">
         <path
           fill="currentColor"
           fill-rule="evenodd"
