@@ -193,7 +193,9 @@
       <label class="text-xs font-semibold uppercase tracking-wide text-slate-300" for="drugbag-drug">Drug</label>
       <select id="drugbag-drug" class="field-select" bind:value={selectedDrugId}>
         {#each DRUG_OPTIONS as option}
-          <option value={option.id}>{option.label}</option>
+          <option value={option.id}>
+            {option.label} — {formatConcDisplay(MEDICATIONS.find((m) => m.id === option.id))}
+          </option>
         {/each}
       </select>
     </div>
@@ -217,7 +219,6 @@
           <option value="mcg/kg/min">mcg/kg/min</option>
         </select>
       </div>
-      <div class="text-xs text-slate-400">Defaults to {DEFAULT_DOSE_UNIT[selectedDrugId]} for {selectedDrug.label}</div>
     </div>
 
     <div class="flex min-w-0 flex-col gap-2">
@@ -251,58 +252,79 @@
   </div>
 
   {#if ready && snappedMlToAdd != null}
-    <div class="min-w-0 rounded-lg border-2 border-slate-200 bg-surface p-4 text-slate-200 shadow-panel">
-      <h3 class="text-sm font-black uppercase tracking-wide text-slate-200">Summary</h3>
-      <div class="mt-3 grid min-w-0 gap-3 [grid-template-columns:repeat(auto-fit,minmax(220px,1fr))]">
-        <div class="rounded-lg border border-slate-200 bg-surface p-4">
-          <div class="text-sm font-black uppercase tracking-wide text-slate-300">Add to bag</div>
-          <div class="mt-2 text-lg font-black tabular-nums text-slate-100">
-            {fmt(snappedMlToAdd, volumeDigits)} <span class="ml-1 text-xs font-semibold uppercase tracking-wide text-slate-400">mL</span>
+    <div class="grid gap-3">
+      <div class="grid gap-3 md:grid-cols-2">
+        <div class="ui-card p-4 text-center md:col-span-2">
+          <div class="text-xs font-black uppercase tracking-wide text-slate-300">Delivered dose at rate</div>
+          <div class="mt-2 text-3xl font-black tabular-nums text-slate-100">{formatDeliveredDose(deliveredDoseMgPerKgHr, doseUnit)}</div>
+          {#if deliveredDoseMgPerKgHr != null}
+            <div class="mt-2 text-xs text-slate-400">= {formatDeliveredDose(deliveredDoseMgPerKgHr, 'mg/kg/hr')}</div>
+          {/if}
+        </div>
+
+        <div class="ui-card p-4">
+          <div class="text-xs font-black uppercase tracking-wide text-slate-300">Draw up</div>
+
+          <div class="mt-3 grid gap-3 sm:grid-cols-2">
+            <div class="ui-inset p-3">
+              <div class="text-xs font-semibold uppercase tracking-wide text-slate-400">Add to bag</div>
+              <div class="mt-1 text-2xl font-black tabular-nums text-slate-100">
+                {fmt(snappedMlToAdd, volumeDigits)} <span class="text-base font-semibold text-slate-300">mL</span>
+              </div>
+            </div>
+            <div class="ui-inset p-3">
+              <div class="text-xs font-semibold uppercase tracking-wide text-slate-400">Drug drawn</div>
+              <div class="mt-1 text-2xl font-black tabular-nums text-slate-100">
+                {fmt(snappedMgToAdd, 2)} <span class="text-base font-semibold text-slate-300">mg</span>
+              </div>
+            </div>
           </div>
-          <div class="text-sm tabular-nums text-slate-300">
-            {selectedDrug.label} {formatConcDisplay(med)}
+
+          <div class="mt-3 grid gap-x-3 gap-y-2 text-sm [grid-template-columns:minmax(0,1fr)_auto]">
+            <div class="text-slate-300">Drug</div>
+            <div class="text-right text-slate-100">{selectedDrug.label}</div>
+
+            <div class="text-slate-300">Stock</div>
+            <div class="text-right"><span class="ui-chip">{formatConcDisplay(med)}</span></div>
+
             {#if syr}
-              · in <span class="ml-1 inline-flex items-center rounded-full border border-slate-200 bg-surface-sunken px-2 py-0.5 text-xs font-semibold uppercase tracking-wide text-slate-200">{syr.label ?? `${syr.sizeCc} cc`}</span>
-              {#if !syr.label}
-                <span class="ml-2 text-slate-400">(ticks {fmt(syr.incrementMl, 2)} mL)</span>
-              {/if}
+              <div class="text-slate-300">Syringe</div>
+              <div class="text-right"><span class="ui-chip">{syr.label ?? `${syr.sizeCc} cc`}</span></div>
               {#if fills && fills > 1}
-                <span class="ml-2 font-semibold text-amber-500">requires {fills} fills</span>
+                <div class="text-slate-300">Fills</div>
+                <div class="text-right font-semibold text-amber-500">{fills}</div>
               {/if}
             {/if}
           </div>
+
           {#if hasRoundingChange && rawMlToAdd != null}
-            <div class="mt-2 text-xs text-slate-400">Rounded from {fmt(rawMlToAdd, volumeDigits)} mL</div>
+            <div class="mt-3 text-xs text-slate-400">Rounded from {fmt(rawMlToAdd, volumeDigits)} mL</div>
           {/if}
+        </div>
+
+        <div class="ui-card p-4">
+          <div class="text-xs font-black uppercase tracking-wide text-slate-300">Bag + rate</div>
+
+          <div class="mt-3 grid gap-x-3 gap-y-2 text-sm [grid-template-columns:minmax(0,1fr)_auto]">
+            <div class="text-slate-300">Bag volume</div>
+            <div class="text-right font-black tabular-nums text-slate-100">{bagVolumeMl || 0} <span class="ml-1 text-xs font-semibold uppercase tracking-wide text-slate-400">mL</span></div>
+
+            <div class="text-slate-300">Rate</div>
+            <div class="text-right font-black tabular-nums text-slate-100">{maintRateMlHr || 0} <span class="ml-1 text-xs font-semibold uppercase tracking-wide text-slate-400">mL/hr</span></div>
+
+            <div class="text-slate-300">Runtime</div>
+            <div class="text-right font-black tabular-nums text-slate-100">{fmt(bagHours, 2)} <span class="ml-1 text-xs font-semibold uppercase tracking-wide text-slate-400">hr</span></div>
+
+            <div class="text-slate-300">Bag concentration</div>
+            <div class="text-right font-black tabular-nums text-slate-100">
+              {fmt(finalConcMgPerMl, 4)} <span class="ml-1 text-xs font-semibold uppercase tracking-wide text-slate-400">mg/mL</span>
+            </div>
+          </div>
         </div>
       </div>
 
-      <div class="mt-4 grid items-center gap-x-4 gap-y-2 text-sm [grid-template-columns:minmax(0,1fr)_auto]">
-        <div class="text-slate-300">Drug amount drawn</div>
-        <div class="text-right font-black tabular-nums text-slate-100">
-          {fmt(snappedMgToAdd, 2)} <span class="ml-1 text-xs font-semibold uppercase tracking-wide text-slate-400">mg</span>
-        </div>
-        <div class="text-slate-300">Bag runtime at rate</div>
-        <div class="text-right tabular-nums text-slate-100">
-          {fmt(bagHours, 2)} <span class="ml-1 text-xs font-semibold uppercase tracking-wide text-slate-400">hr</span>
-        </div>
-        <div class="text-slate-300">Stock concentration</div>
-        <div class="text-right tabular-nums text-slate-100">{formatConcDisplay(med)}</div>
-        <div class="text-slate-300">Bag concentration (rounded)</div>
-        <div class="text-right tabular-nums text-slate-100">
-          {fmt(finalConcMgPerMl, 4)} <span class="ml-1 text-xs font-semibold uppercase tracking-wide text-slate-400">mg/mL</span>
-        </div>
-        <div class="text-slate-300">Delivered dose at rate</div>
-        <div class="text-right text-slate-100">
-          <span class="font-black tabular-nums">{formatDeliveredDose(deliveredDoseMgPerKgHr, doseUnit)}</span>
-          {#if deliveredDoseMgPerKgHr != null}
-            <div class="mt-1 text-xs text-slate-400">= {formatDeliveredDose(deliveredDoseMgPerKgHr, 'mg/kg/hr')}</div>
-          {/if}
-        </div>
-      </div>
-
-      <div class="mt-4 rounded-lg border border-slate-200 bg-surface-sunken p-4">
-        <div class="text-xs font-black uppercase tracking-wide text-slate-300">How calculated</div>
+      <details class="ui-inset p-4">
+        <summary class="cursor-pointer select-none text-xs font-black uppercase tracking-wide text-slate-300">How calculated</summary>
         <table class="mt-3 w-full table-fixed border-collapse text-sm">
           <tbody>
             <tr>
@@ -341,7 +363,7 @@
             {/if}
           </tbody>
         </table>
-      </div>
+      </details>
     </div>
   {/if}
 </section>

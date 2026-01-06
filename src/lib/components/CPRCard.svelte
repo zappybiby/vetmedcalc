@@ -33,52 +33,70 @@
   }
 </script>
 
-<section class="grid gap-[0.6rem]" aria-label="CPR Card">
-  <header class="flex items-center justify-between font-extrabold">
-    <div>CPR Card</div>
+<section class="grid gap-3" aria-label="CPR Card">
+  <div class="flex flex-wrap items-center justify-between gap-3">
+    <div class="text-sm font-black uppercase tracking-wide text-slate-100">CPR Card</div>
     <div class="print:hidden">
-      <button
-        class="inline-flex items-center rounded-lg border-2 border-slate-200 bg-slate-800 px-3 py-1.5 font-bold text-slate-200 shadow-[2px_2px_0_#0b0b0b] transition disabled:cursor-not-allowed disabled:opacity-60"
-        on:click={printLabel}
-        disabled={!p.weightKg || !p.species}
-      >
+      <button class="ui-button font-bold" on:click={printLabel} disabled={!p.weightKg || !p.species}>
         Print label
       </button>
     </div>
-  </header>
-
-  <div class="grid gap-[0.5rem]">
-    <!-- Epi -->
-    <div class="grid grid-cols-[1.5fr_.9fr_.9fr] items-center gap-[0.5rem] rounded-[0.45rem] border border-slate-200 bg-slate-900 px-[0.7rem] py-[0.55rem] text-slate-200 shadow-[2px_2px_0_#0b0b0b]">
-      <div class="font-semibold">Epi {label.epiMed?.concentration.value} {label.epiMed?.concentration.units}</div>
-      <div>{label.epiDose?.mgPerKg} mg/kg</div>
-      <div class="font-extrabold">{fmtVolume(label.epiVolume)} mL</div>
-    </div>
-
-    <!-- Atropine -->
-    <div class="grid grid-cols-[1.5fr_.9fr_.9fr] items-center gap-[0.5rem] rounded-[0.45rem] border border-slate-200 bg-slate-900 px-[0.7rem] py-[0.55rem] text-slate-200 shadow-[2px_2px_0_#0b0b0b]">
-      <div class="font-semibold">Atropine {label.atropineMed?.concentration.value} {label.atropineMed?.concentration.units}</div>
-      <div>{label.atropineDose?.mgPerKg} mg/kg</div>
-      <div class="font-extrabold">{fmtVolume(label.atropineVolume)} mL</div>
-    </div>
-
-    <!-- ET Tube (moved to bottom) -->
-    <div class="grid grid-cols-[1.5fr_.9fr_.9fr] items-center gap-[0.5rem] rounded-[0.45rem] border border-slate-200 bg-slate-900 px-[0.7rem] py-[0.55rem] text-slate-200 shadow-[2px_2px_0_#0b0b0b]">
-      <div class="font-semibold">ET Tube Estimated Size</div>
-      <div>
-        {#if label.etEstimate}
-          Range: {label.etEstimate.lowMm.toFixed(1)}–{label.etEstimate.highMm.toFixed(1)} mm
-        {:else}
-          —
-        {/if}
-      </div>
-      <div class="font-extrabold">
-        {#if label.etEstimate}{label.etEstimate.estimateMm.toFixed(1)} mm{:else}—{/if}
-      </div>
-    </div>
   </div>
 
-  <p class="m-0 text-[0.8rem] opacity-80">
+  <div class="ui-card grid gap-2 p-4">
+    <article class="ui-inset p-3">
+      <div class="flex items-start justify-between gap-3">
+        <div class="min-w-0">
+          <div class="text-xs font-black uppercase tracking-wide text-slate-300">Epi</div>
+          <div class="mt-1 text-sm font-semibold text-slate-100">
+            {label.epiMed?.concentration.value ?? '—'} {label.epiMed?.concentration.units ?? ''}
+          </div>
+          <div class="mt-1 text-xs text-slate-400">{label.epiDose?.mgPerKg ?? '—'} mg/kg</div>
+        </div>
+        <div class="text-right">
+          <div class="text-xs font-semibold uppercase tracking-wide text-slate-400">Volume</div>
+          <div class="mt-1 text-lg font-black tabular-nums text-slate-100">{fmtVolume(label.epiVolume)} mL</div>
+        </div>
+      </div>
+    </article>
+
+    <article class="ui-inset p-3">
+      <div class="flex items-start justify-between gap-3">
+        <div class="min-w-0">
+          <div class="text-xs font-black uppercase tracking-wide text-slate-300">Atropine</div>
+          <div class="mt-1 text-sm font-semibold text-slate-100">
+            {label.atropineMed?.concentration.value ?? '—'} {label.atropineMed?.concentration.units ?? ''}
+          </div>
+          <div class="mt-1 text-xs text-slate-400">{label.atropineDose?.mgPerKg ?? '—'} mg/kg</div>
+        </div>
+        <div class="text-right">
+          <div class="text-xs font-semibold uppercase tracking-wide text-slate-400">Volume</div>
+          <div class="mt-1 text-lg font-black tabular-nums text-slate-100">{fmtVolume(label.atropineVolume)} mL</div>
+        </div>
+      </div>
+    </article>
+
+    <article class="ui-inset p-3">
+      <div class="flex items-start justify-between gap-3">
+        <div class="min-w-0">
+          <div class="text-xs font-black uppercase tracking-wide text-slate-300">ET Tube</div>
+        </div>
+        <div class="text-right">
+          <div class="text-xs font-semibold uppercase tracking-wide text-slate-400">Estimated ET Tube Size</div>
+          <div class="mt-1 text-lg font-black tabular-nums text-slate-100">
+            {#if label.etEstimate}{label.etEstimate.estimateMm.toFixed(1)} mm{:else}—{/if}
+          </div>
+          {#if label.etEstimate}
+            <div class="mt-1 text-xs text-slate-400">
+              Range {label.etEstimate.lowMm.toFixed(1)}–{label.etEstimate.highMm.toFixed(1)} mm
+            </div>
+          {/if}
+        </div>
+      </div>
+    </article>
+  </div>
+
+  <p class="m-0 text-xs text-slate-400">
     ET Tube sizing for dogs is calculated from the formula <code>3.85 * (kg)^(1/3)</code> derived from a
     <a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC6625165/" target="_blank" rel="noreferrer">2019 study</a>
     published in the Canadian Veterinary Journal.

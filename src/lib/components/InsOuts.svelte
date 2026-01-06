@@ -76,10 +76,8 @@
 </script>
 
 <section class="grid min-w-0 gap-4 text-slate-200" aria-label="Ins and outs calculator">
-  <header class="text-base font-black uppercase tracking-wide text-slate-100">Ins / Outs</header>
-
   <div class="grid min-w-0 gap-4">
-    <div class="min-w-0 rounded-lg border-2 border-slate-200 bg-surface p-4 shadow-card">
+    <div class="ui-card min-w-0 p-4">
       <div class="grid min-w-0 gap-4 md:grid-cols-2 md:divide-x md:divide-slate-800">
         <div class="min-w-0 md:col-span-2">
           <h2 class="text-sm font-semibold uppercase tracking-wide text-slate-200">
@@ -112,8 +110,8 @@
               />
             </label>
 
-            <label class="grid min-w-0 gap-2 rounded-lg border border-slate-700/60 bg-surface-sunken p-3 text-sm text-slate-300">
-              <span class="font-semibold uppercase tracking-wide text-slate-300">Duration (hours)</span>
+            <label class="grid gap-2">
+              <span class="text-xs font-semibold uppercase tracking-wide text-slate-300">Duration (hours)</span>
               <input
                 class="field-control"
                 type="number"
@@ -129,10 +127,10 @@
     </div>
 
     <div class="grid min-w-0 gap-4">
-      <div class="min-w-0 rounded-lg border-2 border-slate-200 bg-surface p-4 shadow-panel">
+      <div class="ui-card min-w-0 p-4">
         <h3 class="text-sm font-black uppercase tracking-wide text-slate-200">Fluid summary</h3>
         <div class="mt-3 grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
-          <article class="min-w-0 rounded-lg border border-slate-200 bg-surface-sunken p-4">
+          <article class="ui-inset min-w-0 p-4">
             <header class="text-xs font-semibold uppercase tracking-wide text-slate-300">Fluid ins</header>
             <dl class="mt-3 grid gap-3 text-sm text-slate-300">
               <div>
@@ -152,7 +150,7 @@
             </dl>
           </article>
 
-          <article class="min-w-0 rounded-lg border border-slate-200 bg-surface-sunken p-4">
+          <article class="ui-inset min-w-0 p-4">
             <header class="text-xs font-semibold uppercase tracking-wide text-slate-300">Fluid outs</header>
             <dl class="mt-3 grid gap-3 text-sm text-slate-300">
               <div>
@@ -172,7 +170,7 @@
             </dl>
           </article>
 
-          <article class="min-w-0 rounded-lg border border-slate-200 bg-surface-sunken p-4">
+          <article class="ui-inset min-w-0 p-4">
             <header class="text-xs font-semibold uppercase tracking-wide text-slate-300">Net balance</header>
             <div class="mt-3 space-y-3 text-sm text-slate-300">
               <div class="text-right text-sm font-semibold uppercase tracking-wide text-slate-100">{balanceDescriptor}</div>

@@ -24,13 +24,17 @@
     active = id;
   }
 
-  const tabBase = 'rounded-md border-2 border-slate-200 px-3 py-1 text-sm font-semibold tracking-wide text-slate-200 shadow-card transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-400';
-  const tabActive = 'bg-slate-700';
-  const tabInactive = 'bg-surface-raised';
+  const tabBase = 'ui-tab';
+  const tabActive = 'ui-tab-active';
+  const tabInactive = '';
 </script>
 
 <section class="grid min-w-0 w-full gap-3" aria-label="Main tools">
-  <div class="flex flex-wrap gap-2" role="tablist" aria-label="Tool tabs">
+  <div
+    class="flex gap-2 overflow-x-auto pb-1 [-webkit-overflow-scrolling:touch] md:flex-wrap md:overflow-visible"
+    role="tablist"
+    aria-label="Tool tabs"
+  >
     {#each tabs as t}
       <button
         class={`${tabBase} ${active === t.id ? tabActive : tabInactive}`}
@@ -44,7 +48,7 @@
   </div>
 
   <div
-    class="min-h-[40vh] max-w-full min-w-0 overflow-x-auto rounded-lg border-2 border-slate-200 bg-surface p-4 text-slate-200 shadow-panel"
+    class="ui-panel max-w-full min-w-0 overflow-x-auto p-4 text-slate-200"
     role="tabpanel"
   >
     <div hidden={active !== 'cpr'}>

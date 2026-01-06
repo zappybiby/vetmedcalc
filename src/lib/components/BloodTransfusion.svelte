@@ -67,13 +67,14 @@
     : null;
 
   let summaryOpen = false;
+  $: if (!hasInput) summaryOpen = false;
 </script>
 
 <section class="grid min-w-0 gap-4 text-slate-200" aria-label="Blood transfusion planner">
   <header class="text-base font-black uppercase tracking-wide text-slate-100">Blood Transfusion</header>
 
   <div class="grid min-w-0 gap-4">
-    <div class="min-w-0 rounded-lg border-2 border-slate-200 bg-surface p-4 shadow-card">
+    <div class="ui-card min-w-0 p-4">
       <h2 class="text-sm font-black uppercase tracking-wide text-slate-200">Inputs</h2>
       <div class="mt-3 grid gap-3">
         <label class="grid gap-2">
@@ -104,7 +105,7 @@
       </div>
 
       {#if showIssues}
-        <div class="mt-3 rounded-lg border-2 border-amber-300 bg-amber-900/60 px-3 py-2 text-sm font-semibold text-amber-100">
+        <div class="mt-3 rounded-lg border border-amber-300/30 bg-amber-950/40 px-3 py-2 text-sm font-semibold text-amber-100">
           {#each issues as issue}
             <div>{issue}</div>
           {/each}
@@ -116,100 +117,97 @@
       </div>
     </div>
 
-    <div class="min-w-0 rounded-lg border-2 border-slate-200 bg-surface p-4 shadow-panel">
-      <h3 class="text-sm font-black uppercase tracking-wide text-slate-200">Step-by-step plan</h3>
-      {#if plan}
-        <div class="mt-3 overflow-x-auto">
-          <table class="min-w-full text-sm">
-            <thead class="text-xs font-semibold uppercase tracking-wide text-slate-400">
-              <tr class="border-b border-slate-700">
-                <th class="px-3 py-2 text-left">Interval</th>
-                <th class="px-3 py-2 text-right">Rate (mL/hr)</th>
-                <th class="px-3 py-2 text-right">Volume (mL)</th>
-                <th class="px-3 py-2 text-right">Cumulative (mL)</th>
-              </tr>
-            </thead>
-            <tbody class="divide-y divide-slate-800">
-              {#each plan.steps as step}
-                <tr class="text-slate-200">
-                  <td class="px-3 py-2 font-semibold text-slate-100">{intervalLabel(step)}</td>
-                  <td class="px-3 py-2 text-right tabular-nums">{fmt(step.rateMlHr, 0)}</td>
-                  <td class="px-3 py-2 text-right tabular-nums">{fmt(step.volumeMl, 2)}</td>
-                  <td class="px-3 py-2 text-right tabular-nums">{fmt(step.cumulativeMl, 2)}</td>
-                </tr>
-              {/each}
-            </tbody>
-          </table>
-        </div>
-      {:else}
-        <div class="mt-3 text-sm text-slate-400">Plan details will appear here once inputs are set.</div>
-      {/if}
-    </div>
-
-    <div class="min-w-0 rounded-lg border-2 border-slate-200 bg-surface p-4 shadow-card">
-      <h2 class="text-sm font-black uppercase tracking-wide text-slate-200">
-        <button
-          type="button"
-          class="flex w-full items-center justify-between text-left"
-          aria-expanded={summaryOpen}
-          aria-controls="blood-transfusion-summary"
-          on:click={() => (summaryOpen = !summaryOpen)}
-        >
-          <span>Summary</span>
-          <svg
-            viewBox="0 0 20 20"
-            fill="currentColor"
-            aria-hidden="true"
-            class={`h-4 w-4 text-slate-300 transition-transform duration-200 ${summaryOpen ? 'rotate-90' : ''}`}
-          >
-            <path
-              fill-rule="evenodd"
-              clip-rule="evenodd"
-              d="M7.21 14.79a.75.75 0 0 1 0-1.06L10.94 10 7.21 6.27a.75.75 0 1 1 1.06-1.06l4.25 4.25a.75.75 0 0 1 0 1.06l-4.25 4.25a.75.75 0 0 1-1.06 0Z"
-            />
-          </svg>
-        </button>
-      </h2>
-      <div
-        id="blood-transfusion-summary"
-        class={summaryOpen ? 'mt-3' : 'mt-3 hidden'}
-      >
+    {#if hasInput}
+      <div class="ui-card min-w-0 p-4">
+        <h3 class="text-sm font-black uppercase tracking-wide text-slate-200">Step-by-step plan</h3>
         {#if plan}
-          <div class="grid gap-3 text-sm">
-            <div class="grid grid-cols-[minmax(0,1fr)_auto] items-baseline gap-2">
-              <span class="text-slate-300">Ideal final rate</span>
-              <span class="font-black tabular-nums text-slate-100">{fmt(plan.summary.idealFinalRateMlHr, 2)} mL/hr</span>
-            </div>
-            <div class="grid grid-cols-[minmax(0,1fr)_auto] items-baseline gap-2">
-              <span class="text-slate-300">Final rate (rounded)</span>
-              <span class="font-black tabular-nums text-slate-100">{fmt(plan.summary.finalRateMlHr, 0)} mL/hr</span>
-            </div>
-            <div class="grid grid-cols-[minmax(0,1fr)_auto] items-baseline gap-2">
-              <span class="text-slate-300">Total time</span>
-              <span class="font-black tabular-nums text-slate-100">{fmt(plan.summary.totalHours, 2)} hr</span>
-            </div>
-            <div class="grid grid-cols-[minmax(0,1fr)_auto] items-baseline gap-2">
-              <span class="text-slate-300">Target volume</span>
-              <span class="font-black tabular-nums text-slate-100">{fmt(plan.summary.targetVolumeMl, 2)} mL</span>
-            </div>
-            <div class="grid grid-cols-[minmax(0,1fr)_auto] items-baseline gap-2">
-              <span class="text-slate-300">Delivered volume</span>
-              <span class="font-black tabular-nums text-slate-100">{fmt(plan.summary.deliveredVolumeMl, 2)} mL</span>
-            </div>
-            <div class="grid grid-cols-[minmax(0,1fr)_auto] items-baseline gap-2">
-              <span class="text-slate-300">Delta vs target</span>
-              <span class="font-black tabular-nums text-slate-100">{fmtSigned(plan.summary.deltaMl, 2)} mL</span>
-            </div>
-          </div>
-          <div class="mt-3 text-xs text-slate-400">
-            Rates are rounded to whole mL/hr (minimum 1). Delivered volume can differ slightly from target.
+          <div class="mt-3 overflow-x-auto">
+            <table class="min-w-full text-sm">
+              <thead class="text-xs font-semibold uppercase tracking-wide text-slate-400">
+                <tr class="border-b border-slate-700">
+                  <th class="px-3 py-2 text-left">Interval</th>
+                  <th class="px-3 py-2 text-right">Rate (mL/hr)</th>
+                  <th class="px-3 py-2 text-right">Volume (mL)</th>
+                  <th class="px-3 py-2 text-right">Cumulative (mL)</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-slate-800">
+                {#each plan.steps as step}
+                  <tr class="text-slate-200">
+                    <td class="px-3 py-2 font-semibold text-slate-100">{intervalLabel(step)}</td>
+                    <td class="px-3 py-2 text-right tabular-nums">{fmt(step.rateMlHr, 0)}</td>
+                    <td class="px-3 py-2 text-right tabular-nums">{fmt(step.volumeMl, 2)}</td>
+                    <td class="px-3 py-2 text-right tabular-nums">{fmt(step.cumulativeMl, 2)}</td>
+                  </tr>
+                {/each}
+              </tbody>
+            </table>
           </div>
         {:else}
-          <div class="text-sm text-slate-400">
-            Enter a total volume and a total time greater than 1 hour.
-          </div>
+          <div class="mt-3 text-sm text-slate-400">Enter a total volume and a total time greater than 1 hour.</div>
         {/if}
       </div>
-    </div>
+
+      <div class="ui-card min-w-0 p-4">
+        <h2 class="text-sm font-black uppercase tracking-wide text-slate-200">
+          <button
+            type="button"
+            class="flex w-full items-center justify-between text-left"
+            aria-expanded={summaryOpen}
+            aria-controls="blood-transfusion-summary"
+            on:click={() => (summaryOpen = !summaryOpen)}
+          >
+            <span>Summary</span>
+            <svg
+              viewBox="0 0 20 20"
+              fill="currentColor"
+              aria-hidden="true"
+              class={`h-4 w-4 text-slate-300 transition-transform duration-200 ${summaryOpen ? 'rotate-90' : ''}`}
+            >
+              <path
+                fill-rule="evenodd"
+                clip-rule="evenodd"
+                d="M7.21 14.79a.75.75 0 0 1 0-1.06L10.94 10 7.21 6.27a.75.75 0 1 1 1.06-1.06l4.25 4.25a.75.75 0 0 1 0 1.06l-4.25 4.25a.75.75 0 0 1-1.06 0Z"
+              />
+            </svg>
+          </button>
+        </h2>
+        <div id="blood-transfusion-summary" class={summaryOpen ? 'mt-3' : 'mt-3 hidden'}>
+          {#if plan}
+            <div class="grid gap-3 text-sm">
+              <div class="grid grid-cols-[minmax(0,1fr)_auto] items-baseline gap-2">
+                <span class="text-slate-300">Ideal final rate</span>
+                <span class="font-black tabular-nums text-slate-100">{fmt(plan.summary.idealFinalRateMlHr, 2)} mL/hr</span>
+              </div>
+              <div class="grid grid-cols-[minmax(0,1fr)_auto] items-baseline gap-2">
+                <span class="text-slate-300">Final rate (rounded)</span>
+                <span class="font-black tabular-nums text-slate-100">{fmt(plan.summary.finalRateMlHr, 0)} mL/hr</span>
+              </div>
+              <div class="grid grid-cols-[minmax(0,1fr)_auto] items-baseline gap-2">
+                <span class="text-slate-300">Total time</span>
+                <span class="font-black tabular-nums text-slate-100">{fmt(plan.summary.totalHours, 2)} hr</span>
+              </div>
+              <div class="grid grid-cols-[minmax(0,1fr)_auto] items-baseline gap-2">
+                <span class="text-slate-300">Target volume</span>
+                <span class="font-black tabular-nums text-slate-100">{fmt(plan.summary.targetVolumeMl, 2)} mL</span>
+              </div>
+              <div class="grid grid-cols-[minmax(0,1fr)_auto] items-baseline gap-2">
+                <span class="text-slate-300">Delivered volume</span>
+                <span class="font-black tabular-nums text-slate-100">{fmt(plan.summary.deliveredVolumeMl, 2)} mL</span>
+              </div>
+              <div class="grid grid-cols-[minmax(0,1fr)_auto] items-baseline gap-2">
+                <span class="text-slate-300">Delta vs target</span>
+                <span class="font-black tabular-nums text-slate-100">{fmtSigned(plan.summary.deltaMl, 2)} mL</span>
+              </div>
+            </div>
+            <div class="mt-3 text-xs text-slate-400">
+              Rates are rounded to whole mL/hr (minimum 1). Delivered volume can differ slightly from target.
+            </div>
+          {:else}
+            <div class="text-sm text-slate-400">Enter a total volume and a total time greater than 1 hour.</div>
+          {/if}
+        </div>
+      </div>
+    {/if}
   </div>
 </section>

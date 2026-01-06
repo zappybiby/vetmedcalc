@@ -179,74 +179,72 @@
 
 <section class="grid gap-4" aria-label="Batch CPR Labels">
   <header class="flex flex-col gap-1">
-    <h2 class="m-0 text-lg font-extrabold tracking-wide">Batch CPR Labels</h2>
-    <p class="m-0 text-sm text-slate-300">
+    <div class="text-sm font-black uppercase tracking-wide text-slate-100">Batch CPR Labels</div>
+    <p class="m-0 text-xs text-slate-400">
       Enter patient details row by row. A fresh row appears automatically so you can stay on the keyboard.
     </p>
   </header>
 
-  <div class="grid gap-2">
-    <div class="grid grid-cols-[2fr_1fr_1fr] gap-3 text-xs font-semibold uppercase tracking-wide text-slate-400">
-      <span>Patient Name</span>
-      <span>Species</span>
-      <span>Weight (kg)</span>
-    </div>
-
+  <div class="ui-card grid gap-4 p-4">
     <div class="grid gap-2">
-      {#each rows as row, index (row.id)}
-        <div class="grid grid-cols-[2fr_1fr_1fr] items-center gap-3">
-          <input
-            class="field-control"
-            type="text"
-            placeholder="Patient name"
-            autocomplete="off"
-            spellcheck={false}
-            data-row={index}
-            data-field={0}
-            value={row.name}
-            on:input={(event) => updateRow(index, 'name', event.currentTarget.value)}
-            on:keydown={(event) => handleKeyNav(event, index, 0)}
-          />
+      <div class="grid grid-cols-[2fr_1fr_1fr] gap-3 text-xs font-semibold uppercase tracking-wide text-slate-400">
+        <span>Patient Name</span>
+        <span>Species</span>
+        <span>Weight (kg)</span>
+      </div>
 
-          <select
-            class="field-select"
-            data-row={index}
-            data-field={1}
-            value={row.species}
-            on:change={(event) => updateRow(index, 'species', event.currentTarget.value)}
-            on:keydown={(event) => handleKeyNav(event, index, 1)}
-          >
-            <option value="">Species</option>
-            {#each speciesOptions as option}
-              <option value={option.value}>{option.label}</option>
-            {/each}
-          </select>
+      <div class="grid gap-2">
+        {#each rows as row, index (row.id)}
+          <div class="grid grid-cols-[2fr_1fr_1fr] items-center gap-3">
+            <input
+              class="field-control"
+              type="text"
+              placeholder="Patient name"
+              autocomplete="off"
+              spellcheck={false}
+              data-row={index}
+              data-field={0}
+              value={row.name}
+              on:input={(event) => updateRow(index, 'name', event.currentTarget.value)}
+              on:keydown={(event) => handleKeyNav(event, index, 0)}
+            />
 
-          <input
-            class="field-control"
-            type="number"
-            min="0"
-            step="0.1"
-            inputmode="decimal"
-            placeholder="0.0"
-            data-row={index}
-            data-field={2}
-            value={row.weight}
-            on:input={(event) => updateRow(index, 'weight', event.currentTarget.value)}
-            on:keydown={(event) => handleKeyNav(event, index, 2)}
-          />
-        </div>
-      {/each}
+            <select
+              class="field-select"
+              data-row={index}
+              data-field={1}
+              value={row.species}
+              on:change={(event) => updateRow(index, 'species', event.currentTarget.value)}
+              on:keydown={(event) => handleKeyNav(event, index, 1)}
+            >
+              <option value="">Species</option>
+              {#each speciesOptions as option}
+                <option value={option.value}>{option.label}</option>
+              {/each}
+            </select>
+
+            <input
+              class="field-control"
+              type="number"
+              min="0"
+              step="0.1"
+              inputmode="decimal"
+              placeholder="0.0"
+              data-row={index}
+              data-field={2}
+              value={row.weight}
+              on:input={(event) => updateRow(index, 'weight', event.currentTarget.value)}
+              on:keydown={(event) => handleKeyNav(event, index, 2)}
+            />
+          </div>
+        {/each}
+      </div>
     </div>
-  </div>
 
-  <div class="pt-4 text-center">
-    <button
-      class="inline-flex items-center rounded-lg border-2 border-slate-200 bg-slate-800 px-4 py-2 font-bold uppercase tracking-wide text-slate-200 shadow-[2px_2px_0_#0b0b0b] transition disabled:cursor-not-allowed disabled:opacity-60"
-      on:click={printAll}
-      disabled={!canPrint}
-    >
-      Print All Labels ({printablePatients.length})
-    </button>
+    <div class="text-center">
+      <button class="ui-button px-4 py-2 font-bold uppercase tracking-wide" on:click={printAll} disabled={!canPrint}>
+        Print All Labels ({printablePatients.length})
+      </button>
+    </div>
   </div>
 </section>

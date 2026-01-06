@@ -6,7 +6,7 @@
 
 <main class="min-h-screen py-6 md:pb-14">
   <div
-    class={`mx-auto grid min-w-0 max-w-5xl gap-4 px-4 sm:px-6 ${$cprBatchMode ? 'md:grid-cols-1' : 'md:grid-cols-[320px_1fr]'}`}
+    class={`mx-auto grid min-w-0 max-w-5xl items-start gap-4 px-4 sm:px-6 ${$cprBatchMode ? 'md:grid-cols-1' : 'md:grid-cols-[320px_1fr]'}`}
   >
     {#if !$cprBatchMode}
       <PatientPanel />
