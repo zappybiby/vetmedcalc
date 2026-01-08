@@ -107,11 +107,11 @@
     desiredRateMlPerHr,
   });
 
-  const alertBase = 'rounded-lg border-2 px-3 py-2 font-bold';
-  const defaultAlert = 'border-slate-200 bg-surface text-slate-200';
+  const alertBase = 'rounded-lg border px-3 py-2 text-sm font-semibold';
+  const defaultAlert = 'border-slate-600/40 bg-surface-sunken text-slate-200';
   const alertStyles: Record<string, string> = {
-    warn: 'border-amber-300 border-dashed bg-amber-900/60 text-amber-100',
-    info: 'border-sky-300 bg-sky-950/60 text-sky-100'
+    warn: 'border-amber-300/30 bg-amber-950/40 text-amber-100',
+    info: 'border-sky-300/25 bg-sky-950/55 text-sky-100'
   };
 </script>
 
@@ -188,9 +188,7 @@
 
   <!-- Unified Results -->
   {#if vm}
-    <div class="min-w-0 rounded-lg border-2 border-slate-200 bg-surface p-4 text-slate-200 shadow-panel">
-      <h3 class="text-sm font-black uppercase tracking-wide text-slate-200">{enableDilution ? 'Dilution Plan' : 'From Stock (no dilution)'}</h3>
-
+    <div class="grid gap-3">
       {#if vm.alerts?.length}
         <div class="grid gap-2" aria-live="polite">
           {#each vm.alerts as a}
@@ -199,50 +197,49 @@
         </div>
       {/if}
 
-      <div class="space-y-4">
-        <div class="rounded-lg border border-slate-200 bg-surface-sunken p-4">
-          <div class="text-xs font-black uppercase tracking-wide text-slate-300">Summary</div>
-          <div class="mt-3 grid min-w-0 gap-3 [grid-template-columns:repeat(auto-fit,minmax(220px,1fr))]">
-            {#each vm.drawCards as card}
-              <div class="rounded-lg border border-slate-200 bg-surface p-4">
-                <div class="text-sm font-black uppercase tracking-wide text-slate-300">{card.title}</div>
-                <div class="mt-2 text-lg font-black tabular-nums text-slate-100">{card.volumeText}</div>
-                <div class="text-sm tabular-nums text-slate-300">
-                  in <span class="inline-flex items-center rounded-full border border-slate-200 bg-surface-sunken px-2 py-0.5 text-xs font-semibold uppercase tracking-wide text-slate-200">{card.syringeText}</span>
-                  {#if card.fills && card.fills > 1}
-                    <span class="ml-2 font-semibold text-amber-500">· {card.fills} fills</span>
-                  {/if}
-                  {#if card.tickText}
-                    <span class="ml-2 text-slate-400">({card.tickText})</span>
-                  {/if}
-                </div>
-              </div>
-            {/each}
+      <div class="grid min-w-0 gap-3 [grid-template-columns:repeat(auto-fit,minmax(220px,1fr))]">
+        {#each vm.drawCards as card}
+          <div class="ui-card p-4">
+            <div class="flex items-center justify-between gap-2 text-xs">
+              <span class="ui-chip">{card.kind === 'diluent' ? 'Diluent' : 'Stock'}</span>
+              {#if card.fills && card.fills > 1}
+                <span class="font-semibold text-amber-500">{card.fills} fills</span>
+              {/if}
+            </div>
+            <div class="mt-2 text-lg font-black tabular-nums text-slate-100">{card.volumeText}</div>
+            <div class="text-sm tabular-nums text-slate-300">
+              in <span class="ui-chip">{card.syringeText}</span>
+              {#if card.tickText}
+                <span class="ml-2 text-slate-400">({card.tickText})</span>
+              {/if}
+            </div>
           </div>
+        {/each}
+      </div>
 
-          <div class="mt-4 grid gap-3 rounded-lg border border-slate-200 bg-surface p-4">
-            <div class="text-sm font-black uppercase tracking-wide text-slate-300">{vm.resultCard.title}</div>
-            <div class="grid items-center gap-x-4 gap-y-2 text-sm [grid-template-columns:minmax(0,1fr)_auto]">
-              <div class="text-slate-300">Total volume</div>
-              <div class="text-right font-black tabular-nums text-slate-100">{vm.resultCard.totalVolumeText}</div>
-              <div class="text-slate-300">Final concentration</div>
-              <div class="text-right font-black tabular-nums text-slate-100">{vm.resultCard.finalConcentrationText}</div>
-            </div>
-            <div class="h-px bg-slate-700" role="presentation"></div>
-            <div class="tabular-nums text-sm text-slate-200">
-              At <span class="font-black text-slate-100">{vm.resultCard.pumpRateText}</span> this will deliver
-              <span class="font-black text-slate-100">{vm.resultCard.deliveredDoseText}</span>
-            </div>
-            <div class="text-sm text-slate-400">Giving a dose of:</div>
-            <div class="h-px bg-slate-700" role="presentation"></div>
-            <div class="grid gap-1 text-sm">
-              {#each vm.resultCard.doseLines as ln}
-                <div class="font-black tabular-nums text-slate-100">{ln}</div>
-              {/each}
-            </div>
-          </div>
+      <div class="ui-card grid gap-3 p-4">
+        <div class="grid items-center gap-x-4 gap-y-2 text-sm [grid-template-columns:minmax(0,1fr)_auto]">
+          <div class="text-slate-300">Total volume</div>
+          <div class="text-right font-black tabular-nums text-slate-100">{vm.resultCard.totalVolumeText}</div>
+          <div class="text-slate-300">Final concentration</div>
+          <div class="text-right font-black tabular-nums text-slate-100">{vm.resultCard.finalConcentrationText}</div>
+        </div>
+        <div class="ui-divider" role="presentation"></div>
+        <div class="tabular-nums text-sm text-slate-200">
+          At <span class="font-black text-slate-100">{vm.resultCard.pumpRateText}</span> this will deliver
+          <span class="font-black text-slate-100">{vm.resultCard.deliveredDoseText}</span>
         </div>
 
+        <details class="ui-inset p-3">
+          <summary class="ui-summary cursor-pointer select-none text-xs font-black uppercase tracking-wide text-slate-300">
+            Dose conversions
+          </summary>
+          <div class="mt-3 grid gap-1 text-sm sm:grid-cols-2 sm:gap-x-3">
+            {#each vm.resultCard.doseLines as ln}
+              <div class="font-black tabular-nums text-slate-100">{ln}</div>
+            {/each}
+          </div>
+        </details>
       </div>
     </div>
   {/if}

@@ -13,8 +13,8 @@ const config = {
         }
       },
       boxShadow: {
-        card: '2px 2px 0 #0b0b0b',
-        panel: '3px 3px 0 #0b0b0b'
+        card: '0 1px 0 rgba(255,255,255,0.06) inset, 0 10px 24px rgba(0,0,0,0.35)',
+        panel: '0 1px 0 rgba(255,255,255,0.07) inset, 0 16px 40px rgba(0,0,0,0.45)'
       }
     }
   },
