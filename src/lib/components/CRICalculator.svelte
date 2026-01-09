@@ -42,7 +42,8 @@
   let enableDilution = false;
   $: {
     const rate = desiredRateMlPerHr;
-    enableDilution = rate !== '' && rate != null && !Number.isNaN(typeof rate === 'number' ? rate : Number(rate));
+    const rNum = rate === '' || rate == null ? NaN : (typeof rate === 'number' ? rate : Number(rate));
+    enableDilution = Number.isFinite(rNum) && rNum > 0;
   }
 
   let unitFlash = false;
@@ -239,6 +240,82 @@
               <div class="font-black tabular-nums text-slate-100">{ln}</div>
             {/each}
           </div>
+        </details>
+
+        <details class="ui-inset p-3">
+          <summary class="ui-summary cursor-pointer select-none text-xs font-black uppercase tracking-wide text-slate-300">
+            Step by step calculation
+          </summary>
+          <table class="mt-3 w-full table-fixed border-collapse text-xs">
+            <tbody>
+              {#each vm.stepByStep.rows as row}
+                <tr class="align-top">
+                  <th class="py-1 pr-3 text-left font-semibold text-slate-300">
+                    {row.label}
+                  </th>
+                  <td class="py-1 text-left tabular-nums text-slate-100">
+                    <div class="flex items-start gap-2">
+                      <div class="min-w-0 flex-1 break-words text-slate-100">{row.math}</div>
+                      {#if row.popover}
+                        <details class="group relative mt-0.5 flex-none">
+                          <summary
+                            class="ui-summary inline-flex h-5 w-5 cursor-pointer items-center justify-center rounded-md border border-slate-600/40 bg-surface-sunken text-slate-300 transition-colors hover:border-slate-500/60 hover:text-slate-100"
+                            aria-label="Optimization details"
+                          >
+                            <svg viewBox="0 0 20 20" class="h-4 w-4" aria-hidden="true">
+                              <path
+                                fill="currentColor"
+                                fill-rule="evenodd"
+                                d="M10 18a8 8 0 1 0 0-16 8 8 0 0 0 0 16Zm0-11a1 1 0 1 0 0-2 1 1 0 0 0 0 2Zm-1 2a1 1 0 0 1 2 0v5a1 1 0 1 1-2 0V9Z"
+                                clip-rule="evenodd"
+                              />
+                            </svg>
+                          </summary>
+
+                          <div
+                            class="absolute right-0 top-full z-30 mt-2 hidden w-72 max-w-[calc(100vw-3rem)] rounded-lg border border-slate-600/40 bg-surface-raised p-3 text-xs text-slate-200 shadow-lg group-hover:block group-open:block"
+                            role="dialog"
+                            aria-label={row.popover.title}
+                          >
+                            <div class="text-xs font-black uppercase tracking-wide text-slate-300">{row.popover.title}</div>
+
+                            {#if row.popover.bars?.length}
+                              <div class="mt-2 grid gap-2">
+                                {#each row.popover.bars as bar}
+                                  <div class="grid gap-1">
+                                    <div class="flex items-baseline justify-between gap-2">
+                                      <div class="font-semibold text-slate-200">{bar.label}</div>
+                                      <div class={`tabular-nums ${bar.severity === 'warn' ? 'text-amber-300' : 'text-emerald-300'}`}>{bar.valueText}</div>
+                                    </div>
+                                    <div class="h-2 overflow-hidden rounded bg-slate-700/40">
+                                      <div
+                                        class={`h-full ${bar.severity === 'warn' ? 'bg-amber-400/70' : 'bg-emerald-400/70'}`}
+                                        style={`width:${Math.max(0, Math.min(100, bar.fillPct)).toFixed(0)}%`}
+                                      ></div>
+                                    </div>
+                                  </div>
+                                {/each}
+                              </div>
+                            {/if}
+
+                            {#if row.popover.lines?.length}
+                              <div class="mt-2 grid gap-1 text-slate-300">
+                                {#each row.popover.lines as ln}
+                                  <div class="break-words">{ln}</div>
+                                {/each}
+                              </div>
+                            {/if}
+
+                            <div class="mt-2 text-[11px] text-slate-400">Hover on desktop, tap the icon on mobile.</div>
+                          </div>
+                        </details>
+                      {/if}
+                    </div>
+                  </td>
+                </tr>
+              {/each}
+            </tbody>
+          </table>
         </details>
       </div>
     </div>

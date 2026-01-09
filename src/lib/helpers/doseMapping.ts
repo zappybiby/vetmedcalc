@@ -23,6 +23,12 @@ type SearchResult = {
   volErr: number;
 };
 
+type SearchOutcome = {
+  best: SearchResult | null;
+  candidatesConsidered: number;
+  candidatesScored: number;
+};
+
 /**
  * Search a grid of feasible (stock,diluent) volumes that are multiples of increments,
  * trying to hit both the concentration ratio and the total volume.
@@ -30,7 +36,7 @@ type SearchResult = {
  * We parametrize by m = ticks of drug. For each m, compute the ideal total V from ratio,
  * then snap diluent to its increment and evaluate.
  */
-function searchSnappedVolumes(p: SearchParams): SearchResult | null {
+function searchSnappedVolumes(p: SearchParams): SearchOutcome {
   const ratio = p.C_target / p.S_mg_per_mL; // desired vStock / V
   if (ratio <= 0 || ratio >= 1) {
     // ratio==1 means diluent=0; ratio<=0 invalid. We'll still allow the search to catch diluent=0 below.
@@ -42,6 +48,8 @@ function searchSnappedVolumes(p: SearchParams): SearchResult | null {
 
   let best: SearchResult | null = null;
   const incDrug = p.incDrug, incDil = p.incDil;
+  let candidatesConsidered = 0;
+  let candidatesScored = 0;
 
   for (let m = mMin; m <= mMax; m++) {
     const vStock = m * incDrug;
@@ -58,6 +66,8 @@ function searchSnappedVolumes(p: SearchParams): SearchResult | null {
       const V = vStock + vDil;
       if (V <= 0) continue;
 
+      candidatesConsidered++;
+
       const C_final = p.S_mg_per_mL * (vStock / V);
       const concErr = Math.abs(C_final - p.C_target) / Math.max(1e-9, p.C_target);
       const volErr = Math.abs(V - p.V_target) / Math.max(1e-9, p.V_target);
@@ -66,6 +76,8 @@ function searchSnappedVolumes(p: SearchParams): SearchResult | null {
       const fillsDrug = Math.ceil(vStock / p.drugSyr.sizeCc);
       const fillsDil = Math.ceil(vDil / p.dilSyr.sizeCc);
       if (fillsDrug > p.maxFillsPerLiquid || fillsDil > p.maxFillsPerLiquid) continue;
+
+      candidatesScored++;
 
       // Objective: weighted sum; prioritize concentration match
       const score = p.weightings.conc * concErr + p.weightings.vol * volErr;
@@ -79,7 +91,7 @@ function searchSnappedVolumes(p: SearchParams): SearchResult | null {
     }
   }
 
-  return best;
+  return { best, candidatesConsidered, candidatesScored };
 }
 
 // ---------- main entry ----------
@@ -101,6 +113,10 @@ export function computeMixturePlan(input: MappingInput): MixturePlan {
   } = input;
 
   const warnings: string[] = [];
+  const tolerancePctUsed = {
+    concentration: tolerancePct.concentration ?? 1,
+    totalVolume: tolerancePct.totalVolume ?? 5,
+  };
 
   // 1) Normalize stock to mg/mL
   const S_mg_per_mL = normalizeConcToMgPerMl(medication.concentration);
@@ -136,7 +152,7 @@ export function computeMixturePlan(input: MappingInput): MixturePlan {
   const dilSyr  = chooseSyringeForVolume(rawDil,  syringes);
 
   // 8) Search snapped solution under increments
-  const best = searchSnappedVolumes({
+  const search = searchSnappedVolumes({
     S_mg_per_mL,
     C_target,
     V_target,
@@ -156,10 +172,14 @@ export function computeMixturePlan(input: MappingInput): MixturePlan {
   let snappedDil = rawDil;
   let C_final = (S_mg_per_mL * snappedStock) / Math.max(1e-9, snappedStock + snappedDil);
 
+  const best = search.best;
+  let snappingMethod: MixturePlan['optimization']['method'] = 'fallback';
+
   if (best) {
     snappedStock = best.vStock;
     snappedDil = best.vDil;
     C_final = best.C_final;
+    snappingMethod = 'search';
   } else {
     snappedStock = roundToIncrement(rawStock, drugSyr.incrementMl);
     // Maintain ratio as best we can with diluent increment
@@ -192,8 +212,8 @@ export function computeMixturePlan(input: MappingInput): MixturePlan {
   const deliveredAtDesiredRate = deliveredDoseFrom(C_final, desiredRateMlPerHr, weightKg, doseUnit);
 
   // 12) Tolerance checks (informational)
-  const concTol = (tolerancePct.concentration ?? 1) / 100;
-  const volTol  = (tolerancePct.totalVolume ?? 5) / 100;
+  const concTol = tolerancePctUsed.concentration / 100;
+  const volTol  = tolerancePctUsed.totalVolume / 100;
 
   if (relConcErr > concTol) {
     warnings.push(
@@ -246,6 +266,15 @@ export function computeMixturePlan(input: MappingInput): MixturePlan {
     relConcentrationErrorPct: relConcErr * 100,
     relTotalVolumeErrorPct: relVolErr * 100,
     doseUnit,
+
+    optimization: {
+      method: snappingMethod,
+      candidatesConsidered: search.candidatesConsidered,
+      candidatesScored: search.candidatesScored,
+      spanSteps: searchSpanSteps,
+      weight: searchWeight,
+      tolerancePct: tolerancePctUsed,
+    },
   };
 
   return plan;
@@ -312,6 +341,15 @@ export type MixturePlan = {
   // Errors
   relConcentrationErrorPct: number;
   relTotalVolumeErrorPct: number;
+
+  optimization: {
+    method: 'search' | 'fallback';
+    candidatesConsidered: number;
+    candidatesScored: number;
+    spanSteps: number;
+    weight: { conc: number; vol: number };
+    tolerancePct: Required<NonNullable<MappingInput['tolerancePct']>>;
+  };
 };
 
 // ---------- core helpers ----------
