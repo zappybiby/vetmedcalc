@@ -201,14 +201,14 @@
         {#each vm.drawCards as card}
           <div class="ui-card p-4">
             <div class="flex items-center justify-between gap-2 text-xs">
-              <span class="ui-chip">{card.kind === 'diluent' ? 'Diluent' : 'Stock'}</span>
+              <span class="ui-chip -ml-px text-sm">{card.kind === 'diluent' ? 'Diluent' : 'Stock'}</span>
               {#if card.fills && card.fills > 1}
                 <span class="font-semibold text-amber-500">{card.fills} fills</span>
               {/if}
             </div>
-            <div class="mt-2 text-lg font-black tabular-nums text-slate-100">{card.volumeText}</div>
-            <div class="text-sm tabular-nums text-slate-300">
-              in <span class="ui-chip">{card.syringeText}</span>
+            <div class="mt-2 text-xl font-black tabular-nums text-slate-100">{card.volumeText}</div>
+            <div class="text-base tabular-nums text-slate-300">
+              in <span class="ui-chip text-sm">{card.syringeText}</span>
               {#if card.tickText}
                 <span class="ml-2 text-slate-400">({card.tickText})</span>
               {/if}
@@ -218,14 +218,14 @@
       </div>
 
       <div class="ui-card grid gap-3 p-4">
-        <div class="grid items-center gap-x-4 gap-y-2 text-sm [grid-template-columns:minmax(0,1fr)_auto]">
+        <div class="grid items-center gap-x-4 gap-y-2 text-base [grid-template-columns:minmax(0,1fr)_auto]">
           <div class="text-slate-300">Total volume</div>
           <div class="text-right font-black tabular-nums text-slate-100">{vm.resultCard.totalVolumeText}</div>
           <div class="text-slate-300">Final concentration</div>
           <div class="text-right font-black tabular-nums text-slate-100">{vm.resultCard.finalConcentrationText}</div>
         </div>
         <div class="ui-divider" role="presentation"></div>
-        <div class="tabular-nums text-sm text-slate-200">
+        <div class="tabular-nums text-base text-slate-200">
           At <span class="font-black text-slate-100">{vm.resultCard.pumpRateText}</span> this will deliver
           <span class="font-black text-slate-100">{vm.resultCard.deliveredDoseText}</span>
         </div>

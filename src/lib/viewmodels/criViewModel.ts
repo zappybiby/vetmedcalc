@@ -137,12 +137,14 @@ export function buildCRIViewModel(params: BuildParams): CRIViewModel | null {
     const alerts: VMAlert[] = [];
 
     // Summary cards
+    const syringeText = syr.label ?? `${syr.sizeCc} cc`;
+    const syringeHasTickInfo = syringeText.toLowerCase().includes('ticks');
     const drawCard: DrawCard = {
       kind: 'stock',
       title: 'Stock to Draw Up',
       volumeText: `${fmt(drawVol, 2)} mL`,
-      syringeText: syr.label ?? `${syr.sizeCc} cc`,
-      tickText: `ticks ${fmt(syr.incrementMl, 2)} mL`,
+      syringeText,
+      tickText: syringeHasTickInfo ? undefined : `${syr.incrementMl} mL ticks`,
       fills: fills > 1 ? fills : undefined,
     };
     const resultCard: ResultCard = {
