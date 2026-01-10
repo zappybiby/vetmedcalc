@@ -114,6 +114,33 @@
     warn: 'border-amber-300/30 bg-amber-950/40 text-amber-100',
     info: 'border-sky-300/25 bg-sky-950/55 text-sky-100'
   };
+
+  type MathToken = { kind: 'num' | 'op' | 'text'; text: string };
+
+  function tokenizeMath(expr: string): MathToken[] {
+    const tokens: MathToken[] = [];
+    const re = /(-?\d+(?:\.\d+)?)|([=×÷→()+;])/g;
+    let lastIndex = 0;
+    let match: RegExpExecArray | null;
+
+    while ((match = re.exec(expr)) !== null) {
+      const idx = match.index;
+      if (idx > lastIndex) {
+        tokens.push({ kind: 'text', text: expr.slice(lastIndex, idx) });
+      }
+
+      if (match[1]) tokens.push({ kind: 'num', text: match[1] });
+      else if (match[2]) tokens.push({ kind: 'op', text: match[2] });
+
+      lastIndex = idx + match[0].length;
+    }
+
+    if (lastIndex < expr.length) {
+      tokens.push({ kind: 'text', text: expr.slice(lastIndex) });
+    }
+
+    return tokens;
+  }
 </script>
 
 <section class="grid min-w-0 gap-4 text-slate-200" aria-label="CRI Calculator">
@@ -246,16 +273,31 @@
           <summary class="ui-summary cursor-pointer select-none text-xs font-black uppercase tracking-wide text-slate-300">
             Step by step calculation
           </summary>
-          <table class="mt-3 w-full table-fixed border-collapse text-xs">
+          <table class="mt-3 w-full table-auto border-collapse text-xs">
             <tbody>
               {#each vm.stepByStep.rows as row}
-                <tr class="align-top">
-                  <th class="py-1 pr-3 text-left font-semibold text-slate-300">
+                <tr class="align-top border-t border-slate-700/40 first:border-t-0">
+                  <th class="w-36 py-2 pr-3 text-left text-xs font-semibold text-slate-300 sm:w-44">
                     {row.label}
                   </th>
-                  <td class="py-1 text-left tabular-nums text-slate-100">
+                  <td class="py-2 text-left tabular-nums text-slate-100">
                     <div class="flex items-start gap-2">
-                      <div class="min-w-0 flex-1 break-words text-slate-100">{row.math}</div>
+                      <div class="min-w-0 flex-1">
+                        <div class="rounded-md border border-slate-600/40 bg-surface-sunken px-2 py-1 font-mono text-[11px] leading-relaxed tracking-tight text-slate-100">
+                          <span class="whitespace-pre-wrap break-words">
+                            {#each tokenizeMath(row.math) as t}
+                              <span class={t.kind === 'num'
+                                ? 'font-bold text-slate-100'
+                                : t.kind === 'op'
+                                  ? 'text-slate-400'
+                                  : 'text-slate-200'}
+                              >
+                                {t.text}
+                              </span>
+                            {/each}
+                          </span>
+                        </div>
+                      </div>
                       {#if row.popover}
                         <details class="group relative mt-0.5 flex-none">
                           <summary
