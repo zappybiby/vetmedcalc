@@ -1,7 +1,52 @@
 <script lang="ts">
+  import { onMount } from 'svelte';
   import PatientPanel from './lib/components/PatientPanel.svelte';
   import TabShell from './lib/components/TabShell.svelte';
   import { cprBatchMode } from './lib/stores/cprUi';
+
+  type Theme = 'dark' | 'light';
+
+  const THEME_STORAGE_KEY = 'vetmedcalc.theme';
+  const DEFAULT_THEME: Theme = 'dark';
+
+  let theme: Theme = DEFAULT_THEME;
+
+  const isTheme = (value: string | null): value is Theme => value === 'dark' || value === 'light';
+
+  const applyTheme = (value: Theme): void => {
+    if (typeof document === 'undefined') return;
+
+    document.documentElement.dataset.theme = value;
+    document.documentElement.classList.toggle('dark', value === 'dark');
+  };
+
+  const readStoredTheme = (): Theme | null => {
+    try {
+      const stored = localStorage.getItem(THEME_STORAGE_KEY);
+      return isTheme(stored) ? stored : null;
+    } catch {
+      return null;
+    }
+  };
+
+  const writeStoredTheme = (value: Theme): void => {
+    try {
+      localStorage.setItem(THEME_STORAGE_KEY, value);
+    } catch {
+      // Ignore storage errors (private mode, blocked storage, etc.).
+    }
+  };
+
+  const toggleTheme = (): void => {
+    theme = theme === 'dark' ? 'light' : 'dark';
+    applyTheme(theme);
+    writeStoredTheme(theme);
+  };
+
+  onMount(() => {
+    theme = readStoredTheme() ?? DEFAULT_THEME;
+    applyTheme(theme);
+  });
 </script>
 
 <main class="min-h-screen py-6 md:pb-14">
@@ -18,11 +63,29 @@
   </div>
 </main>
 
-<footer class="hidden md:fixed md:inset-x-0 md:bottom-0 md:flex md:border-t md:border-slate-800/80 md:bg-slate-950/90 md:backdrop-blur">
-  <div class="mx-auto flex w-full max-w-5xl items-center justify-center gap-3 px-4 py-2 text-xs text-slate-300">
+<div class="pointer-events-none hidden md:fixed md:inset-x-0 md:top-4 md:z-40 md:flex">
+  <div class="mx-auto flex w-full max-w-5xl justify-end px-4 sm:px-6">
+    <button
+      type="button"
+      class="theme-toggle ui-button pointer-events-auto gap-2 text-xs font-black uppercase tracking-wide"
+      on:click={toggleTheme}
+      aria-pressed={theme === 'light'}
+      aria-label={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
+      title={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
+    >
+      <span>{theme === 'dark' ? 'Light mode' : 'Dark mode'}</span>
+      <span class="theme-toggle-track" aria-hidden="true">
+        <span class={`theme-toggle-thumb ${theme === 'light' ? 'is-light' : ''}`}></span>
+      </span>
+    </button>
+  </div>
+</div>
+
+<footer class="app-footer hidden md:fixed md:inset-x-0 md:bottom-0 md:flex">
+  <div class="mx-auto flex w-full max-w-5xl items-center justify-center gap-3 px-4 py-2 text-xs">
     <span>VetMedCalc made by Brian L. aka zappybiby.</span>
     <a
-      class="inline-flex items-center text-slate-300 hover:text-slate-100"
+      class="app-footer-link inline-flex items-center"
       href="https://github.com/zappybiby/vetmedcalc"
       target="_blank"
       rel="noreferrer"
