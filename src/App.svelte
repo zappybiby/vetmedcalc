@@ -49,37 +49,37 @@
   });
 </script>
 
-<main class="min-h-screen py-6 md:pb-14">
-  <div
-    class={`mx-auto grid min-w-0 max-w-5xl items-start gap-4 px-4 sm:px-6 ${$cprBatchMode ? 'md:grid-cols-1' : 'md:grid-cols-[320px_1fr]'}`}
-  >
-    {#if !$cprBatchMode}
-      <PatientPanel />
-    {/if}
+<main class="min-h-screen py-4 md:py-6 md:pb-14">
+  <div class="mx-auto grid min-w-0 max-w-5xl gap-4 px-4 sm:px-6">
+    <div class="flex justify-end">
+      <button
+        type="button"
+        class="theme-toggle ui-button gap-2 text-[11px] font-black uppercase tracking-wide sm:text-xs"
+        on:click={toggleTheme}
+        aria-pressed={theme === 'light'}
+        aria-label={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
+        title={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
+      >
+        <span>{theme === 'dark' ? 'Light mode' : 'Dark mode'}</span>
+        <span class="theme-toggle-track" aria-hidden="true">
+          <span class={`theme-toggle-thumb ${theme === 'light' ? 'is-light' : ''}`}></span>
+        </span>
+      </button>
+    </div>
 
-    <div class={`flex min-w-0 justify-center ${$cprBatchMode ? 'md:justify-center' : 'md:justify-start'}`}>
-      <TabShell />
+    <div
+      class={`grid min-w-0 items-start gap-4 ${$cprBatchMode ? 'md:grid-cols-1' : 'md:grid-cols-[320px_1fr]'}`}
+    >
+      {#if !$cprBatchMode}
+        <PatientPanel />
+      {/if}
+
+      <div class={`flex min-w-0 justify-center ${$cprBatchMode ? 'md:justify-center' : 'md:justify-start'}`}>
+        <TabShell />
+      </div>
     </div>
   </div>
 </main>
-
-<div class="pointer-events-none hidden md:fixed md:inset-x-0 md:top-4 md:z-40 md:flex">
-  <div class="mx-auto flex w-full max-w-5xl justify-end px-4 sm:px-6">
-    <button
-      type="button"
-      class="theme-toggle ui-button pointer-events-auto gap-2 text-xs font-black uppercase tracking-wide"
-      on:click={toggleTheme}
-      aria-pressed={theme === 'light'}
-      aria-label={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
-      title={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
-    >
-      <span>{theme === 'dark' ? 'Light mode' : 'Dark mode'}</span>
-      <span class="theme-toggle-track" aria-hidden="true">
-        <span class={`theme-toggle-thumb ${theme === 'light' ? 'is-light' : ''}`}></span>
-      </span>
-    </button>
-  </div>
-</div>
 
 <footer class="app-footer hidden md:fixed md:inset-x-0 md:bottom-0 md:flex">
   <div class="mx-auto flex w-full max-w-5xl items-center justify-center gap-3 px-4 py-2 text-xs">
