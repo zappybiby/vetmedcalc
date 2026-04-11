@@ -4,6 +4,7 @@
   import CRICalculator from './CRICalculator.svelte';
   import DrugInBag from './DrugInBag.svelte';
   import InsOuts from './InsOuts.svelte';
+  import RERCalculator from './RERCalculator.svelte';
   import { cprBatchMode } from '../stores/cprUi';
 
   type Tab = { id: string; label: string };
@@ -12,6 +13,7 @@
     { id: 'cri',     label: 'CRI CALCULATOR' },
     { id: 'drugbag', label: 'DRUG IN BAG' },
     { id: 'insouts', label: 'INS / OUTS' },
+    { id: 'rer',     label: 'RER CALCULATOR' },
     { id: 'blood',   label: 'BLOOD TRANSFUSION' },
   ];
 
@@ -58,6 +60,9 @@
     </div>
     <div hidden={active !== 'insouts'}>
       <InsOuts />
+    </div>
+    <div hidden={active !== 'rer'}>
+      <RERCalculator />
     </div>
     <div hidden={active !== 'blood'}>
       <BloodTransfusion />
