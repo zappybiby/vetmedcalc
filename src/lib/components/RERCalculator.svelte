@@ -29,6 +29,11 @@
     return num.toFixed(digits);
   }
 
+  function fmtWhole(value: number | null | undefined): string {
+    if (value == null || Number.isNaN(value)) return '—';
+    return Math.round(Number(value)).toString();
+  }
+
   function fmtCompact(value: number | null | undefined, maxDigits = 2): string {
     if (value == null || Number.isNaN(value)) return '—';
     return Number(Number(value).toFixed(maxDigits)).toString();
@@ -85,19 +90,7 @@
     <div class="ui-card min-w-0 p-4">
       <h2 class="text-sm font-black uppercase tracking-wide text-slate-200">Inputs</h2>
 
-      <div class="mt-3 grid gap-3 md:grid-cols-2">
-        <div class="ui-inset p-3">
-          <div class="text-xs font-semibold uppercase tracking-wide text-slate-400">Patient weight</div>
-          <div class="mt-2 text-2xl font-black tabular-nums text-slate-100">
-            {#if weightKg != null}
-              {fmt(weightKg, 2)} kg
-            {:else}
-              —
-            {/if}
-          </div>
-          <div class="mt-2 text-xs text-slate-400">Pulled from the shared Patient panel.</div>
-        </div>
-
+      <div class="mt-3 grid gap-3 md:grid-cols-2 xl:grid-cols-3">
         <label class="grid gap-2">
           <span class="text-xs font-semibold uppercase tracking-wide text-slate-300">Diet density (kcal/mL)</span>
           <input
@@ -139,7 +132,7 @@
       </div>
 
       <div class="mt-3 text-xs text-slate-400">
-        Uses RER = 70 x kg^0.75. Adjusted target = RER x factor.
+        Uses patient weight from the Patient panel. RER = 70 x kg^0.75, then target kcal/day = RER x factor.
       </div>
 
       {#if issues.length}
@@ -157,42 +150,60 @@
 
         <div class="mt-3 ui-inset p-4">
           <div class="text-xs font-semibold uppercase tracking-wide text-slate-400">Give every {fmtCompact(plan.intervalHours)} hr</div>
-          <div class="mt-2 text-3xl font-black tabular-nums text-slate-100">{fmt(plan.mlPerInterval, 2)} mL</div>
+          <div class="mt-2 text-3xl font-black tabular-nums text-slate-100">{fmtWhole(plan.mlPerInterval)} mL</div>
           <div class="mt-2 text-sm text-slate-300">
-            Delivers {fmt(plan.kcalPerInterval, 2)} kcal q{fmtCompact(plan.intervalHours)}h
+            Delivers about {fmtWhole(plan.kcalPerInterval)} kcal q{fmtCompact(plan.intervalHours)}h
           </div>
         </div>
 
-        <div class="mt-3 grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
-          <article class="ui-inset p-4">
-            <header class="text-xs font-semibold uppercase tracking-wide text-slate-300">Base RER</header>
-            <div class="mt-3 text-right text-lg font-black tabular-nums text-slate-100">{fmt(plan.rerKcalPerDay, 2)} kcal/day</div>
-          </article>
+        <div class="mt-3 grid gap-3 xl:grid-cols-[minmax(0,1.3fr)_minmax(280px,1fr)]">
+          <div class="ui-inset p-4">
+            <header class="text-xs font-semibold uppercase tracking-wide text-slate-300">Calculation summary</header>
+            <div class="mt-3 grid gap-3 text-sm text-slate-300">
+              <div class="rounded-lg border border-slate-700/40 bg-surface-sunken px-3 py-3">
+                <div class="text-xs font-semibold uppercase tracking-wide text-slate-400">Step 1</div>
+                <div class="mt-1 text-slate-100">
+                  RER = 70 x {fmtCompact(plan.weightKg)}^0.75 = <span class="font-black tabular-nums">{fmtWhole(plan.rerKcalPerDay)} kcal/day</span>
+                </div>
+              </div>
 
-          <article class="ui-inset p-4">
-            <header class="text-xs font-semibold uppercase tracking-wide text-slate-300">Adjusted target</header>
-            <div class="mt-3 text-right text-lg font-black tabular-nums text-slate-100">{fmt(plan.targetKcalPerDay, 2)} kcal/day</div>
-          </article>
+              <div class="rounded-lg border border-slate-700/40 bg-surface-sunken px-3 py-3">
+                <div class="text-xs font-semibold uppercase tracking-wide text-slate-400">Step 2</div>
+                <div class="mt-1 text-slate-100">
+                  Calorie goal = {fmtWhole(plan.rerKcalPerDay)} x {fmtCompact(plan.rerFactor)} = <span class="font-black tabular-nums">{fmtWhole(plan.targetKcalPerDay)} kcal/day</span>
+                </div>
+              </div>
 
-          <article class="ui-inset p-4">
-            <header class="text-xs font-semibold uppercase tracking-wide text-slate-300">Daily volume</header>
-            <div class="mt-3 text-right text-lg font-black tabular-nums text-slate-100">{fmt(plan.totalMlPerDay, 2)} mL/day</div>
-          </article>
+              <div class="rounded-lg border border-slate-700/40 bg-surface-sunken px-3 py-3">
+                <div class="text-xs font-semibold uppercase tracking-wide text-slate-400">Step 3</div>
+                <div class="mt-1 text-slate-100">
+                  Daily volume = {fmtWhole(plan.targetKcalPerDay)} / {fmt(plan.kcalPerMl, 2)} = <span class="font-black tabular-nums">{fmtWhole(plan.totalMlPerDay)} mL/day</span>
+                </div>
+              </div>
+            </div>
+          </div>
 
-          <article class="ui-inset p-4">
-            <header class="text-xs font-semibold uppercase tracking-wide text-slate-300">Continuous rate</header>
-            <div class="mt-3 text-right text-lg font-black tabular-nums text-slate-100">{fmt(plan.mlPerHour, 2)} mL/hr</div>
-          </article>
-
-          <article class="ui-inset p-4">
-            <header class="text-xs font-semibold uppercase tracking-wide text-slate-300">kcal per hour</header>
-            <div class="mt-3 text-right text-lg font-black tabular-nums text-slate-100">{fmt(plan.kcalPerHour, 2)} kcal/hr</div>
-          </article>
-
-          <article class="ui-inset p-4">
-            <header class="text-xs font-semibold uppercase tracking-wide text-slate-300">Diet density</header>
-            <div class="mt-3 text-right text-lg font-black tabular-nums text-slate-100">{fmt(plan.kcalPerMl, 2)} kcal/mL</div>
-          </article>
+          <div class="ui-inset p-4">
+            <header class="text-xs font-semibold uppercase tracking-wide text-slate-300">Quick reference</header>
+            <div class="mt-3 grid gap-3 text-sm">
+              <div class="grid grid-cols-[minmax(0,1fr)_auto] items-baseline gap-2">
+                <span class="text-slate-300">Calorie goal</span>
+                <span class="font-black tabular-nums text-slate-100">{fmtWhole(plan.targetKcalPerDay)} kcal/day</span>
+              </div>
+              <div class="grid grid-cols-[minmax(0,1fr)_auto] items-baseline gap-2">
+                <span class="text-slate-300">Daily volume</span>
+                <span class="font-black tabular-nums text-slate-100">{fmtWhole(plan.totalMlPerDay)} mL/day</span>
+              </div>
+              <div class="grid grid-cols-[minmax(0,1fr)_auto] items-baseline gap-2">
+                <span class="text-slate-300">Continuous rate</span>
+                <span class="font-black tabular-nums text-slate-100">{fmt(plan.mlPerHour, 2)} mL/hr</span>
+              </div>
+              <div class="grid grid-cols-[minmax(0,1fr)_auto] items-baseline gap-2">
+                <span class="text-slate-300">Diet density</span>
+                <span class="font-black tabular-nums text-slate-100">{fmt(plan.kcalPerMl, 2)} kcal/mL</span>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     {/if}
