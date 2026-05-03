@@ -25,3 +25,5 @@ dist-ssr
 
 # Agent instructions
 AGENTS.md
+.codex
+test-results/
