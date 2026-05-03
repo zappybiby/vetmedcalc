@@ -22,6 +22,7 @@
     'diazepam-5': 'mg/kg/hr',
     'dobutamine-12-5': 'mcg/kg/min',
     'dopamine-40': 'mcg/kg/min',
+    'epinephrine-1': 'mcg/kg/min',
     'fentanyl-50': 'mcg/kg/hr',
     'furosemide-50': 'mg/kg/hr',
     'midazolam-5': 'mg/kg/hr',

@@ -20,6 +20,11 @@ export const MEDICATIONS: readonly MedicationDef[] = [
     criDoseRange: { minMgPerKgHr: 0.12, maxMgPerKgHr: 0.6 },
   },
   {
+    id: 'epinephrine-1',
+    name: 'Epinephrine',
+    concentration: { value: 1, units: 'mg/mL' },
+  },
+  {
     id: 'fentanyl-50',
     name: 'Fentanyl',
     concentration: { value: 0.05, units: 'mg/mL' },
