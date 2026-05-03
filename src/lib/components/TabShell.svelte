@@ -9,12 +9,12 @@
 
   type Tab = { id: string; label: string };
   const tabs: Tab[] = [
-    { id: 'cpr',     label: 'CPR LABELS' },
-    { id: 'cri',     label: 'CRI CALCULATOR' },
-    { id: 'drugbag', label: 'DRUG IN BAG' },
-    { id: 'insouts', label: 'INS / OUTS' },
-    { id: 'rer',     label: 'RER CALCULATOR' },
-    { id: 'blood',   label: 'BLOOD TRANSFUSION' },
+    { id: 'cpr',     label: 'CPR labels' },
+    { id: 'cri',     label: 'CRI calculator' },
+    { id: 'drugbag', label: 'Drug in bag' },
+    { id: 'insouts', label: 'Ins / outs' },
+    { id: 'rer',     label: 'RER calculator' },
+    { id: 'blood',   label: 'Blood transfusion' },
   ];
 
   let active: Tab['id'] = 'cpr'; // default
@@ -31,11 +31,12 @@
   const tabInactive = '';
 </script>
 
-<section class="grid min-w-0 w-full gap-3" aria-label="Main tools">
-  <div class="flex flex-wrap gap-2" role="tablist" aria-label="Tool tabs">
+<section class="grid min-w-0 w-full gap-2" aria-label="Main tools">
+  <div class="-mx-1 flex justify-center px-1 pb-0.5">
+    <div class="ui-tablist" role="tablist" aria-label="Tool tabs">
     {#each tabs as t}
       <button
-        class={`${tabBase} ${active === t.id ? tabActive : tabInactive}`}
+        class={`${tabBase} ${active === t.id ? tabActive : tabInactive} shrink-0`}
         role="tab"
         aria-selected={active === t.id}
         on:click={() => selectTab(t.id)}
@@ -43,10 +44,11 @@
         {t.label}
       </button>
     {/each}
+    </div>
   </div>
 
   <div
-    class="ui-panel max-w-full min-w-0 overflow-x-auto p-4 text-slate-200"
+    class="ui-panel max-w-full min-w-0 overflow-x-auto p-2 text-slate-200 sm:p-2.5"
     role="tabpanel"
   >
     <div hidden={active !== 'cpr'}>

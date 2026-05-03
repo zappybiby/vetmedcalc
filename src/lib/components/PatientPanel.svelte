@@ -69,13 +69,52 @@
 </script>
 
 <aside
-  class="ui-panel p-3 text-slate-100 sm:p-4 md:sticky md:top-4 md:self-start"
+  class="ui-panel ui-panel-contrast p-2.5 text-slate-100 sm:p-3 md:sticky md:top-3 md:self-start"
   aria-label="Patient inputs"
 >
-  <details class="group" bind:open={panelOpen}>
-    <summary class="ui-summary flex cursor-pointer items-center justify-between gap-3 md:hidden">
+  <div class="hidden md:mx-auto md:grid md:max-w-[760px] md:grid-cols-[118px_132px_minmax(220px,1fr)] md:items-end md:gap-2">
+    <div class="flex min-w-0 flex-col gap-1.5">
+      <label class="ui-label" for="weight">Weight (kg)</label>
+      <input
+        id="weight"
+        class="field-control"
+        type="number"
+        min="0"
+        step="0.1"
+        bind:value={weight}
+        inputmode="decimal"
+      />
+    </div>
+
+    <div class="flex min-w-0 flex-col gap-1.5">
+      <label class="ui-label" for="species">Species</label>
+      <select
+        id="species"
+        class="field-select"
+        bind:value={species}
+      >
+        <option value="" disabled>Select...</option>
+        <option value="dog">Dog</option>
+        <option value="cat">Cat</option>
+      </select>
+    </div>
+
+    <div class="flex min-w-0 flex-col gap-1.5">
+      <label class="ui-label" for="name">Patient name</label>
+      <input
+        id="name"
+        class="field-control"
+        type="text"
+        placeholder="e.g., Bella"
+        bind:value={name}
+      />
+    </div>
+  </div>
+
+  <details class="group md:hidden" bind:open={panelOpen}>
+    <summary class="ui-summary flex cursor-pointer items-center justify-between gap-3">
       <div class="min-w-0">
-        <div class="text-xs font-black uppercase tracking-wide text-slate-300">Patient</div>
+        <div class="ui-label-strong">Patient</div>
         <div class="mt-0.5 truncate text-sm font-semibold text-slate-100">{summaryText}</div>
       </div>
       <svg class="h-6 w-6 flex-none text-slate-400 transition group-open:rotate-180" viewBox="0 0 20 20" aria-hidden="true">
@@ -88,14 +127,12 @@
       </svg>
     </summary>
 
-    <div class="mt-3 md:mt-0">
-      <h2 class="mb-3 hidden text-sm font-semibold uppercase tracking-wide text-slate-200 md:block">Patient</h2>
-
-      <div class="grid grid-cols-2 gap-x-2 gap-y-3 sm:grid-cols-1 sm:gap-3">
-        <div class="flex flex-col gap-2">
-          <label class="text-xs font-semibold uppercase tracking-wide text-slate-300" for="weight">Weight (kg)</label>
+    <div class="mt-2.5">
+      <div class="grid grid-cols-2 gap-x-2 gap-y-2.5 sm:grid-cols-1 sm:gap-2.5">
+        <div class="flex flex-col gap-1.5">
+          <label class="ui-label" for="weight-mobile">Weight (kg)</label>
           <input
-            id="weight"
+            id="weight-mobile"
             class="field-control"
             type="number"
             min="0"
@@ -105,10 +142,10 @@
           />
         </div>
 
-        <div class="flex flex-col gap-2">
-          <label class="text-xs font-semibold uppercase tracking-wide text-slate-300" for="species">Species</label>
+        <div class="flex flex-col gap-1.5">
+          <label class="ui-label" for="species-mobile">Species</label>
           <select
-            id="species"
+            id="species-mobile"
             class="field-select"
             bind:value={species}
           >
@@ -118,10 +155,10 @@
           </select>
         </div>
 
-        <div class="col-span-2 flex flex-col gap-2 sm:col-span-1">
-          <label class="text-xs font-semibold uppercase tracking-wide text-slate-300" for="name">Patient name (optional)</label>
+        <div class="col-span-2 flex flex-col gap-1.5 sm:col-span-1">
+          <label class="ui-label" for="name-mobile">Patient name</label>
           <input
-            id="name"
+            id="name-mobile"
             class="field-control"
             type="text"
             placeholder="e.g., Bella"
