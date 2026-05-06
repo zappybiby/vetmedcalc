@@ -33,18 +33,18 @@
   }
 </script>
 
-<section class="grid gap-3" aria-label="CPR Card">
-  <div class="flex flex-wrap items-center justify-between gap-3">
-    <div class="text-sm font-black uppercase tracking-wide text-slate-100">CPR Card</div>
+<section class="grid gap-2 sm:gap-3" aria-label="CPR Card">
+  <div class="flex flex-wrap items-center justify-between gap-2 sm:gap-3">
+    <div class="text-[13px] font-black uppercase tracking-wide text-slate-100 sm:text-sm">CPR Card</div>
     <div class="print:hidden">
-      <button class="ui-button font-bold" on:click={printLabel} disabled={!p.weightKg || !p.species}>
+      <button class="ui-button px-2.5 py-1 text-xs font-bold sm:px-3 sm:py-1.5 sm:text-sm" on:click={printLabel} disabled={!p.weightKg || !p.species}>
         Print label
       </button>
     </div>
   </div>
 
-  <div class="ui-card grid gap-2 p-4">
-    <article class="ui-inset p-3">
+  <div class="ui-card grid gap-2 p-2.5 sm:p-4">
+    <article class="ui-inset p-2.5 sm:p-3">
       <div class="flex items-start justify-between gap-3">
         <div class="min-w-0">
           <div class="text-xs font-black uppercase tracking-wide text-slate-300">Epi</div>
@@ -60,7 +60,7 @@
       </div>
     </article>
 
-    <article class="ui-inset p-3">
+    <article class="ui-inset p-2.5 sm:p-3">
       <div class="flex items-start justify-between gap-3">
         <div class="min-w-0">
           <div class="text-xs font-black uppercase tracking-wide text-slate-300">Atropine</div>
@@ -76,7 +76,7 @@
       </div>
     </article>
 
-    <article class="ui-inset p-3">
+    <article class="ui-inset p-2.5 sm:p-3">
       <div class="flex items-start justify-between gap-3">
         <div class="min-w-0">
           <div class="text-xs font-black uppercase tracking-wide text-slate-300">ET Tube</div>
@@ -96,7 +96,7 @@
     </article>
   </div>
 
-  <p class="m-0 text-xs text-slate-400">
+  <p class="m-0 text-[11px] leading-relaxed text-slate-400 sm:text-xs">
     ET Tube sizing for dogs is calculated from the formula <code>3.85 * (kg)^(1/3)</code> derived from a
     <a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC6625165/" target="_blank" rel="noreferrer">2019 study</a>
     published in the Canadian Veterinary Journal.

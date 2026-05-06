@@ -78,16 +78,16 @@
         : 'Input = output';
 </script>
 
-<section class="grid min-w-0 gap-4 text-slate-200" aria-label="Ins and outs calculator">
-  <div class="grid min-w-0 gap-4">
-    <div class="ui-card min-w-0 p-4">
-      <div class="grid min-w-0 gap-4 md:grid-cols-2 md:divide-x md:divide-slate-800">
+<section class="grid min-w-0 gap-2 text-slate-200 sm:gap-4" aria-label="Ins and outs calculator">
+  <div class="grid min-w-0 gap-2 sm:gap-4">
+    <div class="ui-card min-w-0 p-2.5 sm:p-4">
+      <div class="grid min-w-0 gap-2 sm:gap-4 md:grid-cols-2 md:divide-x md:divide-slate-800">
         <div class="min-w-0 md:col-span-2">
-          <h2 class="text-sm font-semibold uppercase tracking-wide text-slate-200">
+          <h2 class="text-[13px] font-semibold uppercase tracking-wide text-slate-200 sm:text-sm">
             Inputs (last {fmtCompact(windowHours)} {windowHours === 1 ? 'hour' : 'hours'})
           </h2>
-          <div class="mt-3 grid gap-3">
-            <label class="grid gap-2">
+          <div class="mt-2 grid gap-2 min-[360px]:grid-cols-2 sm:mt-3 sm:gap-3">
+            <label class="grid gap-1.5 sm:gap-2">
               <span class="text-xs font-semibold uppercase tracking-wide text-slate-300">Fluid ins (mL)</span>
               <input
                 class="field-control"
@@ -100,7 +100,7 @@
               />
             </label>
 
-            <label class="grid gap-2">
+            <label class="grid gap-1.5 sm:gap-2">
               <span class="text-xs font-semibold uppercase tracking-wide text-slate-300">Urine output (mL)</span>
               <input
                 class="field-control"
@@ -113,7 +113,7 @@
               />
             </label>
 
-            <label class="grid gap-2">
+            <label class="grid gap-1.5 min-[360px]:col-span-2 sm:gap-2">
               <span class="text-xs font-semibold uppercase tracking-wide text-slate-300">Duration (hours)</span>
               <input
                 class="field-control"
@@ -130,23 +130,23 @@
     </div>
 
     {#if hasInput}
-      <div class="grid min-w-0 gap-4">
-        <div class="ui-card min-w-0 p-4">
-          <h3 class="text-sm font-black uppercase tracking-wide text-slate-200">Fluid summary</h3>
-          <div class="mt-3 grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
-            <article class="ui-inset min-w-0 p-4">
+      <div class="grid min-w-0 gap-2 sm:gap-4">
+        <div class="ui-card min-w-0 p-2.5 sm:p-4">
+          <h3 class="text-[13px] font-black uppercase tracking-wide text-slate-200 sm:text-sm">Fluid summary</h3>
+          <div class="mt-2 grid gap-2 sm:mt-3 sm:grid-cols-2 sm:gap-3 xl:grid-cols-3">
+            <article class="ui-inset min-w-0 p-3 sm:p-4">
               <header class="text-xs font-semibold uppercase tracking-wide text-slate-300">Fluid ins</header>
-              <dl class="mt-3 grid gap-3 text-sm text-slate-300">
-                <div>
+              <dl class="mt-2 grid gap-2 text-sm text-slate-300 sm:mt-3 sm:gap-3">
+                <div class="flex items-baseline justify-between gap-2">
                   <dt class="text-xs font-semibold uppercase tracking-wide text-slate-400">mL/hr</dt>
-                  <dd class="mt-1 text-right text-lg font-black text-slate-100">
+                  <dd class="text-right text-base font-black text-slate-100 sm:text-lg">
                     <span class="tabular-nums">{fmt(insMlPerHr)}</span>
                     <span class="ml-1 text-sm font-semibold text-slate-300">mL/hr</span>
                   </dd>
                 </div>
-                <div>
+                <div class="flex items-baseline justify-between gap-2">
                   <dt class="text-xs font-semibold uppercase tracking-wide text-slate-400">mL/kg/hr</dt>
-                  <dd class="mt-1 text-right text-lg font-black text-slate-100">
+                  <dd class="text-right text-base font-black text-slate-100 sm:text-lg">
                     <span class="tabular-nums">{fmt(insMlPerKgHr)}</span>
                     <span class="ml-1 text-sm font-semibold text-slate-300">mL/kg/hr</span>
                   </dd>
@@ -154,19 +154,19 @@
               </dl>
             </article>
 
-            <article class="ui-inset min-w-0 p-4">
+            <article class="ui-inset min-w-0 p-3 sm:p-4">
               <header class="text-xs font-semibold uppercase tracking-wide text-slate-300">Fluid outs</header>
-              <dl class="mt-3 grid gap-3 text-sm text-slate-300">
-                <div>
+              <dl class="mt-2 grid gap-2 text-sm text-slate-300 sm:mt-3 sm:gap-3">
+                <div class="flex items-baseline justify-between gap-2">
                   <dt class="text-xs font-semibold uppercase tracking-wide text-slate-400">mL/hr</dt>
-                  <dd class="mt-1 text-right text-lg font-black text-slate-100">
+                  <dd class="text-right text-base font-black text-slate-100 sm:text-lg">
                     <span class="tabular-nums">{fmt(outMlPerHr)}</span>
                     <span class="ml-1 text-sm font-semibold text-slate-300">mL/hr</span>
                   </dd>
                 </div>
-                <div>
+                <div class="flex items-baseline justify-between gap-2">
                   <dt class="text-xs font-semibold uppercase tracking-wide text-slate-400">mL/kg/hr</dt>
-                  <dd class="mt-1 text-right text-lg font-black text-slate-100">
+                  <dd class="text-right text-base font-black text-slate-100 sm:text-lg">
                     <span class="tabular-nums">{fmt(outMlPerKgHr)}</span>
                     <span class="ml-1 text-sm font-semibold text-slate-300">mL/kg/hr</span>
                   </dd>
@@ -174,13 +174,13 @@
               </dl>
             </article>
 
-            <article class="ui-inset min-w-0 p-4">
+            <article class="ui-inset min-w-0 p-3 sm:p-4">
               <header class="text-xs font-semibold uppercase tracking-wide text-slate-300">Net balance</header>
-              <div class="mt-3 space-y-3 text-sm text-slate-300">
-                <div class="text-right text-sm font-semibold uppercase tracking-wide text-slate-100">{balanceDescriptor}</div>
+              <div class="mt-2 space-y-2 text-sm text-slate-300 sm:mt-3 sm:space-y-3">
+                <div class="text-right text-xs font-semibold uppercase tracking-wide text-slate-100 sm:text-sm">{balanceDescriptor}</div>
                 <div class="flex items-baseline justify-between gap-2">
                   <span>Δ mL/hr</span>
-                  <span class="text-right text-lg font-black text-slate-100">
+                  <span class="text-right text-base font-black text-slate-100 sm:text-lg">
                     <span class="tabular-nums">{fmtSigned(netMlPerHr)}</span>
                     <span class="ml-1 text-sm font-semibold text-slate-300">mL/hr</span>
                   </span>

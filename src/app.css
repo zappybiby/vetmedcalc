@@ -135,7 +135,7 @@
   .field-control,
   .field-select {
     color-scheme: var(--ui-input-scheme);
-    @apply w-full min-w-0 rounded-lg px-2 py-1.5 text-sm transition-colors disabled:cursor-not-allowed disabled:opacity-60;
+    @apply w-full min-w-0 rounded-lg px-2 py-1.5 text-[13px] transition-colors disabled:cursor-not-allowed disabled:opacity-60 sm:text-sm;
     color: var(--ui-input-text);
     border: 1px solid var(--ui-field-border);
     background-clip: padding-box;
@@ -276,14 +276,14 @@
   }
 
   .ui-tablist {
-    @apply inline-flex min-w-0 items-center gap-1 overflow-x-auto rounded-xl px-1.5 py-1;
+    @apply grid w-full max-w-full min-w-0 grid-cols-3 items-center gap-1 rounded-lg px-1 py-1 sm:flex sm:w-auto sm:flex-nowrap sm:justify-center sm:overflow-x-auto sm:rounded-xl sm:px-1.5;
     background-color: color-mix(in srgb, var(--ui-tab-bg) 85%, var(--ui-surface));
     border: 1px solid rgba(148, 163, 184, 0.14);
     box-shadow: 0 1px 0 rgba(255, 255, 255, 0.04) inset;
   }
 
   .ui-tab {
-    @apply inline-flex items-center rounded-lg px-2.5 py-1.5 text-[12px] font-medium whitespace-nowrap transition-colors;
+    @apply inline-flex min-w-0 items-center justify-center rounded-md px-1.5 py-1.5 text-center text-[11px] font-medium leading-tight transition-colors sm:rounded-lg sm:px-2.5 sm:text-[12px] sm:whitespace-nowrap;
     color: color-mix(in srgb, var(--ui-text-300) 82%, var(--ui-text-400));
     background-color: transparent;
     border: 1px solid transparent;
@@ -360,7 +360,7 @@
   }
 
   .ui-statement-value {
-    @apply text-[1.35rem] font-semibold leading-tight tracking-tight tabular-nums;
+    @apply text-[1.15rem] font-semibold leading-tight tracking-tight tabular-nums sm:text-[1.35rem];
     color: var(--ui-text-100);
   }
 

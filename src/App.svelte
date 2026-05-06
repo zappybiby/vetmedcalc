@@ -50,7 +50,7 @@
 </script>
 
 <div class="flex min-h-dvh flex-col">
-  <main class="flex-1 py-3 md:py-4">
+  <main class="flex-1 py-2 sm:py-3 md:py-4">
     <button
       type="button"
       class="theme-toggle ui-button fixed right-3 top-3 z-40 gap-2 px-2 py-1 text-[10.5px] font-medium sm:right-4 sm:top-4 sm:px-2.5 sm:py-1.5 sm:text-xs"
@@ -65,7 +65,7 @@
       </span>
     </button>
 
-    <div class="mx-auto grid min-w-0 max-w-[1040px] gap-2 px-3 sm:px-4">
+    <div class="mx-auto grid min-w-0 max-w-[1040px] gap-2 px-2 sm:px-3 md:px-4">
       {#if !$cprBatchMode}
         <PatientPanel />
       {/if}

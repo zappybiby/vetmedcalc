@@ -185,11 +185,9 @@
   $: ready = !!(p.weightKg && dose !== '' && bagVolumeMl !== '' && maintRateMlHr !== '');
 </script>
 
-<section class="grid min-w-0 gap-4 text-slate-200" aria-label="Drug in bag calculator">
-  <header class="text-base font-black uppercase tracking-wide text-slate-100">Drug in Bag</header>
-
-  <div class="grid min-w-0 gap-3 md:grid-cols-2">
-    <div class="flex min-w-0 flex-col gap-2">
+<section class="grid min-w-0 gap-2 text-slate-200 sm:gap-3" aria-label="Drug in bag calculator">
+  <div class="grid min-w-0 gap-2 min-[380px]:grid-cols-2 sm:gap-3 md:grid-cols-2">
+    <div class="flex min-w-0 flex-col gap-1.5 min-[380px]:col-span-2 sm:gap-2 md:col-span-1">
       <label class="text-xs font-semibold uppercase tracking-wide text-slate-300" for="drugbag-drug">Drug</label>
       <select id="drugbag-drug" class="field-select" bind:value={selectedDrugId}>
         {#each DRUG_OPTIONS as option}
@@ -200,7 +198,7 @@
       </select>
     </div>
 
-    <div class="flex min-w-0 flex-col gap-2">
+    <div class="flex min-w-0 flex-col gap-1.5 min-[380px]:col-span-2 sm:gap-2 md:col-span-1">
       <label class="text-xs font-semibold uppercase tracking-wide text-slate-300" for="drugbag-dose">Dose</label>
       <div class="grid min-w-0 grid-cols-[minmax(0,1fr)_auto] items-center gap-2">
         <input
@@ -221,7 +219,7 @@
       </div>
     </div>
 
-    <div class="flex min-w-0 flex-col gap-2">
+    <div class="flex min-w-0 flex-col gap-1.5 sm:gap-2">
       <label class="text-xs font-semibold uppercase tracking-wide text-slate-300" for="drugbag-bag">Fluid bag volume (mL)</label>
       <input
         id="drugbag-bag"
@@ -235,7 +233,7 @@
       />
     </div>
 
-    <div class="flex min-w-0 flex-col gap-2">
+    <div class="flex min-w-0 flex-col gap-1.5 sm:gap-2">
       <label class="text-xs font-semibold uppercase tracking-wide text-slate-300" for="drugbag-rate">Maintenance rate (mL/hr)</label>
       <input
         id="drugbag-rate"
@@ -252,35 +250,35 @@
   </div>
 
   {#if ready && snappedMlToAdd != null}
-    <div class="grid gap-3">
-      <div class="grid gap-3 md:grid-cols-2">
-        <div class="ui-card p-4 text-center md:col-span-2">
+    <div class="grid gap-2 sm:gap-2.5">
+      <div class="grid gap-2 sm:gap-3 md:grid-cols-2">
+        <div class="ui-card p-3 text-center md:col-span-2">
           <div class="text-xs font-black uppercase tracking-wide text-slate-300">Delivered dose at rate</div>
-          <div class="mt-2 text-3xl font-black tabular-nums text-slate-100">{formatDeliveredDose(deliveredDoseMgPerKgHr, doseUnit)}</div>
+          <div class="mt-1.5 text-2xl font-black tabular-nums text-slate-100">{formatDeliveredDose(deliveredDoseMgPerKgHr, doseUnit)}</div>
           {#if deliveredDoseMgPerKgHr != null}
-            <div class="mt-2 text-xs text-slate-400">= {formatDeliveredDose(deliveredDoseMgPerKgHr, 'mg/kg/hr')}</div>
+            <div class="mt-1 text-xs text-slate-400">= {formatDeliveredDose(deliveredDoseMgPerKgHr, 'mg/kg/hr')}</div>
           {/if}
         </div>
 
-        <div class="ui-card p-4">
+        <div class="ui-card p-3">
           <div class="text-xs font-black uppercase tracking-wide text-slate-300">Draw up</div>
 
-          <div class="mt-3 grid gap-3 sm:grid-cols-2">
-            <div class="ui-inset p-3">
+          <div class="mt-2 grid gap-2 min-[380px]:grid-cols-2">
+            <div class="ui-inset p-2.5 sm:p-3">
               <div class="text-xs font-semibold uppercase tracking-wide text-slate-400">Add to bag</div>
-              <div class="mt-1 text-2xl font-black tabular-nums text-slate-100">
+              <div class="mt-1 text-xl font-black tabular-nums text-slate-100 sm:text-2xl">
                 {fmt(snappedMlToAdd, volumeDigits)} <span class="text-base font-semibold text-slate-300">mL</span>
               </div>
             </div>
-            <div class="ui-inset p-3">
+            <div class="ui-inset p-2.5 sm:p-3">
               <div class="text-xs font-semibold uppercase tracking-wide text-slate-400">Drug drawn</div>
-              <div class="mt-1 text-2xl font-black tabular-nums text-slate-100">
+              <div class="mt-1 text-xl font-black tabular-nums text-slate-100 sm:text-2xl">
                 {fmt(snappedMgToAdd, 2)} <span class="text-base font-semibold text-slate-300">mg</span>
               </div>
             </div>
           </div>
 
-          <div class="mt-3 grid gap-x-3 gap-y-2 text-sm [grid-template-columns:minmax(0,1fr)_auto]">
+          <div class="mt-2 grid gap-x-3 gap-y-1.5 text-sm [grid-template-columns:minmax(0,1fr)_auto]">
             <div class="text-slate-300">Drug</div>
             <div class="text-right text-slate-100">{selectedDrug.label}</div>
 
@@ -298,14 +296,14 @@
           </div>
 
           {#if hasRoundingChange && rawMlToAdd != null}
-            <div class="mt-3 text-xs text-slate-400">Rounded from {fmt(rawMlToAdd, volumeDigits)} mL</div>
+            <div class="mt-2 text-xs text-slate-400 sm:mt-3">Rounded from {fmt(rawMlToAdd, volumeDigits)} mL</div>
           {/if}
         </div>
 
-        <div class="ui-card p-4">
+        <div class="ui-card p-3">
           <div class="text-xs font-black uppercase tracking-wide text-slate-300">Bag + rate</div>
 
-          <div class="mt-3 grid gap-x-3 gap-y-2 text-sm [grid-template-columns:minmax(0,1fr)_auto]">
+          <div class="mt-2 grid gap-x-3 gap-y-1.5 text-sm [grid-template-columns:minmax(0,1fr)_auto]">
             <div class="text-slate-300">Bag volume</div>
             <div class="text-right font-black tabular-nums text-slate-100">{bagVolumeMl || 0} <span class="ml-1 text-xs font-semibold uppercase tracking-wide text-slate-400">mL</span></div>
 
@@ -323,7 +321,7 @@
         </div>
       </div>
 
-      <details class="ui-inset p-4">
+      <details class="ui-inset p-3">
         <summary class="cursor-pointer select-none text-xs font-black uppercase tracking-wide text-slate-300">How calculated</summary>
         <table class="mt-3 w-full table-fixed border-collapse text-sm">
           <tbody>

@@ -174,10 +174,10 @@
   }
 </script>
 
-<section class="grid min-w-0 gap-2.5 text-slate-200" aria-label="CRI calculator">
-  <article class="ui-card grid gap-2.5 p-3">
-    <div class="grid min-w-0 gap-2.5 xl:grid-cols-[minmax(220px,300px)_minmax(220px,280px)_104px_120px] xl:justify-center">
-      <div class="flex min-w-0 flex-col gap-1.5">
+<section class="grid min-w-0 gap-2 text-slate-200 sm:gap-2.5" aria-label="CRI calculator">
+  <article class="ui-card grid gap-2 p-2 sm:gap-2.5 sm:p-3">
+    <div class="grid min-w-0 grid-cols-2 gap-2 sm:gap-2.5 xl:grid-cols-[minmax(220px,300px)_minmax(220px,280px)_104px_120px] xl:justify-center">
+      <div class="col-span-2 flex min-w-0 flex-col gap-1.5 xl:col-span-1">
         <label class="ui-label" for="cri-med">Medication</label>
         <select id="cri-med" bind:value={medId} class="field-select">
           {#each MEDICATIONS as m}
@@ -188,7 +188,7 @@
         </select>
       </div>
 
-      <div class="flex min-w-0 flex-col gap-1.5">
+      <div class="col-span-2 flex min-w-0 flex-col gap-1.5 xl:col-span-1">
         <label class="ui-label" for="cri-dose">Dose</label>
         <div class="grid min-w-0 grid-cols-[minmax(0,1fr)_auto] items-center gap-2">
           <input
@@ -204,7 +204,7 @@
           <select
             bind:value={doseUnit}
             aria-label="Dose unit"
-            class="field-select min-w-[8rem]"
+            class="field-select min-w-[7rem] sm:min-w-[8rem]"
             class:unit-flash={unitFlash}
           >
             <option value="mg/kg/hr">mg/kg/hr</option>
@@ -260,9 +260,9 @@
     {/if}
 
     <article class="ui-card overflow-hidden">
-      <section class="px-3.5 py-3.5 lg:px-4 lg:py-4">
+      <section class="px-3 py-3 sm:px-3.5 sm:py-3.5 lg:px-4 lg:py-4">
         <div class="ui-label-strong">Instruction</div>
-        <div class="mt-1.5 flex flex-wrap items-baseline gap-x-2 gap-y-1.5 text-[15px] leading-relaxed text-slate-300">
+        <div class="mt-1.5 flex flex-wrap items-baseline gap-x-1.5 gap-y-1 text-[14px] leading-relaxed text-slate-300 sm:gap-x-2 sm:gap-y-1.5 sm:text-[15px]">
           <span>Draw up</span>
           {#if stockLine}
             <span class="ui-statement-value">{stockLine.value}</span>
@@ -282,9 +282,9 @@
 
       <div class="grid gap-y-0 border-t border-slate-700/40 md:grid-cols-3">
         {#each summaryCards as card, index}
-          <section class={`min-w-0 px-3.5 py-3 sm:px-4 ${index > 0 ? 'border-t border-slate-700/40 md:border-t-0 md:border-l' : ''}`}>
+          <section class={`grid min-w-0 grid-cols-[minmax(0,0.72fr)_minmax(0,1fr)] items-baseline gap-2 px-3 py-2.5 sm:block sm:px-4 sm:py-3 ${index > 0 ? 'border-t border-slate-700/40 md:border-t-0 md:border-l' : ''}`}>
             <div class="ui-label-strong">{card.label}</div>
-            <div class="mt-1.5 text-[1.6rem] font-semibold leading-none tracking-tight tabular-nums text-slate-100">{card.value}</div>
+            <div class="text-right text-[1.12rem] font-semibold leading-tight tracking-tight tabular-nums text-slate-100 sm:mt-1.5 sm:text-left sm:text-[1.6rem] sm:leading-none">{card.value}</div>
             {#if card.secondary}
               <div class="ui-meta mt-1">{card.secondary}</div>
             {/if}
@@ -294,7 +294,7 @@
     </article>
 
     <details class="group ui-card overflow-hidden">
-      <summary class="ui-summary flex cursor-pointer items-center justify-between gap-3 px-3.5 py-3 lg:px-4">
+      <summary class="ui-summary flex cursor-pointer items-center justify-between gap-3 px-3 py-2.5 sm:px-3.5 sm:py-3 lg:px-4">
         <div class="ui-section-title">Step-By-Step calculations</div>
         <svg class="h-5 w-5 flex-none text-slate-400 transition group-open:rotate-180" viewBox="0 0 20 20" aria-hidden="true">
           <path
@@ -306,13 +306,13 @@
         </svg>
       </summary>
 
-      <div class="border-t border-slate-700/40 px-3.5 py-3 lg:px-4">
-        <div class="grid gap-3">
+      <div class="border-t border-slate-700/40 px-2.5 py-2.5 sm:px-3.5 sm:py-3 lg:px-4">
+        <div class="grid gap-2 sm:gap-3">
           <div class="grid gap-2">
             <div class="ui-label-strong">Dose conversions</div>
-            <div class="grid gap-2 sm:grid-cols-2 xl:grid-cols-5">
+            <div class="grid gap-1.5 sm:grid-cols-2 sm:gap-2 xl:grid-cols-5">
               {#each vm.resultCard.doseLines as line}
-                <div class="ui-inset px-3 py-2.5">
+                <div class="ui-inset px-2.5 py-2 sm:px-3 sm:py-2.5">
                   <div class="text-[13px] font-medium leading-none tabular-nums text-slate-200">{line}</div>
                 </div>
               {/each}
@@ -321,8 +321,8 @@
 
           <div class="overflow-hidden rounded-lg border border-slate-700/40 divide-y divide-slate-700/40">
             {#each vm.stepByStep.rows as row}
-              <div class="grid gap-2.5 p-3 lg:grid-cols-[190px_minmax(0,1fr)] lg:items-stretch">
-                <div class="ui-inset flex items-center justify-between gap-3 px-3 py-2.5">
+              <div class="grid gap-2 p-2.5 sm:gap-2.5 sm:p-3 lg:grid-cols-[190px_minmax(0,1fr)] lg:items-stretch">
+                <div class="ui-inset flex items-center justify-between gap-3 px-2.5 py-2 sm:px-3 sm:py-2.5">
                   <div class="text-[13px] font-medium leading-snug text-slate-200">{row.label}</div>
 
                   {#if row.popover}
@@ -379,7 +379,7 @@
                   {/if}
                 </div>
 
-                <div class="ui-inset flex items-center px-3 py-2.5 font-mono text-[12.5px] leading-[1.6] tracking-tight text-slate-100">
+                <div class="ui-inset flex items-center px-2.5 py-2 font-mono text-[12px] leading-[1.55] tracking-tight text-slate-100 sm:px-3 sm:py-2.5 sm:text-[12.5px]">
                   <span class="whitespace-pre-wrap break-words">
                     {#each tokenizeMath(row.math) as t}
                       <span class={t.kind === 'num'

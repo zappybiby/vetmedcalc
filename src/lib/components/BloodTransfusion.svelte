@@ -70,14 +70,12 @@
   $: if (!hasInput) summaryOpen = false;
 </script>
 
-<section class="grid min-w-0 gap-4 text-slate-200" aria-label="Blood transfusion planner">
-  <header class="text-base font-black uppercase tracking-wide text-slate-100">Blood Transfusion</header>
-
-  <div class="grid min-w-0 gap-4">
-    <div class="ui-card min-w-0 p-4">
-      <h2 class="text-sm font-black uppercase tracking-wide text-slate-200">Inputs</h2>
-      <div class="mt-3 grid gap-3">
-        <label class="grid gap-2">
+<section class="grid min-w-0 gap-2 text-slate-200 sm:gap-3" aria-label="Blood transfusion planner">
+  <div class="grid min-w-0 gap-2 sm:gap-3">
+    <div class="ui-card min-w-0 p-2.5 sm:p-3">
+      <h2 class="text-[13px] font-black uppercase tracking-wide text-slate-200 sm:text-sm">Inputs</h2>
+      <div class="mt-2 grid gap-2 min-[360px]:grid-cols-2 sm:mt-3 sm:gap-3">
+        <label class="grid gap-1.5 sm:gap-2">
           <span class="text-xs font-semibold uppercase tracking-wide text-slate-300">Total volume (mL)</span>
           <input
             class="field-control"
@@ -90,7 +88,7 @@
           />
         </label>
 
-        <label class="grid gap-2">
+        <label class="grid gap-1.5 sm:gap-2">
           <span class="text-xs font-semibold uppercase tracking-wide text-slate-300">Total time (hr)</span>
           <input
             class="field-control"
@@ -112,32 +110,32 @@
         </div>
       {/if}
 
-      <div class="mt-3 text-xs text-slate-400">
+      <div class="mt-2 text-[11px] leading-relaxed text-slate-400 sm:text-xs">
         First hour ramps at 20/40/60/80% of the final rate, then continues at the final rate.
       </div>
     </div>
 
     {#if hasInput}
-      <div class="ui-card min-w-0 p-4">
-        <h3 class="text-sm font-black uppercase tracking-wide text-slate-200">Step-by-step plan</h3>
+      <div class="ui-card min-w-0 p-2.5 sm:p-3">
+        <h3 class="text-[13px] font-black uppercase tracking-wide text-slate-200 sm:text-sm">Step-by-step plan</h3>
         {#if plan}
-          <div class="mt-3 overflow-x-auto">
-            <table class="min-w-full text-sm">
+          <div class="mt-2 overflow-x-auto sm:mt-3">
+            <table class="min-w-full text-[12px] sm:text-sm">
               <thead class="text-xs font-semibold uppercase tracking-wide text-slate-400">
                 <tr class="border-b border-slate-700">
-                  <th class="px-3 py-2 text-left">Interval</th>
-                  <th class="px-3 py-2 text-right">Rate (mL/hr)</th>
-                  <th class="px-3 py-2 text-right">Volume (mL)</th>
-                  <th class="px-3 py-2 text-right">Cumulative (mL)</th>
+                  <th class="px-1.5 py-1.5 text-left sm:px-3 sm:py-2">Interval</th>
+                  <th class="px-1.5 py-1.5 text-right sm:px-3 sm:py-2">Rate (mL/hr)</th>
+                  <th class="px-1.5 py-1.5 text-right sm:px-3 sm:py-2">Volume (mL)</th>
+                  <th class="px-1.5 py-1.5 text-right sm:px-3 sm:py-2">Cumulative (mL)</th>
                 </tr>
               </thead>
               <tbody class="divide-y divide-slate-800">
                 {#each plan.steps as step}
                   <tr class="text-slate-200">
-                    <td class="px-3 py-2 font-semibold text-slate-100">{intervalLabel(step)}</td>
-                    <td class="px-3 py-2 text-right tabular-nums">{fmt(step.rateMlHr, 0)}</td>
-                    <td class="px-3 py-2 text-right tabular-nums">{fmt(step.volumeMl, 2)}</td>
-                    <td class="px-3 py-2 text-right tabular-nums">{fmt(step.cumulativeMl, 2)}</td>
+                    <td class="px-1.5 py-1.5 font-semibold text-slate-100 sm:px-3 sm:py-2">{intervalLabel(step)}</td>
+                    <td class="px-1.5 py-1.5 text-right tabular-nums sm:px-3 sm:py-2">{fmt(step.rateMlHr, 0)}</td>
+                    <td class="px-1.5 py-1.5 text-right tabular-nums sm:px-3 sm:py-2">{fmt(step.volumeMl, 2)}</td>
+                    <td class="px-1.5 py-1.5 text-right tabular-nums sm:px-3 sm:py-2">{fmt(step.cumulativeMl, 2)}</td>
                   </tr>
                 {/each}
               </tbody>
@@ -148,8 +146,8 @@
         {/if}
       </div>
 
-      <div class="ui-card min-w-0 p-4">
-        <h2 class="text-sm font-black uppercase tracking-wide text-slate-200">
+      <div class="ui-card min-w-0 p-2.5 sm:p-3">
+        <h2 class="text-[13px] font-black uppercase tracking-wide text-slate-200 sm:text-sm">
           <button
             type="button"
             class="flex w-full items-center justify-between text-left"
@@ -172,9 +170,9 @@
             </svg>
           </button>
         </h2>
-        <div id="blood-transfusion-summary" class={summaryOpen ? 'mt-3' : 'mt-3 hidden'}>
+        <div id="blood-transfusion-summary" class={summaryOpen ? 'mt-2' : 'mt-2 hidden'}>
           {#if plan}
-            <div class="grid gap-3 text-sm">
+            <div class="grid gap-2 text-sm md:grid-cols-2">
               <div class="grid grid-cols-[minmax(0,1fr)_auto] items-baseline gap-2">
                 <span class="text-slate-300">Ideal final rate</span>
                 <span class="font-black tabular-nums text-slate-100">{fmt(plan.summary.idealFinalRateMlHr, 2)} mL/hr</span>
@@ -200,7 +198,7 @@
                 <span class="font-black tabular-nums text-slate-100">{fmtSigned(plan.summary.deltaMl, 2)} mL</span>
               </div>
             </div>
-            <div class="mt-3 text-xs text-slate-400">
+            <div class="mt-2 text-xs text-slate-400">
               Rates are rounded to whole mL/hr (minimum 1). Delivered volume can differ slightly from target.
             </div>
           {:else}

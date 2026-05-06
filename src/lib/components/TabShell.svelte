@@ -32,7 +32,7 @@
 </script>
 
 <section class="grid min-w-0 w-full gap-2" aria-label="Main tools">
-  <div class="-mx-1 flex justify-center px-1 pb-0.5">
+  <div class="flex min-w-0 max-w-full justify-center sm:-mx-1 sm:px-1 sm:pb-0.5 sm:overflow-x-auto">
     <div class="ui-tablist" role="tablist" aria-label="Tool tabs">
     {#each tabs as t}
       <button
@@ -48,7 +48,7 @@
   </div>
 
   <div
-    class="ui-panel max-w-full min-w-0 overflow-x-auto p-2 text-slate-200 sm:p-2.5"
+    class="ui-panel max-w-full min-w-0 overflow-x-auto p-1.5 text-slate-200 sm:p-2.5"
     role="tabpanel"
   >
     <div hidden={active !== 'cpr'}>

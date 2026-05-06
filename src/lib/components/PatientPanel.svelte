@@ -69,7 +69,7 @@
 </script>
 
 <aside
-  class="ui-panel ui-panel-contrast p-2.5 text-slate-100 sm:p-3 md:sticky md:top-3 md:self-start"
+  class="ui-panel ui-panel-contrast p-2 text-slate-100 sm:p-3 md:sticky md:top-3 md:self-start"
   aria-label="Patient inputs"
 >
   <div class="hidden md:mx-auto md:grid md:max-w-[760px] md:grid-cols-[118px_132px_minmax(220px,1fr)] md:items-end md:gap-2">
@@ -112,12 +112,12 @@
   </div>
 
   <details class="group md:hidden" bind:open={panelOpen}>
-    <summary class="ui-summary flex cursor-pointer items-center justify-between gap-3">
+    <summary class="ui-summary flex cursor-pointer items-center justify-between gap-3 px-0.5 py-0.5">
       <div class="min-w-0">
         <div class="ui-label-strong">Patient</div>
-        <div class="mt-0.5 truncate text-sm font-semibold text-slate-100">{summaryText}</div>
+        <div class="mt-0.5 truncate text-[13px] font-semibold leading-tight text-slate-100 sm:text-sm">{summaryText}</div>
       </div>
-      <svg class="h-6 w-6 flex-none text-slate-400 transition group-open:rotate-180" viewBox="0 0 20 20" aria-hidden="true">
+      <svg class="h-5 w-5 flex-none text-slate-400 transition group-open:rotate-180" viewBox="0 0 20 20" aria-hidden="true">
         <path
           fill="currentColor"
           fill-rule="evenodd"
@@ -127,7 +127,7 @@
       </svg>
     </summary>
 
-    <div class="mt-2.5">
+    <div class="mt-2">
       <div class="grid grid-cols-2 gap-x-2 gap-y-2.5 sm:grid-cols-1 sm:gap-2.5">
         <div class="flex flex-col gap-1.5">
           <label class="ui-label" for="weight-mobile">Weight (kg)</label>
