@@ -184,21 +184,24 @@
           <div class="ui-inset p-3 sm:p-4">
             <header class="text-xs font-semibold uppercase tracking-wide text-slate-300">Quick reference</header>
             <div class="mt-2 grid gap-2 text-sm sm:mt-3 sm:gap-3">
-              <div class="grid grid-cols-[minmax(0,1fr)_auto] items-baseline gap-2">
-                <span class="text-slate-300">Calorie goal</span>
-                <span class="font-black tabular-nums text-slate-100">{fmtWhole(plan.targetKcalPerDay)} kcal/day</span>
+              <div class="grid gap-2 sm:gap-3">
+                <div class="grid grid-cols-[minmax(0,1fr)_auto] items-baseline gap-2">
+                  <span class="text-slate-300">Calorie goal</span>
+                  <span class="font-black tabular-nums text-slate-100">{fmtWhole(plan.targetKcalPerDay)} kcal/day</span>
+                </div>
+                <div class="grid grid-cols-[minmax(0,1fr)_auto] items-baseline gap-2">
+                  <span class="text-slate-300">Daily volume</span>
+                  <span class="font-black tabular-nums text-slate-100">{fmtWhole(plan.totalMlPerDay)} mL/day</span>
+                </div>
+                <div class="grid grid-cols-[minmax(0,1fr)_auto] items-baseline gap-2">
+                  <span class="text-slate-300">Diet density</span>
+                  <span class="font-black tabular-nums text-slate-100">{fmt(plan.kcalPerMl, 2)} kcal/mL</span>
+                </div>
               </div>
-              <div class="grid grid-cols-[minmax(0,1fr)_auto] items-baseline gap-2">
-                <span class="text-slate-300">Daily volume</span>
-                <span class="font-black tabular-nums text-slate-100">{fmtWhole(plan.totalMlPerDay)} mL/day</span>
-              </div>
-              <div class="grid grid-cols-[minmax(0,1fr)_auto] items-baseline gap-2">
-                <span class="text-slate-300">Continuous rate</span>
+
+              <div class="mt-1 grid grid-cols-[minmax(0,1fr)_auto] items-baseline gap-3 border-t border-sky-400/50 pt-3 text-base sm:mt-2 sm:text-lg">
+                <span class="text-slate-200">Continuous rate</span>
                 <span class="font-black tabular-nums text-slate-100">{fmt(plan.mlPerHour, 2)} mL/hr</span>
-              </div>
-              <div class="grid grid-cols-[minmax(0,1fr)_auto] items-baseline gap-2">
-                <span class="text-slate-300">Diet density</span>
-                <span class="font-black tabular-nums text-slate-100">{fmt(plan.kcalPerMl, 2)} kcal/mL</span>
               </div>
             </div>
           </div>
