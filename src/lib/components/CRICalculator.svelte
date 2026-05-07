@@ -126,7 +126,8 @@
         },
         {
           label: 'Lasts',
-          value: durationHr === '' ? '—' : `${fmt(Number(durationHr), 2)} hr`,
+          value: vm.resultCard.runtimeText,
+          secondary: vm.resultCard.runtimeNoteText,
         },
         {
           label: 'Final concentration',
@@ -306,96 +307,83 @@
         </svg>
       </summary>
 
-      <div class="border-t border-slate-700/40 px-2.5 py-2.5 sm:px-3.5 sm:py-3 lg:px-4">
-        <div class="grid gap-2 sm:gap-3">
-          <div class="grid gap-2">
-            <div class="ui-label-strong">Dose conversions</div>
-            <div class="grid gap-1.5 sm:grid-cols-2 sm:gap-2 xl:grid-cols-5">
-              {#each vm.resultCard.doseLines as line}
-                <div class="ui-inset px-2.5 py-2 sm:px-3 sm:py-2.5">
-                  <div class="text-[13px] font-medium leading-none tabular-nums text-slate-200">{line}</div>
-                </div>
-              {/each}
-            </div>
-          </div>
+      <div class="border-t border-slate-700/40 px-2 py-2 sm:px-3 lg:px-3.5">
+        <div class="overflow-hidden rounded-lg border border-slate-700/40 divide-y divide-slate-700/40">
+          {#each vm.stepByStep.rows as row}
+            <div class="grid gap-1.5 px-2.5 py-2 sm:px-3 lg:grid-cols-[168px_minmax(0,1fr)] lg:items-center lg:gap-3 lg:py-1.5">
+              <div class="flex min-w-0 items-center justify-between gap-2">
+                <div class="text-[12px] font-semibold leading-snug text-slate-200">{row.label}</div>
 
-          <div class="overflow-hidden rounded-lg border border-slate-700/40 divide-y divide-slate-700/40">
-            {#each vm.stepByStep.rows as row}
-              <div class="grid gap-2 p-2.5 sm:gap-2.5 sm:p-3 lg:grid-cols-[190px_minmax(0,1fr)] lg:items-stretch">
-                <div class="ui-inset flex items-center justify-between gap-3 px-2.5 py-2 sm:px-3 sm:py-2.5">
-                  <div class="text-[13px] font-medium leading-snug text-slate-200">{row.label}</div>
+                {#if row.popover}
+                  <details class="group relative flex-none">
+                    <summary
+                      class="ui-summary inline-flex h-5 w-5 cursor-pointer items-center justify-center rounded-md border border-slate-600/40 bg-surface-sunken text-slate-300 transition-colors hover:border-slate-500/60 hover:text-slate-100"
+                      aria-label="Optimization details"
+                    >
+                      <svg viewBox="0 0 20 20" class="h-4 w-4" aria-hidden="true">
+                        <path
+                          fill="currentColor"
+                          fill-rule="evenodd"
+                          d="M10 18a8 8 0 1 0 0-16 8 8 0 0 0 0 16Zm0-11a1 1 0 1 0 0-2 1 1 0 0 0 0 2Zm-1 2a1 1 0 0 1 2 0v5a1 1 0 1 1-2 0V9Z"
+                          clip-rule="evenodd"
+                        />
+                      </svg>
+                    </summary>
 
-                  {#if row.popover}
-                    <details class="group relative flex-none">
-                      <summary
-                        class="ui-summary inline-flex h-5 w-5 cursor-pointer items-center justify-center rounded-md border border-slate-600/40 bg-surface-sunken text-slate-300 transition-colors hover:border-slate-500/60 hover:text-slate-100"
-                        aria-label="Optimization details"
-                      >
-                        <svg viewBox="0 0 20 20" class="h-4 w-4" aria-hidden="true">
-                          <path
-                            fill="currentColor"
-                            fill-rule="evenodd"
-                            d="M10 18a8 8 0 1 0 0-16 8 8 0 0 0 0 16Zm0-11a1 1 0 1 0 0-2 1 1 0 0 0 0 2Zm-1 2a1 1 0 0 1 2 0v5a1 1 0 1 1-2 0V9Z"
-                            clip-rule="evenodd"
-                          />
-                        </svg>
-                      </summary>
+                    <div
+                      class="absolute right-0 top-full z-30 mt-2 hidden w-72 max-w-[calc(100vw-3rem)] rounded-lg border border-slate-600/40 bg-surface-raised p-3 text-xs text-slate-200 shadow-lg group-hover:block group-open:block"
+                      role="dialog"
+                      aria-label={row.popover.title}
+                    >
+                      <div class="ui-label-strong">{row.popover.title}</div>
 
-                      <div
-                        class="absolute right-0 top-full z-30 mt-2 hidden w-72 max-w-[calc(100vw-3rem)] rounded-lg border border-slate-600/40 bg-surface-raised p-3 text-xs text-slate-200 shadow-lg group-hover:block group-open:block"
-                        role="dialog"
-                        aria-label={row.popover.title}
-                      >
-                        <div class="ui-label-strong">{row.popover.title}</div>
-
-                        {#if row.popover.bars?.length}
-                          <div class="mt-2 grid gap-2">
-                            {#each row.popover.bars as bar}
-                              <div class="grid gap-1">
-                                <div class="flex items-baseline justify-between gap-2">
-                                  <div class="font-medium text-slate-200">{bar.label}</div>
-                                  <div class={`tabular-nums ${bar.severity === 'warn' ? 'text-amber-300' : 'text-emerald-300'}`}>{bar.valueText}</div>
-                                </div>
-                                <div class="h-2 overflow-hidden rounded bg-slate-700/40">
-                                  <div
-                                    class={`h-full ${bar.severity === 'warn' ? 'bg-amber-400/70' : 'bg-emerald-400/70'}`}
-                                    style={`width:${Math.max(0, Math.min(100, bar.fillPct)).toFixed(0)}%`}
-                                  ></div>
-                                </div>
+                      {#if row.popover.bars?.length}
+                        <div class="mt-2 grid gap-2">
+                          {#each row.popover.bars as bar}
+                            <div class="grid gap-1">
+                              <div class="flex items-baseline justify-between gap-2">
+                                <div class="font-medium text-slate-200">{bar.label}</div>
+                                <div class={`tabular-nums ${bar.severity === 'warn' ? 'text-amber-300' : 'text-emerald-300'}`}>{bar.valueText}</div>
                               </div>
-                            {/each}
-                          </div>
-                        {/if}
+                              <div class="h-2 overflow-hidden rounded bg-slate-700/40">
+                                <div
+                                  class={`h-full ${bar.severity === 'warn' ? 'bg-amber-400/70' : 'bg-emerald-400/70'}`}
+                                  style={`width:${Math.max(0, Math.min(100, bar.fillPct)).toFixed(0)}%`}
+                                ></div>
+                              </div>
+                            </div>
+                          {/each}
+                        </div>
+                      {/if}
 
-                        {#if row.popover.lines?.length}
-                          <div class="mt-2 grid gap-1 text-slate-300">
-                            {#each row.popover.lines as ln}
-                              <div class="break-words">{ln}</div>
-                            {/each}
-                          </div>
-                        {/if}
-                      </div>
-                    </details>
-                  {/if}
-                </div>
-
-                <div class="ui-inset flex items-center px-2.5 py-2 font-mono text-[12px] leading-[1.55] tracking-tight text-slate-100 sm:px-3 sm:py-2.5 sm:text-[12.5px]">
-                  <span class="whitespace-pre-wrap break-words">
-                    {#each tokenizeMath(row.math) as t}
-                      <span class={t.kind === 'num'
-                        ? 'font-semibold text-slate-100'
-                        : t.kind === 'op'
-                          ? 'text-slate-400'
-                          : 'text-slate-200'}
-                      >
-                        {t.text}
-                      </span>
-                    {/each}
-                  </span>
-                </div>
+                      {#if row.popover.lines?.length}
+                        <div class="mt-2 grid gap-1 text-slate-300">
+                          {#each row.popover.lines as ln}
+                            <div class="break-words">{ln}</div>
+                          {/each}
+                        </div>
+                      {/if}
+                    </div>
+                  </details>
+                {/if}
               </div>
-            {/each}
-          </div>
+
+              <div class="min-w-0 font-mono text-[11px] leading-snug tracking-tight text-slate-100 sm:text-[11.5px]">
+                <span class="whitespace-pre-wrap break-words">
+                  {#each tokenizeMath(row.math) as t}
+                    <span class={t.kind === 'num'
+                      ? 'font-semibold text-slate-100'
+                      : t.kind === 'op'
+                        ? 'text-slate-400'
+                        : 'text-slate-200'}
+                    >
+                      {t.text}
+                    </span>
+                  {/each}
+                </span>
+              </div>
+            </div>
+          {/each}
         </div>
       </div>
     </details>

@@ -20,7 +20,8 @@ export type ResultCard = {
   finalConcentrationText: string;
   pumpRateText: string;
   deliveredDoseText: string;
-  doseLines: string[];
+  runtimeText: string;
+  runtimeNoteText?: string;
 };
 
 export type StepBar = {
@@ -235,13 +236,8 @@ export function buildCRIViewModel(params: BuildParams): CRIViewModel | null {
       finalConcentrationText: `${fmt(stockConcMgPerMl, 4)} mg/mL`,
       pumpRateText: `${fmt(rateMlHr, 2)} mL/hr`,
       deliveredDoseText: formatDose(actualDoseMgPerKgHr, doseUnit),
-      doseLines: [
-        formatDose(actualDoseMgPerKgHr, 'mg/kg/hr'),
-        formatDose(actualDoseMgPerKgHr, 'mg/kg/min'),
-        formatDose(actualDoseMgPerKgHr, 'mg/kg/day'),
-        formatDose(actualDoseMgPerKgHr, 'mcg/kg/min'),
-        formatDose(actualDoseMgPerKgHr, 'mcg/kg/hr'),
-      ],
+      runtimeText: `${fmt(actualRuntimeHr, 2)} hr`,
+      runtimeNoteText: Math.abs(runtimeDeltaHr) >= 0.05 ? `requested ${fmt(requestedDurationHr, 2)} hr` : undefined,
     };
 
     return { mode: 'stock', alerts, drawCards: [drawCard], resultCard, stepByStep: { rows: stepRows } };
@@ -347,13 +343,8 @@ export function buildCRIViewModel(params: BuildParams): CRIViewModel | null {
     finalConcentrationText: `${fmt(plan.chosenConcentrationMgPerMl, 4)} mg/mL`,
     pumpRateText: `${fmt(plan.desiredRateMlPerHr, 2)} mL/hr`,
     deliveredDoseText: formatDose(actualDoseMgPerKgHr, doseUnit),
-      doseLines: [
-        formatDose(actualDoseMgPerKgHr, 'mg/kg/hr'),
-        formatDose(actualDoseMgPerKgHr, 'mg/kg/min'),
-        formatDose(actualDoseMgPerKgHr, 'mg/kg/day'),
-        formatDose(actualDoseMgPerKgHr, 'mcg/kg/min'),
-        formatDose(actualDoseMgPerKgHr, 'mcg/kg/hr'),
-      ],
+    runtimeText: `${fmt(targetRuntimeHr, 2)} hr`,
+    runtimeNoteText: Math.abs(targetRuntimeHr - Number(durationHr)) >= 0.05 ? `requested ${fmt(Number(durationHr), 2)} hr` : undefined,
   };
 
   const durationNum = Number(durationHr);

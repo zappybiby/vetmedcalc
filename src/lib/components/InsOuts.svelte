@@ -2,6 +2,7 @@
   import { patient, type Patient } from '../stores/patient';
 
   const DEFAULT_HOURS_WINDOW = 4;
+  type InsMode = 'rate' | 'total';
 
   // Patient context
   let p: Patient = { weightKg: null, species: '', name: '' };
@@ -11,11 +12,13 @@
 
   // Inputs
   let hoursWindow: number | '' = DEFAULT_HOURS_WINDOW;
+  let insMode: InsMode = 'total';
+  let insRateMlHr: number | '' = '';
   let insMl: number | '' = '';
   let urineOutMl: number | '' = '';
 
   let hasInput = false;
-  $: hasInput = insMl !== '' || urineOutMl !== '';
+  $: hasInput = (insMode === 'rate' ? insRateMlHr !== '' : insMl !== '') || urineOutMl !== '';
 
   function numeric(value: number | '' | null | undefined): number | null {
     if (value == null || value === '') return null;
@@ -46,12 +49,35 @@
     return num > 0 ? `+${rounded}` : rounded;
   }
 
+  function totalInsLabel(hours: number | null): string {
+    if (hours == null || hours <= 0) return 'Total fluid ins';
+    return `Total over ${fmtCompact(hours)} hr`;
+  }
+
+  function selectInsMode(mode: InsMode) {
+    if (insMode === mode) return;
+    insMode = mode;
+    if (mode === 'rate') {
+      insMl = '';
+    } else {
+      insRateMlHr = '';
+    }
+  }
+
   // Core numbers
   let windowHours: number | null = null;
+  let hourlyInsRateMlHr: number | null = null;
+  let enteredInsTotalMl: number | null = null;
   let totalInsMl: number | null = null;
   let totalOutMl: number | null = null;
   $: windowHours = numeric(hoursWindow);
-  $: totalInsMl = numeric(insMl);
+  $: hourlyInsRateMlHr = numeric(insRateMlHr);
+  $: enteredInsTotalMl = numeric(insMl);
+  $: totalInsMl = insMode === 'rate'
+    ? hourlyInsRateMlHr == null || windowHours == null || windowHours <= 0
+      ? null
+      : hourlyInsRateMlHr * windowHours
+    : enteredInsTotalMl;
   $: totalOutMl = numeric(urineOutMl);
 
   // Derived rates
@@ -62,7 +88,11 @@
   let netMlPerHr: number | null = null;
   let balanceDescriptor = '—';
 
-  $: insMlPerHr = totalInsMl == null || windowHours == null || windowHours <= 0 ? null : totalInsMl / windowHours;
+  $: insMlPerHr = insMode === 'rate'
+    ? hourlyInsRateMlHr
+    : totalInsMl == null || windowHours == null || windowHours <= 0
+      ? null
+      : totalInsMl / windowHours;
   $: insMlPerKgHr = insMlPerHr == null || !weightKg ? null : insMlPerHr / weightKg;
 
   $: outMlPerHr = totalOutMl == null || windowHours == null || windowHours <= 0 ? null : totalOutMl / windowHours;
@@ -80,50 +110,108 @@
 
 <section class="grid min-w-0 gap-2 text-slate-200 sm:gap-4" aria-label="Ins and outs calculator">
   <div class="grid min-w-0 gap-2 sm:gap-4">
-    <div class="ui-card min-w-0 p-2.5 sm:p-4">
+    <div class="ui-card min-w-0 p-2 sm:p-4">
       <div class="grid min-w-0 gap-2 sm:gap-4 md:grid-cols-2 md:divide-x md:divide-slate-800">
         <div class="min-w-0 md:col-span-2">
-          <h2 class="text-[13px] font-semibold uppercase tracking-wide text-slate-200 sm:text-sm">
-            Inputs (last {fmtCompact(windowHours)} {windowHours === 1 ? 'hour' : 'hours'})
-          </h2>
-          <div class="mt-2 grid gap-2 min-[360px]:grid-cols-2 sm:mt-3 sm:gap-3">
-            <label class="grid gap-1.5 sm:gap-2">
-              <span class="text-xs font-semibold uppercase tracking-wide text-slate-300">Fluid ins (mL)</span>
-              <input
-                class="field-control"
-                type="number"
-                min="0"
-                step="1"
-                bind:value={insMl}
-                inputmode="decimal"
-                placeholder="e.g., 400"
-              />
-            </label>
+          <h2 class="text-[13px] font-semibold uppercase tracking-wide text-slate-200 sm:text-sm">Inputs</h2>
+          <div class="mt-2 grid gap-2 sm:mt-3 sm:gap-3 lg:grid-cols-[minmax(0,1.35fr)_minmax(260px,0.65fr)]">
+            <fieldset class="ui-inset min-w-0 p-2 sm:p-3">
+              <legend class="px-1 text-xs font-semibold uppercase tracking-wide text-slate-300">Fluid ins</legend>
+              <div class="grid gap-2 min-[520px]:grid-cols-2">
+                <div
+                  class={`grid cursor-pointer gap-1.5 rounded-lg border p-2 transition-colors sm:gap-2 sm:p-3 ${insMode === 'rate' ? 'border-sky-400/50 bg-sky-400/10' : 'border-slate-700/40 bg-surface-sunken hover:border-slate-600/60'}`}
+                >
+                  <label class="flex cursor-pointer items-center gap-2 text-xs font-semibold uppercase tracking-wide text-slate-300" for="ins-mode-rate">
+                    <input
+                      id="ins-mode-rate"
+                      class="field-radio h-4 w-4"
+                      type="radio"
+                      checked={insMode === 'rate'}
+                      on:change={() => selectInsMode('rate')}
+                    />
+                    Hourly fluid rate
+                  </label>
+                  <div class="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-2">
+                    <input
+                      id="ins-rate"
+                      class="field-control"
+                      type="number"
+                      min="0"
+                      step="0.1"
+                      bind:value={insRateMlHr}
+                      on:focus={() => selectInsMode('rate')}
+                      inputmode="decimal"
+                      placeholder="0"
+                    />
+                    <span class="text-xs font-semibold uppercase tracking-wide text-slate-400">mL/hr</span>
+                  </div>
+                </div>
 
-            <label class="grid gap-1.5 sm:gap-2">
-              <span class="text-xs font-semibold uppercase tracking-wide text-slate-300">Urine output (mL)</span>
-              <input
-                class="field-control"
-                type="number"
-                min="0"
-                step="1"
-                bind:value={urineOutMl}
-                inputmode="decimal"
-                placeholder="e.g., 320"
-              />
-            </label>
+                <div
+                  class={`grid cursor-pointer gap-1.5 rounded-lg border p-2 transition-colors sm:gap-2 sm:p-3 ${insMode === 'total' ? 'border-sky-400/50 bg-sky-400/10' : 'border-slate-700/40 bg-surface-sunken hover:border-slate-600/60'}`}
+                >
+                  <label class="flex cursor-pointer items-center gap-2 text-xs font-semibold uppercase tracking-wide text-slate-300" for="ins-mode-total">
+                    <input
+                      id="ins-mode-total"
+                      class="field-radio h-4 w-4"
+                      type="radio"
+                      checked={insMode === 'total'}
+                      on:change={() => selectInsMode('total')}
+                    />
+                    {totalInsLabel(windowHours)}
+                  </label>
+                  <div class="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-2">
+                    <input
+                      id="ins-total"
+                      class="field-control"
+                      type="number"
+                      min="0"
+                      step="1"
+                      bind:value={insMl}
+                      on:focus={() => selectInsMode('total')}
+                      inputmode="decimal"
+                      placeholder="0"
+                    />
+                    <span class="text-xs font-semibold uppercase tracking-wide text-slate-400">mL</span>
+                  </div>
+                </div>
+              </div>
+            </fieldset>
 
-            <label class="grid gap-1.5 min-[360px]:col-span-2 sm:gap-2">
-              <span class="text-xs font-semibold uppercase tracking-wide text-slate-300">Duration (hours)</span>
-              <input
-                class="field-control"
-                type="number"
-                min="0.25"
-                step="0.25"
-                bind:value={hoursWindow}
-                inputmode="decimal"
-              />
-            </label>
+            <div class="grid min-w-0 gap-2 min-[360px]:grid-cols-2 lg:grid-cols-1">
+              <label class="grid gap-1.5 sm:gap-2">
+                <span class="text-xs font-semibold uppercase tracking-wide text-slate-300">Urine output</span>
+                <div class="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-2">
+                  <input
+                    id="out-total"
+                    class="field-control"
+                    type="number"
+                    min="0"
+                    step="1"
+                    bind:value={urineOutMl}
+                    inputmode="decimal"
+                    placeholder="0"
+                  />
+                  <span class="text-xs font-semibold uppercase tracking-wide text-slate-400">mL</span>
+                </div>
+              </label>
+
+              <label class="grid gap-1.5 sm:gap-2">
+                <span class="text-xs font-semibold uppercase tracking-wide text-slate-300">Duration</span>
+                <div class="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-2">
+                  <input
+                    id="io-duration"
+                    class="field-control"
+                    type="number"
+                    min="0.25"
+                    step="0.25"
+                    bind:value={hoursWindow}
+                    inputmode="decimal"
+                  />
+                  <span class="text-xs font-semibold uppercase tracking-wide text-slate-400">hr</span>
+                </div>
+              </label>
+            </div>
           </div>
         </div>
       </div>
@@ -131,12 +219,19 @@
 
     {#if hasInput}
       <div class="grid min-w-0 gap-2 sm:gap-4">
-        <div class="ui-card min-w-0 p-2.5 sm:p-4">
+        <div class="ui-card min-w-0 p-2 sm:p-4">
           <h3 class="text-[13px] font-black uppercase tracking-wide text-slate-200 sm:text-sm">Fluid summary</h3>
           <div class="mt-2 grid gap-2 sm:mt-3 sm:grid-cols-2 sm:gap-3 xl:grid-cols-3">
-            <article class="ui-inset min-w-0 p-3 sm:p-4">
+            <article class="ui-inset min-w-0 p-2.5 sm:p-4">
               <header class="text-xs font-semibold uppercase tracking-wide text-slate-300">Fluid ins</header>
-              <dl class="mt-2 grid gap-2 text-sm text-slate-300 sm:mt-3 sm:gap-3">
+              <dl class="mt-2 grid gap-1.5 text-sm text-slate-300 sm:mt-3 sm:gap-3">
+                <div class="flex items-baseline justify-between gap-2">
+                  <dt class="text-xs font-semibold uppercase tracking-wide text-slate-400">Total</dt>
+                  <dd class="text-right text-base font-black text-slate-100 sm:text-lg">
+                    <span class="tabular-nums">{fmt(totalInsMl)}</span>
+                    <span class="ml-1 text-sm font-semibold text-slate-300">mL</span>
+                  </dd>
+                </div>
                 <div class="flex items-baseline justify-between gap-2">
                   <dt class="text-xs font-semibold uppercase tracking-wide text-slate-400">mL/hr</dt>
                   <dd class="text-right text-base font-black text-slate-100 sm:text-lg">
@@ -154,9 +249,9 @@
               </dl>
             </article>
 
-            <article class="ui-inset min-w-0 p-3 sm:p-4">
+            <article class="ui-inset min-w-0 p-2.5 sm:p-4">
               <header class="text-xs font-semibold uppercase tracking-wide text-slate-300">Fluid outs</header>
-              <dl class="mt-2 grid gap-2 text-sm text-slate-300 sm:mt-3 sm:gap-3">
+              <dl class="mt-2 grid gap-1.5 text-sm text-slate-300 sm:mt-3 sm:gap-3">
                 <div class="flex items-baseline justify-between gap-2">
                   <dt class="text-xs font-semibold uppercase tracking-wide text-slate-400">mL/hr</dt>
                   <dd class="text-right text-base font-black text-slate-100 sm:text-lg">
@@ -174,9 +269,9 @@
               </dl>
             </article>
 
-            <article class="ui-inset min-w-0 p-3 sm:p-4">
+            <article class="ui-inset min-w-0 p-2.5 sm:p-4">
               <header class="text-xs font-semibold uppercase tracking-wide text-slate-300">Net balance</header>
-              <div class="mt-2 space-y-2 text-sm text-slate-300 sm:mt-3 sm:space-y-3">
+              <div class="mt-1.5 space-y-1.5 text-sm text-slate-300 sm:mt-3 sm:space-y-3">
                 <div class="text-right text-xs font-semibold uppercase tracking-wide text-slate-100 sm:text-sm">{balanceDescriptor}</div>
                 <div class="flex items-baseline justify-between gap-2">
                   <span>Δ mL/hr</span>

@@ -9,15 +9,15 @@
 
   type Tab = { id: string; label: string };
   const tabs: Tab[] = [
-    { id: 'cpr',     label: 'CPR labels' },
     { id: 'cri',     label: 'CRI calculator' },
     { id: 'drugbag', label: 'Drug in bag' },
     { id: 'insouts', label: 'Ins / outs' },
     { id: 'rer',     label: 'RER calculator' },
     { id: 'blood',   label: 'Blood transfusion' },
+    { id: 'cpr',     label: 'CPR labels' },
   ];
 
-  let active: Tab['id'] = 'cpr'; // default
+  let active: Tab['id'] = 'cri';
 
   function selectTab(id: Tab['id']) {
     if (active === 'cpr' && id !== 'cpr' && $cprBatchMode) {
@@ -51,9 +51,6 @@
     class="ui-panel max-w-full min-w-0 overflow-x-auto p-1.5 text-slate-200 sm:p-2.5"
     role="tabpanel"
   >
-    <div hidden={active !== 'cpr'}>
-      <CPRLabelsTool />
-    </div>
     <div hidden={active !== 'cri'}>
       <CRICalculator />
     </div>
@@ -68,6 +65,9 @@
     </div>
     <div hidden={active !== 'blood'}>
       <BloodTransfusion />
+    </div>
+    <div hidden={active !== 'cpr'}>
+      <CPRLabelsTool />
     </div>
   </div>
 </section>
