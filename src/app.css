@@ -283,27 +283,31 @@
   }
 
   .ui-tab {
-    @apply inline-flex min-w-0 items-center justify-center rounded-md px-1 py-1.5 text-center font-semibold leading-tight transition-colors sm:rounded-lg sm:px-2.5;
+    @apply inline-flex min-w-0 items-center justify-center rounded-md px-1.5 py-2 text-center font-semibold leading-tight transition-colors sm:rounded-lg sm:px-3 sm:py-2.5;
     color: color-mix(in srgb, var(--ui-text-300) 82%, var(--ui-text-400));
     background-color: color-mix(in srgb, var(--ui-surface-2) 34%, transparent);
     border: 1px solid color-mix(in srgb, var(--ui-border) 62%, transparent);
-    font-size: 9px;
+    min-height: 2.25rem;
+    font-size: 9.5px;
     letter-spacing: 0.012em;
     text-transform: uppercase;
-    white-space: nowrap;
+    overflow-wrap: anywhere;
+    white-space: normal;
     box-shadow: 0 1px 0 rgba(255, 255, 255, 0.03) inset;
   }
 
   @media (min-width: 390px) {
     .ui-tab {
-      font-size: 10px;
+      font-size: 10.5px;
       letter-spacing: 0.018em;
     }
   }
 
   @media (min-width: 640px) {
     .ui-tab {
-      font-size: 12px;
+      min-height: 2.5rem;
+      font-size: 13px;
+      white-space: nowrap;
     }
   }
 

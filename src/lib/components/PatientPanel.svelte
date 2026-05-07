@@ -80,38 +80,40 @@
   class="ui-panel ui-panel-contrast min-w-0 p-2 text-slate-100 sm:p-3 md:sticky md:top-3 md:self-start"
   aria-label="Patient inputs"
 >
-  <div class="hidden md:mx-auto md:grid md:max-w-[820px] md:grid-cols-[minmax(170px,0.95fr)_minmax(245px,1.35fr)_minmax(170px,0.85fr)] md:items-stretch md:gap-2.5">
-    <div class="patient-primary-field flex min-w-0 flex-col gap-2">
-      <label class="ui-label" for="weight">Weight (kg)</label>
-      <input
-        id="weight"
-        class="field-control patient-weight-input"
-        type="number"
-        min="0"
-        step="0.1"
-        bind:value={weight}
-        inputmode="decimal"
-      />
-    </div>
+  <div class="hidden md:mx-auto md:grid md:max-w-[760px] md:grid-cols-[minmax(255px,0.95fr)_minmax(270px,1fr)] md:items-stretch md:gap-2.5">
+    <div class="patient-left-stack">
+      <div class="patient-primary-field flex min-w-0 flex-col gap-2">
+        <label class="ui-label" for="weight">Weight (kg)</label>
+        <input
+          id="weight"
+          class="field-control patient-weight-input"
+          type="number"
+          min="0"
+          step="0.1"
+          bind:value={weight}
+          inputmode="decimal"
+        />
+      </div>
 
-    <div class="patient-primary-field flex min-w-0 flex-col gap-2">
-      <div class="ui-label" id="species-label">Species</div>
-      <div class="species-toggle-grid" role="group" aria-labelledby="species-label">
-        {#each speciesOptions as option (option.value)}
-          <button
-            type="button"
-            class:is-selected={species === option.value}
-            class="species-toggle"
-            aria-pressed={species === option.value}
-            on:click={() => selectSpecies(option.value)}
-          >
-            {option.label}
-          </button>
-        {/each}
+      <div class="patient-primary-field patient-species-field flex min-w-0 flex-col gap-2">
+        <div class="ui-label" id="species-label">Species</div>
+        <div class="species-toggle-grid" role="group" aria-labelledby="species-label">
+          {#each speciesOptions as option (option.value)}
+            <button
+              type="button"
+              class:is-selected={species === option.value}
+              class="species-toggle"
+              aria-pressed={species === option.value}
+              on:click={() => selectSpecies(option.value)}
+            >
+              {option.label}
+            </button>
+          {/each}
+        </div>
       </div>
     </div>
 
-    <div class="patient-name-field flex min-w-0 flex-col gap-1.5 self-center">
+    <div class="patient-name-field patient-name-field-desktop flex min-w-0 flex-col gap-1.5">
       <label class="ui-label" for="name">Patient name</label>
       <input
         id="name"
@@ -139,8 +141,8 @@
     </summary>
 
     <div class="mt-2">
-      <div class="grid gap-2.5">
-        <div class="patient-primary-field flex flex-col gap-2">
+      <div class="patient-mobile-grid grid gap-2.5">
+        <div class="patient-primary-field patient-mobile-weight flex flex-col gap-2">
           <label class="ui-label" for="weight-mobile">Weight (kg)</label>
           <input
             id="weight-mobile"
@@ -153,7 +155,7 @@
           />
         </div>
 
-        <div class="patient-primary-field flex flex-col gap-2">
+        <div class="patient-primary-field patient-mobile-species patient-species-field flex flex-col gap-2">
           <div class="ui-label" id="species-mobile-label">Species</div>
           <div class="species-toggle-grid" role="group" aria-labelledby="species-mobile-label">
             {#each speciesOptions as option (option.value)}
@@ -170,7 +172,7 @@
           </div>
         </div>
 
-        <div class="patient-name-field flex flex-col gap-1.5">
+        <div class="patient-name-field patient-mobile-name flex flex-col gap-1.5">
           <label class="ui-label" for="name-mobile">Patient name</label>
           <input
             id="name-mobile"
@@ -200,9 +202,25 @@
     padding: 0.65rem;
   }
 
+  .patient-left-stack {
+    display: grid;
+    min-width: 0;
+    gap: 0.65rem;
+  }
+
+  .patient-species-field {
+    min-height: 4.25rem;
+    padding: 0.55rem 0.65rem;
+  }
+
   .patient-name-field {
     padding: 0.55rem;
     background-color: color-mix(in srgb, var(--ui-surface-2) 88%, transparent);
+  }
+
+  .patient-name-field-desktop {
+    justify-content: center;
+    padding: 0.75rem;
   }
 
   .patient-weight-input {
@@ -229,14 +247,14 @@
   .species-toggle {
     display: inline-flex;
     min-width: 0;
-    min-height: 3.25rem;
+    min-height: 2.35rem;
     align-items: center;
     justify-content: center;
     border: 1px solid var(--ui-field-border);
     border-radius: 0.5rem;
     background-color: var(--ui-field-bg);
     color: var(--ui-text-200);
-    font-size: 1.05rem;
+    font-size: 0.92rem;
     font-weight: 800;
     line-height: 1;
     transition:
@@ -267,9 +285,17 @@
       padding: 0.6rem;
     }
 
-    .patient-weight-input,
-    .species-toggle {
+    .patient-species-field {
+      min-height: 4.5rem;
+      padding: 0.55rem 0.6rem;
+    }
+
+    .patient-weight-input {
       min-height: 3rem;
+    }
+
+    .species-toggle {
+      min-height: 2.6rem;
     }
 
     .patient-weight-input {
@@ -277,7 +303,21 @@
     }
 
     .species-toggle {
-      font-size: 0.95rem;
+      font-size: 0.9rem;
+    }
+  }
+
+  @media (min-width: 520px) and (max-width: 767px) {
+    .patient-mobile-grid {
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+      align-items: stretch;
+    }
+
+    .patient-mobile-name {
+      grid-column: 2;
+      grid-row: 1 / span 2;
+      justify-content: center;
+      padding: 0.7rem;
     }
   }
 </style>
