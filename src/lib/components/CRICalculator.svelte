@@ -4,7 +4,7 @@
   import { buildCRIViewModel, type CRIViewModel } from '../viewmodels/criViewModel';
   import { patient } from '../stores/patient';
   import type { Patient } from '../stores/patient';
-  import { MEDICATIONS } from '@defs';
+  import { MEDICATIONS, getDefaultMedicationDoseUnit } from '@defs';
   import type { MedicationDef } from '@defs';
 
   type MathToken = { kind: 'num' | 'op' | 'text'; text: string };
@@ -18,23 +18,7 @@
   let med: MedicationDef | undefined;
   $: med = MEDICATIONS.find((m) => m.id === medId);
 
-  const DEFAULT_DOSE_UNIT: Record<MedicationDef['id'], DoseUnit> = {
-    'diazepam-5': 'mg/kg/hr',
-    'dobutamine-12-5': 'mcg/kg/min',
-    'dopamine-40': 'mcg/kg/min',
-    'epinephrine-1': 'mcg/kg/min',
-    'fentanyl-50': 'mcg/kg/hr',
-    'furosemide-50': 'mg/kg/hr',
-    'midazolam-5': 'mg/kg/hr',
-    'metoclopramide-5': 'mg/kg/hr',
-    'norepinephrine-1': 'mcg/kg/min',
-    'propofol-10': 'mg/kg/min',
-    'lidocaine-20': 'mcg/kg/min',
-    'ketamine-100': 'mcg/kg/min',
-  };
-  const FALLBACK_DOSE_UNIT: DoseUnit = 'mg/kg/hr';
-
-  let doseUnit: DoseUnit = DEFAULT_DOSE_UNIT[medId] ?? FALLBACK_DOSE_UNIT;
+  let doseUnit: DoseUnit = getDefaultMedicationDoseUnit(medId);
   let desiredDose: number | '' = '';
   let durationHr: number | '' = '';
   let desiredRateMlPerHr: number | '' = '';
@@ -67,7 +51,7 @@
 
   let previousMedId = medId;
   $: if (medId !== previousMedId) {
-    const nextUnit = DEFAULT_DOSE_UNIT[medId] ?? FALLBACK_DOSE_UNIT;
+    const nextUnit = getDefaultMedicationDoseUnit(medId);
     const shouldFlash = doseUnit !== nextUnit;
     doseUnit = nextUnit;
     previousMedId = medId;

@@ -279,9 +279,8 @@ export function computeMixturePlan(input: MappingInput): MixturePlan {
 
   return plan;
 }
-import type { MedicationDef, MedicationConcentration, SyringeDef } from '../definitions/types';
-
-export type DoseUnit = 'mcg/kg/min' | 'mg/kg/min' | 'mg/kg/hr' | 'mg/kg/day' | 'mcg/kg/hr';
+import type { DoseUnit, MedicationDef, MedicationConcentration, SyringeDef } from '../definitions/types';
+export type { DoseUnit } from '../definitions/types';
 
 export type MappingInput = {
   weightKg: number;

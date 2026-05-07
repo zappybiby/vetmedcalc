@@ -12,6 +12,8 @@ export type MedicationConcentration = {
   units: 'mg/mL' | 'mcg/mL';  // normalize by declaring units
 };
 
+export type DoseUnit = 'mcg/kg/min' | 'mg/kg/min' | 'mg/kg/hr' | 'mg/kg/day' | 'mcg/kg/hr';
+
 export type CRIDoseRange = {
   minMgPerKgHr: number;       // lower bound of typical CRI dose (mg/kg/hr)
   maxMgPerKgHr: number;       // upper bound of typical CRI dose (mg/kg/hr)

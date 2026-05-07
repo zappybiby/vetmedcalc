@@ -1,30 +1,14 @@
 <script lang="ts">
   import { patient } from '../stores/patient';
   import type { Patient } from '../stores/patient';
-  import { MEDICATIONS, SYRINGES } from '@defs';
-  import type { MedicationDef, SyringeDef } from '@defs';
-
-  type DoseUnit = 'mg/kg/day' | 'mg/kg/hr' | 'mcg/kg/min';
-
-  type DrugOption = {
-    id: MedicationDef['id'];
-    label: string;
-    defaultDoseUnit: DoseUnit;
-  };
-
-  const DRUG_OPTIONS: readonly DrugOption[] = [
-    { id: 'metoclopramide-5', label: 'Metoclopramide', defaultDoseUnit: 'mg/kg/day' },
-    { id: 'norepinephrine-1', label: 'Norepinephrine', defaultDoseUnit: 'mcg/kg/min' },
-  ] as const;
-
-  const DEFAULT_DOSE_UNIT: Record<DrugOption['id'], DoseUnit> = {
-    'metoclopramide-5': 'mg/kg/day',
-    'norepinephrine-1': 'mcg/kg/min',
-  };
+  import { MEDICATIONS, SYRINGES, getDefaultMedicationDoseUnit } from '@defs';
+  import type { DoseUnit, MedicationDef, SyringeDef } from '@defs';
 
   const UNIT_FACTOR_DETAILS: Record<DoseUnit, string> = {
     'mg/kg/day': 'bag hours ÷ 24',
     'mg/kg/hr': 'bag hours',
+    'mg/kg/min': 'bag hours × 60',
+    'mcg/kg/hr': 'bag hours ÷ 1000',
     'mcg/kg/min': '(bag hours × 60) ÷ 1000',
   };
 
@@ -66,6 +50,10 @@
     switch (unit) {
       case 'mg/kg/day':
         return value * 24;
+      case 'mg/kg/min':
+        return value / 60;
+      case 'mcg/kg/hr':
+        return value * 1000;
       case 'mcg/kg/min':
         return (value * 1000) / 60;
       case 'mg/kg/hr':
@@ -86,14 +74,11 @@
   $: p = $patient;
 
   // Inputs
-  let selectedDrugId: DrugOption['id'] = DRUG_OPTIONS[0]?.id ?? 'metoclopramide-5';
+  let selectedDrugId: MedicationDef['id'] = MEDICATIONS[0]?.id ?? '';
   let dose: number | '' = '';
-  let doseUnit: DoseUnit = DEFAULT_DOSE_UNIT[selectedDrugId];
+  let doseUnit: DoseUnit = getDefaultMedicationDoseUnit(selectedDrugId);
   let bagVolumeMl: number | '' = '';
   let maintRateMlHr: number | '' = '';
-
-  let selectedDrug = DRUG_OPTIONS[0];
-  $: selectedDrug = DRUG_OPTIONS.find((d) => d.id === selectedDrugId) ?? DRUG_OPTIONS[0];
 
   let med: MedicationDef | undefined;
   $: med = MEDICATIONS.find((m) => m.id === selectedDrugId);
@@ -101,9 +86,9 @@
   let concentrationMgPerMl: number | null = null;
   $: concentrationMgPerMl = concMgPerMl(med);
 
-  let previousDrugId: DrugOption['id'] = selectedDrugId;
+  let previousDrugId: MedicationDef['id'] = selectedDrugId;
   $: if (selectedDrugId !== previousDrugId) {
-    doseUnit = DEFAULT_DOSE_UNIT[selectedDrugId];
+    doseUnit = getDefaultMedicationDoseUnit(selectedDrugId);
     previousDrugId = selectedDrugId;
   }
 
@@ -122,6 +107,8 @@
     if (hours == null) return null;
     if (unit === 'mg/kg/day') return hours / 24;
     if (unit === 'mg/kg/hr') return hours;
+    if (unit === 'mg/kg/min') return hours * 60;
+    if (unit === 'mcg/kg/hr') return hours / 1000;
     if (unit === 'mcg/kg/min') return (hours * 60) / 1000;
     return null;
   }
@@ -190,9 +177,9 @@
     <div class="flex min-w-0 flex-col gap-1.5 min-[380px]:col-span-2 sm:gap-2 md:col-span-1">
       <label class="text-xs font-semibold uppercase tracking-wide text-slate-300" for="drugbag-drug">Drug</label>
       <select id="drugbag-drug" class="field-select" bind:value={selectedDrugId}>
-        {#each DRUG_OPTIONS as option}
+        {#each MEDICATIONS as option}
           <option value={option.id}>
-            {option.label} {formatConcDisplay(MEDICATIONS.find((m) => m.id === option.id))}
+            {option.name} {formatConcDisplay(option)}
           </option>
         {/each}
       </select>
@@ -214,6 +201,8 @@
         <select bind:value={doseUnit} aria-label="Dose unit" class="field-select">
           <option value="mg/kg/day">mg/kg/day</option>
           <option value="mg/kg/hr">mg/kg/hr</option>
+          <option value="mg/kg/min">mg/kg/min</option>
+          <option value="mcg/kg/hr">mcg/kg/hr</option>
           <option value="mcg/kg/min">mcg/kg/min</option>
         </select>
       </div>
@@ -280,7 +269,7 @@
 
           <div class="mt-2 grid gap-x-3 gap-y-1.5 text-sm [grid-template-columns:minmax(0,1fr)_auto]">
             <div class="text-slate-300">Drug</div>
-            <div class="text-right text-slate-100">{selectedDrug.label}</div>
+            <div class="text-right text-slate-100">{med?.name ?? '—'}</div>
 
             <div class="text-slate-300">Stock</div>
             <div class="text-right"><span class="ui-chip">{formatConcDisplay(med)}</span></div>

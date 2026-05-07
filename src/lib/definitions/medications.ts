@@ -1,4 +1,25 @@
-import type { MedicationDef } from './types';
+import type { DoseUnit, MedicationDef } from './types';
+
+export const FALLBACK_MEDICATION_DOSE_UNIT: DoseUnit = 'mg/kg/hr';
+
+export const DEFAULT_MEDICATION_DOSE_UNITS: Readonly<Record<string, DoseUnit>> = {
+  'diazepam-5': 'mg/kg/hr',
+  'dobutamine-12-5': 'mcg/kg/min',
+  'dopamine-40': 'mcg/kg/min',
+  'epinephrine-1': 'mcg/kg/min',
+  'fentanyl-50': 'mcg/kg/hr',
+  'furosemide-50': 'mg/kg/hr',
+  'midazolam-5': 'mg/kg/hr',
+  'metoclopramide-5': 'mg/kg/hr',
+  'norepinephrine-1': 'mcg/kg/min',
+  'propofol-10': 'mg/kg/min',
+  'lidocaine-20': 'mcg/kg/min',
+  'ketamine-100': 'mcg/kg/min',
+} as const;
+
+export function getDefaultMedicationDoseUnit(id: string): DoseUnit {
+  return DEFAULT_MEDICATION_DOSE_UNITS[id] ?? FALLBACK_MEDICATION_DOSE_UNIT;
+}
 
 export const MEDICATIONS: readonly MedicationDef[] = [
   {
