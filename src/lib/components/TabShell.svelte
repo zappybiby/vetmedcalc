@@ -5,6 +5,7 @@
   import DrugInBag from './DrugInBag.svelte';
   import InsOuts from './InsOuts.svelte';
   import RERCalculator from './RERCalculator.svelte';
+  import VenousBloodGas from './VenousBloodGas.svelte';
   import { cprBatchMode } from '../stores/cprUi';
 
   type Tab = { id: string; label: string };
@@ -13,6 +14,7 @@
     { id: 'drugbag', label: 'Drug in bag' },
     { id: 'insouts', label: 'Ins / outs' },
     { id: 'rer',     label: 'RER calculator' },
+    { id: 'venousbg', label: 'Venous blood gas' },
     { id: 'blood',   label: 'Blood transfusion' },
     { id: 'cpr',     label: 'CPR labels' },
   ];
@@ -62,6 +64,9 @@
     </div>
     <div hidden={active !== 'rer'}>
       <RERCalculator />
+    </div>
+    <div hidden={active !== 'venousbg'}>
+      <VenousBloodGas />
     </div>
     <div hidden={active !== 'blood'}>
       <BloodTransfusion />
