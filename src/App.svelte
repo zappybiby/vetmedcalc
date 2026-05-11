@@ -1,8 +1,6 @@
 <script lang="ts">
   import { onMount } from 'svelte';
-  import PatientPanel from './lib/components/PatientPanel.svelte';
   import TabShell from './lib/components/TabShell.svelte';
-  import { cprBatchMode } from './lib/stores/cprUi';
 
   type Theme = 'dark' | 'light';
 
@@ -66,10 +64,6 @@
     </button>
 
     <div class="mx-auto grid min-w-0 max-w-[1040px] gap-2 px-2 sm:px-3 md:px-4">
-      {#if !$cprBatchMode}
-        <PatientPanel />
-      {/if}
-
       <div class="flex min-w-0 justify-center">
         <TabShell />
       </div>

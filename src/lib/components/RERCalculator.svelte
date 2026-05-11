@@ -51,7 +51,7 @@
     const next: string[] = [];
 
     if (weightKg == null) {
-      next.push('Enter a patient weight in the Patient panel to calculate RER.');
+      next.push('Enter a patient weight to calculate RER.');
     }
     if (kcalPerMlValue != null && kcalPerMlValue <= 0) {
       next.push('kcal per mL must be greater than 0.');
@@ -130,7 +130,7 @@
       </div>
 
       <div class="mt-2 text-[11px] leading-relaxed text-slate-400 sm:mt-3 sm:text-xs">
-        Uses patient weight from the Patient panel. RER = 70 x kg^0.75, then target kcal/day = RER x factor.
+        RER = 70 x kg^0.75, then target kcal/day = RER x factor.
       </div>
 
       {#if issues.length}

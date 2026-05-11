@@ -283,13 +283,13 @@
   }
 
   .ui-tab {
-    @apply inline-flex min-w-0 items-center justify-center rounded-md px-1.5 py-2 text-center font-semibold leading-tight transition-colors sm:rounded-lg sm:px-3 sm:py-2.5;
+    @apply inline-flex min-w-0 items-center justify-center rounded-md px-2 py-2.5 text-center font-semibold leading-tight transition-colors sm:rounded-lg sm:px-3.5 sm:py-3;
     color: color-mix(in srgb, var(--ui-text-300) 82%, var(--ui-text-400));
     background-color: color-mix(in srgb, var(--ui-surface-2) 34%, transparent);
     border: 1px solid color-mix(in srgb, var(--ui-border) 62%, transparent);
-    min-height: 2.25rem;
-    font-size: 9.5px;
-    letter-spacing: 0.012em;
+    min-height: 2.5rem;
+    font-size: 10px;
+    letter-spacing: 0;
     text-transform: uppercase;
     overflow-wrap: anywhere;
     white-space: normal;
@@ -298,15 +298,14 @@
 
   @media (min-width: 390px) {
     .ui-tab {
-      font-size: 10.5px;
-      letter-spacing: 0.018em;
+      font-size: 11px;
     }
   }
 
   @media (min-width: 640px) {
     .ui-tab {
-      min-height: 2.5rem;
-      font-size: 13px;
+      min-height: 2.75rem;
+      font-size: 13.5px;
       white-space: nowrap;
     }
   }

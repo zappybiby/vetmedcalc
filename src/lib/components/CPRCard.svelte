@@ -1,5 +1,6 @@
 <script lang="ts">
   import { patient } from '../stores/patient';
+  import type { Species } from '../stores/patient';
   import {
     computeCprLabel,
     fmtVolume,
@@ -9,6 +10,21 @@
 
   $: p = $patient;
   $: label = computeCprLabel(p);
+
+  const speciesOptions: readonly { value: Species; label: string }[] = [
+    { value: 'dog', label: 'Dog' },
+    { value: 'cat', label: 'Cat' },
+  ];
+
+  function updateName(event: Event): void {
+    const target = event.currentTarget;
+    if (!(target instanceof HTMLInputElement)) return;
+    patient.update(prev => prev.name === target.value ? prev : { ...prev, name: target.value });
+  }
+
+  function selectSpecies(species: Species): void {
+    patient.update(prev => prev.species === species ? prev : { ...prev, species });
+  }
 
   function printLabel() {
     const labelMarkup = renderCprLabelMarkup(label);
@@ -44,6 +60,36 @@
   </div>
 
   <div class="ui-card grid gap-2 p-2.5 sm:p-4">
+    <div class="cpr-patient-grid grid min-w-0 gap-2 sm:gap-3">
+      <label class="grid min-w-0 gap-1.5">
+        <span class="ui-label">Patient name</span>
+        <input
+          id="cpr-patient-name"
+          class="field-control"
+          type="text"
+          value={p.name}
+          on:input={updateName}
+        />
+      </label>
+
+      <div class="grid min-w-0 gap-1.5">
+        <div class="ui-label" id="cpr-species-label">Species</div>
+        <div class="cpr-species-grid" role="group" aria-labelledby="cpr-species-label">
+          {#each speciesOptions as option (option.value)}
+            <button
+              type="button"
+              class:is-selected={p.species === option.value}
+              class="cpr-species-button"
+              aria-pressed={p.species === option.value}
+              on:click={() => selectSpecies(option.value)}
+            >
+              {option.label}
+            </button>
+          {/each}
+        </div>
+      </div>
+    </div>
+
     <article class="ui-inset p-2.5 sm:p-3">
       <div class="flex items-start justify-between gap-3">
         <div class="min-w-0">
@@ -103,9 +149,6 @@
   </p>
 </section>
 
-<!-- PRINT-ONLY LABEL (unchanged) -->
-
-
 <!-- PRINT-ONLY LABEL -->
 <div id="cpr-print-label" class="printable hidden print:block" aria-hidden="true">
   <div class="label-page">
@@ -116,6 +159,58 @@
 </div>
 
 <style>
+  .cpr-patient-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .cpr-species-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.45rem;
+  }
+
+  .cpr-species-button {
+    display: inline-flex;
+    min-height: 2.35rem;
+    min-width: 0;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid var(--ui-field-border);
+    border-radius: 0.5rem;
+    background-color: var(--ui-field-bg);
+    color: var(--ui-text-200);
+    font-size: 0.9rem;
+    font-weight: 800;
+    line-height: 1;
+    transition:
+      background-color 140ms ease,
+      border-color 140ms ease,
+      color 140ms ease,
+      box-shadow 140ms ease;
+  }
+
+  .cpr-species-button:hover {
+    border-color: var(--ui-field-border-strong);
+    background-color: var(--ui-field-bg-hover);
+    color: var(--ui-text-100);
+  }
+
+  .cpr-species-button.is-selected {
+    border-color: var(--ui-accent-border);
+    background-color: color-mix(in srgb, var(--ui-accent-surface) 66%, var(--ui-surface-2));
+    color: var(--ui-text-100);
+    box-shadow:
+      inset 0 2px 0 rgba(127, 192, 229, 0.6),
+      0 0 0 1px color-mix(in srgb, var(--ui-accent-border) 54%, transparent);
+  }
+
+  @media (min-width: 520px) {
+    .cpr-patient-grid {
+      grid-template-columns: minmax(0, 1.2fr) minmax(150px, 0.8fr);
+      align-items: end;
+    }
+  }
+
   /* ------------------- PRINT STYLES ------------------- */
   @media print {
     /* Hide the app; show only the label to avoid extra pages */

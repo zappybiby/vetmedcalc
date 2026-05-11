@@ -4,6 +4,7 @@
   import CRICalculator from './CRICalculator.svelte';
   import DrugInBag from './DrugInBag.svelte';
   import InsOuts from './InsOuts.svelte';
+  import PatientPanel from './PatientPanel.svelte';
   import RERCalculator from './RERCalculator.svelte';
   import VenousBloodGas from './VenousBloodGas.svelte';
   import { cprBatchMode } from '../stores/cprUi';
@@ -48,6 +49,10 @@
     {/each}
     </div>
   </div>
+
+  {#if !$cprBatchMode}
+    <PatientPanel />
+  {/if}
 
   <div
     class="ui-panel max-w-full min-w-0 overflow-x-auto p-1.5 text-slate-200 sm:p-2.5"
