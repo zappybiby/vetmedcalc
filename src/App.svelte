@@ -49,23 +49,24 @@
 
 <div class="flex min-h-dvh flex-col">
   <main class="flex-1 py-2 sm:py-3 md:py-4">
-    <button
-      type="button"
-      class="theme-toggle ui-button fixed right-3 top-3 z-40 gap-2 px-2 py-1 text-[10.5px] font-medium sm:right-4 sm:top-4 sm:px-2.5 sm:py-1.5 sm:text-xs"
-      on:click={toggleTheme}
-      aria-pressed={theme === 'light'}
-      aria-label={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
-      title={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
-    >
-      <span class="hidden sm:inline">{theme === 'dark' ? 'Light' : 'Dark'}</span>
-      <span class="theme-toggle-track" aria-hidden="true">
-        <span class={`theme-toggle-thumb ${theme === 'light' ? 'is-light' : ''}`}></span>
-      </span>
-    </button>
-
     <div class="mx-auto grid min-w-0 max-w-[1040px] gap-2 px-2 sm:px-3 md:px-4">
       <div class="flex min-w-0 justify-center">
-        <TabShell />
+        <TabShell>
+          <button
+            slot="tab-extra"
+            type="button"
+            class="theme-toggle tab-theme-toggle ui-button z-40 gap-2 text-[10.5px] font-medium sm:text-xs"
+            on:click={toggleTheme}
+            aria-pressed={theme === 'light'}
+            aria-label={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
+            title={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
+          >
+            <span class="hidden sm:inline">{theme === 'dark' ? 'Light' : 'Dark'}</span>
+            <span class="theme-toggle-track" aria-hidden="true">
+              <span class={`theme-toggle-thumb ${theme === 'light' ? 'is-light' : ''}`}></span>
+            </span>
+          </button>
+        </TabShell>
       </div>
     </div>
   </main>

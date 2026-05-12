@@ -36,17 +36,20 @@
 
 <section class="grid min-w-0 w-full gap-2" aria-label="Main tools">
   <div class="flex min-w-0 max-w-full justify-center sm:-mx-1 sm:px-1 sm:pb-0.5 sm:overflow-x-auto">
-    <div class="ui-tablist" role="tablist" aria-label="Tool tabs">
-    {#each tabs as t}
-      <button
-        class={`${tabBase} ${active === t.id ? tabActive : tabInactive} shrink-0`}
-        role="tab"
-        aria-selected={active === t.id}
-        on:click={() => selectTab(t.id)}
-      >
-        {t.label}
-      </button>
-    {/each}
+    <div class="tab-strip-frame">
+      <div class="ui-tablist" role="tablist" aria-label="Tool tabs">
+        {#each tabs as t}
+          <button
+            class={`${tabBase} ${active === t.id ? tabActive : tabInactive} shrink-0`}
+            role="tab"
+            aria-selected={active === t.id}
+            on:click={() => selectTab(t.id)}
+          >
+            {t.label}
+          </button>
+        {/each}
+      </div>
+      <slot name="tab-extra" />
     </div>
   </div>
 

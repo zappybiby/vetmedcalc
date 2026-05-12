@@ -275,6 +275,10 @@
     background-color: var(--ui-divider);
   }
 
+  .tab-strip-frame {
+    @apply relative w-full max-w-full sm:w-auto;
+  }
+
   .ui-tablist {
     @apply grid w-full max-w-full min-w-0 grid-cols-3 items-center gap-1 rounded-lg px-1 py-1 sm:flex sm:w-auto sm:flex-nowrap sm:justify-center sm:overflow-x-auto sm:rounded-xl sm:px-1.5;
     background-color: color-mix(in srgb, var(--ui-tab-bg) 85%, var(--ui-surface));
@@ -283,7 +287,7 @@
   }
 
   .ui-tab {
-    @apply inline-flex min-w-0 items-center justify-center rounded-md px-2 py-2.5 text-center font-semibold leading-tight transition-colors sm:rounded-lg sm:px-3.5 sm:py-3;
+    @apply inline-flex h-[3.25rem] min-w-0 items-center justify-center rounded-md px-2 py-2.5 text-center font-semibold leading-tight transition-colors sm:h-auto sm:rounded-lg sm:px-3.5 sm:py-3;
     color: color-mix(in srgb, var(--ui-text-300) 82%, var(--ui-text-400));
     background-color: color-mix(in srgb, var(--ui-surface-2) 34%, transparent);
     border: 1px solid color-mix(in srgb, var(--ui-border) 62%, transparent);
@@ -397,6 +401,27 @@
 
   .theme-toggle {
     color: var(--ui-text-200);
+  }
+
+  .tab-theme-toggle {
+    position: absolute;
+    right: 0.25rem;
+    bottom: 0.25rem;
+    min-height: 3.25rem;
+    width: calc((100% - 1rem) / 3);
+    padding: 0;
+  }
+
+  @media (min-width: 640px) {
+    .tab-theme-toggle {
+      position: fixed;
+      top: 1rem;
+      right: 1rem;
+      bottom: auto;
+      min-height: 0;
+      width: auto;
+      padding: 0.375rem 0.625rem;
+    }
   }
 
   .theme-toggle:hover:not(:disabled) {
