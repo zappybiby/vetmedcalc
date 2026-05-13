@@ -1,6 +1,7 @@
 import type { DoseUnit, MedicationDef } from './types';
 
 export const FALLBACK_MEDICATION_DOSE_UNIT: DoseUnit = 'mg/kg/hr';
+export const CUSTOM_MEDICATION_ID = 'custom';
 
 export const DEFAULT_MEDICATION_DOSE_UNITS: Readonly<Record<string, DoseUnit>> = {
   'diazepam-5': 'mg/kg/hr',

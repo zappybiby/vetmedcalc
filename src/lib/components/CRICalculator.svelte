@@ -4,7 +4,7 @@
   import { buildCRIViewModel, type CRIViewModel } from '../viewmodels/criViewModel';
   import { patient } from '../stores/patient';
   import type { Patient } from '../stores/patient';
-  import { MEDICATIONS, getDefaultMedicationDoseUnit } from '@defs';
+  import { CUSTOM_MEDICATION_ID, MEDICATIONS, getDefaultMedicationDoseUnit } from '@defs';
   import type { MedicationDef } from '@defs';
 
   type MathToken = { kind: 'num' | 'op' | 'text'; text: string };
@@ -15,8 +15,23 @@
   $: p = $patient;
 
   let medId: string = MEDICATIONS[0]?.id ?? '';
+  let customDrugName = '';
+  let customConcentrationMgMl: number | '' = '';
+
+  let isCustomDrug = false;
+  $: isCustomDrug = medId === CUSTOM_MEDICATION_ID;
+
+  let customMed: MedicationDef | undefined;
+  $: customMed = isCustomDrug && customConcentrationMgMl !== '' && Number(customConcentrationMgMl) > 0
+    ? {
+        id: CUSTOM_MEDICATION_ID,
+        name: customDrugName.trim() || 'Custom',
+        concentration: { value: Number(customConcentrationMgMl), units: 'mg/mL' },
+      }
+    : undefined;
+
   let med: MedicationDef | undefined;
-  $: med = MEDICATIONS.find((m) => m.id === medId);
+  $: med = isCustomDrug ? customMed : MEDICATIONS.find((m) => m.id === medId);
 
   let doseUnit: DoseUnit = getDefaultMedicationDoseUnit(medId);
   let desiredDose: number | '' = '';
@@ -170,8 +185,35 @@
               {m.name} — {formatConcDisplay(m)}
             </option>
           {/each}
+          <option value={CUSTOM_MEDICATION_ID}>Custom</option>
         </select>
       </div>
+
+      {#if isCustomDrug}
+        <div class="flex min-w-0 flex-col gap-1.5">
+          <label class="ui-label" for="cri-custom-name">Drug name</label>
+          <input
+            id="cri-custom-name"
+            class="field-control"
+            type="text"
+            bind:value={customDrugName}
+            autocomplete="off"
+          />
+        </div>
+
+        <div class="flex min-w-0 flex-col gap-1.5">
+          <label class="ui-label" for="cri-custom-concentration">Stock concentration (mg/mL)</label>
+          <input
+            id="cri-custom-concentration"
+            class="field-control"
+            type="number"
+            min="0"
+            step="0.001"
+            bind:value={customConcentrationMgMl}
+            inputmode="decimal"
+          />
+        </div>
+      {/if}
 
       <div class="col-span-2 flex min-w-0 flex-col gap-1.5 xl:col-span-1">
         <label class="ui-label" for="cri-dose">Dose</label>
