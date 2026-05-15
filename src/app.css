@@ -7,24 +7,24 @@
   :root {
     color-scheme: dark;
     --ui-bg: #0b1119;
-    --ui-surface: #121a26;
-    --ui-surface-2: #182333;
-    --ui-surface-3: #0e1621;
-    --ui-border: rgba(148, 163, 184, 0.2);
-    --ui-border-strong: rgba(148, 163, 184, 0.34);
-    --ui-panel-border: rgba(148, 163, 184, 0.18);
-    --ui-card-border: rgba(148, 163, 184, 0.2);
-    --ui-inset-border: rgba(148, 163, 184, 0.18);
-    --ui-tab-bg: #101924;
-    --ui-tab-border: rgba(148, 163, 184, 0.18);
-    --ui-button-bg: #162232;
-    --ui-button-border: rgba(148, 163, 184, 0.24);
-    --ui-field-bg: #0b131e;
-    --ui-field-bg-hover: #101927;
-    --ui-field-border: rgba(148, 163, 184, 0.26);
-    --ui-field-border-strong: rgba(148, 163, 184, 0.42);
-    --ui-shadow: 0 1px 0 rgba(255, 255, 255, 0.06) inset, 0 18px 48px rgba(0, 0, 0, 0.55);
-    --ui-shadow-sm: 0 1px 0 rgba(255, 255, 255, 0.06) inset, 0 10px 26px rgba(0, 0, 0, 0.45);
+    --ui-surface: #111a26;
+    --ui-surface-2: #1a2839;
+    --ui-surface-3: #0d1724;
+    --ui-border: rgba(148, 163, 184, 0.42);
+    --ui-border-strong: rgba(203, 213, 225, 0.66);
+    --ui-panel-border: rgba(148, 163, 184, 0.34);
+    --ui-card-border: rgba(148, 163, 184, 0.4);
+    --ui-inset-border: rgba(148, 163, 184, 0.36);
+    --ui-tab-bg: #101b2a;
+    --ui-tab-border: #64748b;
+    --ui-button-bg: #1b2a3d;
+    --ui-button-border: #64748b;
+    --ui-field-bg: #091220;
+    --ui-field-bg-hover: #0d1a2b;
+    --ui-field-border: #64748b;
+    --ui-field-border-strong: #cbd5e1;
+    --ui-shadow: 0 1px 0 rgba(255, 255, 255, 0.08) inset, 0 18px 48px rgba(0, 0, 0, 0.55);
+    --ui-shadow-sm: 0 1px 0 rgba(255, 255, 255, 0.08) inset, 0 10px 26px rgba(0, 0, 0, 0.45);
     --ui-text-100: #eff4fb;
     --ui-text-200: #d9e2ee;
     --ui-text-300: #b7c4d6;
@@ -33,19 +33,19 @@
     --ui-link-hover: #7dd3fc;
     --ui-input-scheme: dark;
     --ui-input-text: #eef3f9;
-    --ui-input-placeholder: #607188;
+    --ui-input-placeholder: #95a3b8;
     --ui-select-option-bg: #111827;
     --ui-select-option-text: #f1f5f9;
     --ui-select-optgroup-text: #e2e8f0;
     --ui-select-option-active-bg: #0ea5e9;
     --ui-select-option-active-text: #020617;
     --ui-select-arrow: url('data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="%23cbd5f5"%3E%3Cpath fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.173l3.71-3.94a.75.75 0 011.08 1.04l-4.24 4.5a.75.75 0 01-1.08 0l-4.24-4.5a.75.75 0 01.02-1.06z" clip-rule="evenodd" /%3E%3C/svg%3E');
-    --ui-divider: rgba(148, 163, 184, 0.15);
-    --ui-hover-surface: rgba(148, 163, 184, 0.08);
-    --ui-accent-surface: rgba(78, 144, 184, 0.18);
-    --ui-accent-border: rgba(104, 170, 210, 0.34);
-    --ui-panel-contrast-border: rgba(94, 234, 212, 0.18);
-    --ui-panel-contrast-glow: rgba(45, 212, 191, 0.08);
+    --ui-divider: rgba(148, 163, 184, 0.28);
+    --ui-hover-surface: rgba(148, 163, 184, 0.16);
+    --ui-accent-surface: rgba(14, 165, 233, 0.24);
+    --ui-accent-border: #38bdf8;
+    --ui-panel-contrast-border: rgba(94, 234, 212, 0.36);
+    --ui-panel-contrast-glow: rgba(45, 212, 191, 0.12);
     --ui-footer-bg: rgba(2, 6, 23, 0.9);
     --ui-footer-border: rgba(30, 41, 59, 0.8);
     --ui-footer-text: #cbd5e1;
@@ -56,23 +56,23 @@
     color-scheme: light;
     --ui-bg: #e7eef6;
     --ui-surface: #ffffff;
-    --ui-surface-2: #f4f8fc;
-    --ui-surface-3: #e6edf5;
-    --ui-border: rgba(71, 85, 105, 0.22);
-    --ui-border-strong: rgba(51, 65, 85, 0.38);
-    --ui-panel-border: rgba(71, 85, 105, 0.18);
-    --ui-card-border: rgba(71, 85, 105, 0.22);
-    --ui-inset-border: rgba(71, 85, 105, 0.22);
-    --ui-tab-bg: #eef4fa;
-    --ui-tab-border: rgba(100, 116, 139, 0.34);
-    --ui-button-bg: #f4f8fc;
-    --ui-button-border: rgba(100, 116, 139, 0.34);
-    --ui-field-bg: #f8fbff;
-    --ui-field-bg-hover: #ffffff;
-    --ui-field-border: rgba(100, 116, 139, 0.45);
-    --ui-field-border-strong: rgba(71, 85, 105, 0.62);
-    --ui-shadow: 0 1px 0 rgba(255, 255, 255, 0.9) inset, 0 16px 38px rgba(15, 23, 42, 0.13);
-    --ui-shadow-sm: 0 1px 0 rgba(255, 255, 255, 0.92) inset, 0 8px 18px rgba(15, 23, 42, 0.1);
+    --ui-surface-2: #f8fafc;
+    --ui-surface-3: #eef4fb;
+    --ui-border: rgba(51, 65, 85, 0.46);
+    --ui-border-strong: rgba(15, 23, 42, 0.64);
+    --ui-panel-border: rgba(51, 65, 85, 0.34);
+    --ui-card-border: rgba(51, 65, 85, 0.4);
+    --ui-inset-border: rgba(51, 65, 85, 0.38);
+    --ui-tab-bg: #edf3f9;
+    --ui-tab-border: #64748b;
+    --ui-button-bg: #ffffff;
+    --ui-button-border: #64748b;
+    --ui-field-bg: #ffffff;
+    --ui-field-bg-hover: #f8fbff;
+    --ui-field-border: #64748b;
+    --ui-field-border-strong: #1e293b;
+    --ui-shadow: 0 1px 0 rgba(255, 255, 255, 0.96) inset, 0 16px 38px rgba(15, 23, 42, 0.14);
+    --ui-shadow-sm: 0 1px 0 rgba(255, 255, 255, 0.96) inset, 0 8px 18px rgba(15, 23, 42, 0.12);
     --ui-text-100: #0f172a;
     --ui-text-200: #1e293b;
     --ui-text-300: #334155;
@@ -81,19 +81,19 @@
     --ui-link-hover: #0284c7;
     --ui-input-scheme: light;
     --ui-input-text: #0f172a;
-    --ui-input-placeholder: #516274;
+    --ui-input-placeholder: #475569;
     --ui-select-option-bg: #ffffff;
     --ui-select-option-text: #0f172a;
     --ui-select-optgroup-text: #1e293b;
     --ui-select-option-active-bg: #bae6fd;
     --ui-select-option-active-text: #0c4a6e;
     --ui-select-arrow: url('data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="%23334155"%3E%3Cpath fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.173l3.71-3.94a.75.75 0 011.08 1.04l-4.24 4.5a.75.75 0 01-1.08 0l-4.24-4.5a.75.75 0 01.02-1.06z" clip-rule="evenodd" /%3E%3C/svg%3E');
-    --ui-divider: rgba(71, 85, 105, 0.2);
-    --ui-hover-surface: rgba(51, 65, 85, 0.1);
-    --ui-accent-surface: rgba(14, 165, 233, 0.18);
-    --ui-accent-border: rgba(2, 132, 199, 0.38);
-    --ui-panel-contrast-border: rgba(14, 165, 233, 0.22);
-    --ui-panel-contrast-glow: rgba(14, 165, 233, 0.06);
+    --ui-divider: rgba(51, 65, 85, 0.32);
+    --ui-hover-surface: rgba(14, 165, 233, 0.12);
+    --ui-accent-surface: rgba(14, 165, 233, 0.2);
+    --ui-accent-border: #0369a1;
+    --ui-panel-contrast-border: rgba(2, 132, 199, 0.42);
+    --ui-panel-contrast-glow: rgba(14, 165, 233, 0.08);
     --ui-footer-bg: rgba(255, 255, 255, 0.9);
     --ui-footer-border: rgba(148, 163, 184, 0.55);
     --ui-footer-text: #475569;
@@ -140,7 +140,8 @@
     border: 1px solid var(--ui-field-border);
     background-clip: padding-box;
     box-shadow:
-      0 1px 0 rgba(255, 255, 255, 0.08) inset,
+      0 0 0 1px color-mix(in srgb, var(--ui-field-border) 42%, transparent),
+      0 1px 0 rgba(255, 255, 255, 0.1) inset,
       0 1px 2px rgba(2, 6, 23, 0.14);
     background-color: var(--ui-field-bg);
   }
@@ -156,6 +157,7 @@
     border-color: var(--ui-field-border-strong);
     background-color: var(--ui-field-bg-hover);
     box-shadow:
+      0 0 0 1px color-mix(in srgb, var(--ui-field-border-strong) 46%, transparent),
       0 1px 0 rgba(255, 255, 255, 0.1) inset,
       0 2px 4px rgba(2, 6, 23, 0.18);
   }
@@ -275,22 +277,27 @@
     background-color: var(--ui-divider);
   }
 
+  .tab-strip-outer {
+    @apply flex min-w-0 max-w-full justify-center sm:-mx-1 sm:px-1 sm:pb-0.5;
+  }
+
   .tab-strip-frame {
-    @apply relative w-full max-w-full sm:w-auto;
+    @apply flex w-full max-w-full min-w-0 flex-wrap items-start justify-center gap-1 sm:flex-nowrap;
   }
 
   .ui-tablist {
-    @apply grid w-full max-w-full min-w-0 grid-cols-3 items-center gap-1 rounded-lg px-1 py-1 sm:flex sm:w-auto sm:flex-nowrap sm:justify-center sm:overflow-x-auto sm:rounded-xl sm:px-1.5;
+    @apply flex w-full max-w-full min-w-0 flex-wrap items-center justify-center gap-1 rounded-lg px-1 py-1 sm:flex-1 sm:rounded-xl sm:px-1.5;
     background-color: color-mix(in srgb, var(--ui-tab-bg) 85%, var(--ui-surface));
-    border: 1px solid rgba(148, 163, 184, 0.14);
+    border: 1px solid var(--ui-tab-border);
     box-shadow: 0 1px 0 rgba(255, 255, 255, 0.04) inset;
   }
 
   .ui-tab {
-    @apply inline-flex h-[3.25rem] min-w-0 items-center justify-center rounded-md px-2 py-2.5 text-center font-semibold leading-tight transition-colors sm:h-auto sm:rounded-lg sm:px-3.5 sm:py-3;
-    color: color-mix(in srgb, var(--ui-text-300) 82%, var(--ui-text-400));
-    background-color: color-mix(in srgb, var(--ui-surface-2) 34%, transparent);
-    border: 1px solid color-mix(in srgb, var(--ui-border) 62%, transparent);
+    @apply inline-flex h-[3.25rem] min-w-0 items-center justify-center rounded-md px-2 py-2.5 text-center font-semibold leading-tight transition-colors sm:h-auto sm:rounded-lg sm:px-2.5 sm:py-2.5;
+    flex: 1 1 calc((100% - 0.5rem) / 3);
+    color: var(--ui-text-200);
+    background-color: color-mix(in srgb, var(--ui-button-bg) 78%, var(--ui-surface));
+    border: 1px solid var(--ui-tab-border);
     min-height: 2.5rem;
     font-size: 10px;
     letter-spacing: 0;
@@ -308,19 +315,42 @@
 
   @media (min-width: 640px) {
     .ui-tab {
+      flex: 1 1 7.25rem;
       min-height: 2.75rem;
-      font-size: 13.5px;
+      font-size: 12px;
+      white-space: normal;
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .ui-tab {
+      flex: 0 1 auto;
+      font-size: 13px;
+      padding-inline: 0.875rem;
       white-space: nowrap;
+    }
+  }
+
+  @media (min-width: 1280px) {
+    .ui-tablist {
+      flex: 0 1 auto;
+    }
+
+    .ui-tab {
+      font-size: 13.5px;
+      padding-inline: 0.875rem;
+      padding-block: 0.75rem;
     }
   }
 
   .ui-tab-active {
     color: var(--ui-text-100);
-    background-color: var(--ui-surface-2);
+    background-color: color-mix(in srgb, var(--ui-accent-surface) 18%, var(--ui-surface-2));
     border-color: var(--ui-accent-border);
     box-shadow:
-      inset 0 2px 0 rgba(127, 192, 229, 0.6),
-      0 1px 0 rgba(255, 255, 255, 0.05) inset,
+      inset 0 2px 0 color-mix(in srgb, var(--ui-accent-border) 82%, transparent),
+      0 0 0 1px color-mix(in srgb, var(--ui-accent-border) 34%, transparent),
+      0 1px 0 rgba(255, 255, 255, 0.08) inset,
       0 8px 16px rgba(2, 6, 23, 0.16);
   }
 
@@ -329,7 +359,9 @@
     color: var(--ui-text-100);
     background-color: var(--ui-button-bg);
     border: 1px solid var(--ui-button-border);
-    box-shadow: var(--ui-shadow-sm);
+    box-shadow:
+      0 0 0 1px color-mix(in srgb, var(--ui-button-border) 36%, transparent),
+      var(--ui-shadow-sm);
   }
 
   .ui-tab:hover:not(.ui-tab-active) {
@@ -357,35 +389,35 @@
   }
 
   .ui-label {
-    @apply text-[12px] font-medium leading-none;
+    @apply text-xs font-semibold uppercase leading-none tracking-wide;
     color: var(--ui-text-400);
-    letter-spacing: 0.02em;
+    letter-spacing: 0.025em;
   }
 
   .ui-label-strong {
-    @apply text-[12px] font-medium leading-none;
-    color: var(--ui-text-300);
-    letter-spacing: 0.02em;
+    @apply text-xs font-black uppercase leading-none tracking-wide;
+    color: var(--ui-text-200);
+    letter-spacing: 0.025em;
   }
 
   .ui-section-title {
-    @apply text-[15px] font-semibold leading-none;
+    @apply text-xs font-black uppercase leading-none tracking-wide;
     color: var(--ui-text-200);
-    letter-spacing: 0.01em;
+    letter-spacing: 0.025em;
   }
 
   .ui-metric {
-    @apply text-[1.75rem] font-semibold leading-none tracking-tight tabular-nums;
+    @apply text-[1.75rem] font-black leading-none tracking-tight tabular-nums;
     color: var(--ui-text-100);
   }
 
   .ui-metric-compact {
-    @apply text-[1.45rem] font-semibold leading-none tracking-tight tabular-nums;
+    @apply text-[1.45rem] font-black leading-none tracking-tight tabular-nums;
     color: var(--ui-text-100);
   }
 
   .ui-statement-value {
-    @apply text-[1.15rem] font-semibold leading-tight tracking-tight tabular-nums sm:text-[1.35rem];
+    @apply text-[1.15rem] font-black leading-tight tracking-tight tabular-nums sm:text-[1.35rem];
     color: var(--ui-text-100);
   }
 
@@ -404,23 +436,15 @@
   }
 
   .tab-theme-toggle {
-    position: absolute;
-    right: 0.25rem;
-    bottom: 0.25rem;
+    flex: 0 0 4rem;
     min-height: 3.25rem;
-    width: calc((100% - 1rem) / 3);
     padding: 0;
   }
 
   @media (min-width: 640px) {
     .tab-theme-toggle {
-      position: fixed;
-      top: 1rem;
-      right: 1rem;
-      bottom: auto;
-      min-height: 0;
-      width: auto;
-      padding: 0.375rem 0.625rem;
+      flex-basis: 3.25rem;
+      min-height: 2.75rem;
     }
   }
 
@@ -431,29 +455,43 @@
   .theme-toggle-track {
     position: relative;
     display: inline-flex;
-    height: 1.15rem;
-    width: 2.2rem;
+    height: 1.35rem;
+    width: 2.55rem;
     align-items: center;
     border-radius: 9999px;
     border: 1px solid var(--ui-field-border);
     background-color: var(--ui-field-bg);
-    padding: 0.08rem;
+    padding: 0.1rem;
   }
 
   .theme-toggle-thumb {
-    display: block;
-    height: 0.88rem;
-    width: 0.88rem;
+    display: inline-flex;
+    height: 1rem;
+    width: 1rem;
+    align-items: center;
+    justify-content: center;
     border-radius: 9999px;
-    background-color: #f59e0b;
+    background-color: #38bdf8;
+    color: #082f49;
+    box-shadow:
+      0 1px 0 rgba(255, 255, 255, 0.45) inset,
+      0 1px 2px rgba(2, 6, 23, 0.24);
     transition:
       transform 160ms ease,
-      background-color 160ms ease;
+      background-color 160ms ease,
+      color 160ms ease;
   }
 
   .theme-toggle-thumb.is-light {
-    transform: translateX(1rem);
-    background-color: #0ea5e9;
+    transform: translateX(1.2rem);
+    background-color: #f59e0b;
+    color: #431407;
+  }
+
+  .theme-toggle-icon {
+    height: 0.72rem;
+    width: 0.72rem;
+    flex: none;
   }
 
   .app-footer {

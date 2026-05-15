@@ -187,103 +187,104 @@
 </script>
 
 <section class="grid min-w-0 gap-2 text-slate-200 sm:gap-3" aria-label="Drug in bag calculator">
-  <div class="grid min-w-0 gap-2 min-[380px]:grid-cols-2 sm:gap-3 md:grid-cols-2">
-    <div class="flex min-w-0 flex-col gap-1.5 min-[380px]:col-span-2 sm:gap-2 md:col-span-1">
-      <label class="text-xs font-semibold uppercase tracking-wide text-slate-300" for="drugbag-drug">Drug</label>
-      <select id="drugbag-drug" class="field-select" bind:value={selectedDrugId}>
-        {#each MEDICATIONS as option}
-          <option value={option.id}>
-            {option.name} {formatConcDisplay(option)}
-          </option>
-        {/each}
-        <option value={CUSTOM_MEDICATION_ID}>Custom</option>
-      </select>
-    </div>
-
-    {#if isCustomDrug}
-      <div class="flex min-w-0 flex-col gap-1.5 sm:gap-2">
-        <label class="text-xs font-semibold uppercase tracking-wide text-slate-300" for="drugbag-custom-name">Drug name</label>
-        <input
-          id="drugbag-custom-name"
-          class="field-control"
-          type="text"
-          bind:value={customDrugName}
-          autocomplete="off"
-        />
-      </div>
-
-      <div class="flex min-w-0 flex-col gap-1.5 sm:gap-2">
-        <label class="text-xs font-semibold uppercase tracking-wide text-slate-300" for="drugbag-custom-concentration">Stock concentration (mg/mL)</label>
-        <input
-          id="drugbag-custom-concentration"
-          class="field-control"
-          type="number"
-          min="0"
-          step="0.001"
-          bind:value={customConcentrationMgMl}
-          inputmode="decimal"
-        />
-      </div>
-    {/if}
-
-    <div class="flex min-w-0 flex-col gap-1.5 min-[380px]:col-span-2 sm:gap-2 md:col-span-1">
-      <label class="text-xs font-semibold uppercase tracking-wide text-slate-300" for="drugbag-dose">Dose</label>
-      <div class="grid min-w-0 grid-cols-[minmax(0,1fr)_auto] items-center gap-2">
-        <input
-          id="drugbag-dose"
-          class="field-control"
-          type="number"
-          min="0"
-          step="0.01"
-          bind:value={dose}
-          inputmode="decimal"
-          placeholder="e.g., 1"
-        />
-        <select bind:value={doseUnit} aria-label="Dose unit" class="field-select">
-          <option value="mg/kg/day">mg/kg/day</option>
-          <option value="mg/kg/hr">mg/kg/hr</option>
-          <option value="mg/kg/min">mg/kg/min</option>
-          <option value="mcg/kg/hr">mcg/kg/hr</option>
-          <option value="mcg/kg/min">mcg/kg/min</option>
+  <article class="ui-card grid min-w-0 gap-2 p-2.5 sm:gap-3 sm:p-3">
+    <div class="grid min-w-0 gap-2 min-[380px]:grid-cols-2 sm:gap-3 md:grid-cols-2">
+      <div class="flex min-w-0 flex-col gap-1.5 min-[380px]:col-span-2 sm:gap-2 md:col-span-1">
+        <label class="ui-label" for="drugbag-drug">Drug</label>
+        <select id="drugbag-drug" class="field-select" bind:value={selectedDrugId}>
+          {#each MEDICATIONS as option}
+            <option value={option.id}>
+              {option.name} {formatConcDisplay(option)}
+            </option>
+          {/each}
+          <option value={CUSTOM_MEDICATION_ID}>Custom</option>
         </select>
       </div>
-    </div>
 
-    <div class="flex min-w-0 flex-col gap-1.5 sm:gap-2">
-      <label class="text-xs font-semibold uppercase tracking-wide text-slate-300" for="drugbag-bag">Fluid bag volume (mL)</label>
-      <input
-        id="drugbag-bag"
-        class="field-control"
-        type="number"
-        min="0"
-        step="1"
-        bind:value={bagVolumeMl}
-        inputmode="decimal"
-        placeholder="e.g., 1000"
-      />
-    </div>
+      {#if isCustomDrug}
+        <div class="flex min-w-0 flex-col gap-1.5 sm:gap-2">
+          <label class="ui-label" for="drugbag-custom-name">Drug name</label>
+          <input
+            id="drugbag-custom-name"
+            class="field-control"
+            type="text"
+            bind:value={customDrugName}
+            autocomplete="off"
+          />
+        </div>
 
-    <div class="flex min-w-0 flex-col gap-1.5 sm:gap-2">
-      <label class="text-xs font-semibold uppercase tracking-wide text-slate-300" for="drugbag-rate">Maintenance rate (mL/hr)</label>
-      <input
-        id="drugbag-rate"
-        class="field-control"
-        type="number"
-        min="0"
-        step="0.1"
-        bind:value={maintRateMlHr}
-        inputmode="decimal"
-        placeholder="e.g., 60"
-      />
-    </div>
+        <div class="flex min-w-0 flex-col gap-1.5 sm:gap-2">
+          <label class="ui-label" for="drugbag-custom-concentration">Stock concentration (mg/mL)</label>
+          <input
+            id="drugbag-custom-concentration"
+            class="field-control"
+            type="number"
+            min="0"
+            step="0.001"
+            bind:value={customConcentrationMgMl}
+            inputmode="decimal"
+          />
+        </div>
+      {/if}
 
-  </div>
+      <div class="flex min-w-0 flex-col gap-1.5 min-[380px]:col-span-2 sm:gap-2 md:col-span-1">
+        <label class="ui-label" for="drugbag-dose">Dose</label>
+        <div class="grid min-w-0 grid-cols-[minmax(0,1fr)_auto] items-center gap-2">
+          <input
+            id="drugbag-dose"
+            class="field-control"
+            type="number"
+            min="0"
+            step="0.01"
+            bind:value={dose}
+            inputmode="decimal"
+            placeholder="e.g., 1"
+          />
+          <select bind:value={doseUnit} aria-label="Dose unit" class="field-select">
+            <option value="mg/kg/day">mg/kg/day</option>
+            <option value="mg/kg/hr">mg/kg/hr</option>
+            <option value="mg/kg/min">mg/kg/min</option>
+            <option value="mcg/kg/hr">mcg/kg/hr</option>
+            <option value="mcg/kg/min">mcg/kg/min</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="flex min-w-0 flex-col gap-1.5 sm:gap-2">
+        <label class="ui-label" for="drugbag-bag">Fluid bag volume (mL)</label>
+        <input
+          id="drugbag-bag"
+          class="field-control"
+          type="number"
+          min="0"
+          step="1"
+          bind:value={bagVolumeMl}
+          inputmode="decimal"
+          placeholder="e.g., 1000"
+        />
+      </div>
+
+      <div class="flex min-w-0 flex-col gap-1.5 sm:gap-2">
+        <label class="ui-label" for="drugbag-rate">Maintenance rate (mL/hr)</label>
+        <input
+          id="drugbag-rate"
+          class="field-control"
+          type="number"
+          min="0"
+          step="0.1"
+          bind:value={maintRateMlHr}
+          inputmode="decimal"
+          placeholder="e.g., 60"
+        />
+      </div>
+    </div>
+  </article>
 
   {#if ready && snappedMlToAdd != null}
     <div class="grid gap-2 sm:gap-2.5">
       <div class="grid gap-2 sm:gap-3 md:grid-cols-2">
         <div class="ui-card p-3 text-center md:col-span-2">
-          <div class="text-xs font-black uppercase tracking-wide text-slate-300">Delivered dose at rate</div>
+          <div class="ui-label-strong">Delivered dose at rate</div>
           <div class="mt-1.5 text-2xl font-black tabular-nums text-slate-100">{formatDeliveredDose(deliveredDoseMgPerKgHr, doseUnit)}</div>
           {#if deliveredDoseMgPerKgHr != null}
             <div class="mt-1 text-xs text-slate-400">= {formatDeliveredDose(deliveredDoseMgPerKgHr, 'mg/kg/hr')}</div>
@@ -291,7 +292,7 @@
         </div>
 
         <div class="ui-card p-3">
-          <div class="text-xs font-black uppercase tracking-wide text-slate-300">Draw up</div>
+          <div class="ui-label-strong">Draw up</div>
 
           <div class="mt-2 grid gap-2 min-[380px]:grid-cols-2">
             <div class="ui-inset p-2.5 sm:p-3">
@@ -331,7 +332,7 @@
         </div>
 
         <div class="ui-card p-3">
-          <div class="text-xs font-black uppercase tracking-wide text-slate-300">Bag + rate</div>
+          <div class="ui-label-strong">Bag + rate</div>
 
           <div class="mt-2 grid gap-x-3 gap-y-1.5 text-sm [grid-template-columns:minmax(0,1fr)_auto]">
             <div class="text-slate-300">Bag volume</div>
@@ -352,7 +353,9 @@
       </div>
 
       <details class="ui-inset p-3">
-        <summary class="cursor-pointer select-none text-xs font-black uppercase tracking-wide text-slate-300">How calculated</summary>
+        <summary class="ui-summary cursor-pointer select-none">
+          <span class="ui-label-strong">How calculated</span>
+        </summary>
         <table class="mt-3 w-full table-fixed border-collapse text-sm">
           <tbody>
             <tr>

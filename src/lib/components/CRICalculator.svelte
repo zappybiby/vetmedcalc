@@ -174,8 +174,8 @@
   }
 </script>
 
-<section class="grid min-w-0 gap-2 text-slate-200 sm:gap-2.5" aria-label="CRI calculator">
-  <article class="ui-card grid gap-2 p-2 sm:gap-2.5 sm:p-3">
+<section class="grid min-w-0 gap-2 text-slate-200 sm:gap-3" aria-label="CRI calculator">
+  <article class="ui-card grid gap-2 p-2.5 sm:gap-3 sm:p-3">
     <div class="grid min-w-0 grid-cols-2 gap-2 sm:gap-2.5 xl:grid-cols-[minmax(220px,300px)_minmax(220px,280px)_104px_120px] xl:justify-center">
       <div class="col-span-2 flex min-w-0 flex-col gap-1.5 xl:col-span-1">
         <label class="ui-label" for="cri-med">Medication</label>
@@ -311,7 +311,7 @@
         {#each summaryCards as card, index}
           <section class={`grid min-w-0 grid-cols-[minmax(0,0.72fr)_minmax(0,1fr)] items-baseline gap-2 px-3 py-2.5 sm:block sm:px-4 sm:py-3 ${index > 0 ? 'border-t border-slate-700/40 md:border-t-0 md:border-l' : ''}`}>
             <div class="ui-label-strong">{card.label}</div>
-            <div class="text-right text-[1.12rem] font-semibold leading-tight tracking-tight tabular-nums text-slate-100 sm:mt-1.5 sm:text-left sm:text-[1.6rem] sm:leading-none">{card.value}</div>
+            <div class="text-right text-[1.12rem] font-black leading-tight tracking-tight tabular-nums text-slate-100 sm:mt-1.5 sm:text-left sm:text-[1.6rem] sm:leading-none">{card.value}</div>
             {#if card.secondary}
               <div class="ui-meta mt-1">{card.secondary}</div>
             {/if}
@@ -334,7 +334,7 @@
       </summary>
 
       <div class="border-t border-slate-700/40 px-2 py-2 sm:px-3 lg:px-3.5">
-        <div class="overflow-hidden rounded-lg border border-slate-700/40 divide-y divide-slate-700/40">
+        <div class="divide-y divide-slate-700/40">
           {#each vm.stepByStep.rows as row}
             <div class="grid gap-1.5 px-2.5 py-2 sm:px-3 lg:grid-cols-[168px_minmax(0,1fr)] lg:items-center lg:gap-3 lg:py-1.5">
               <div class="flex min-w-0 items-center justify-between gap-2">

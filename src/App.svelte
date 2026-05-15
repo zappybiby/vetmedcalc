@@ -49,21 +49,40 @@
 
 <div class="flex min-h-dvh flex-col">
   <main class="flex-1 py-2 sm:py-3 md:py-4">
-    <div class="mx-auto grid min-w-0 max-w-[1040px] gap-2 px-2 sm:px-3 md:px-4">
+    <div class="mx-auto grid min-w-0 max-w-[1280px] gap-2 px-2 sm:px-3 md:px-4">
       <div class="flex min-w-0 justify-center">
         <TabShell>
           <button
             slot="tab-extra"
             type="button"
-            class="theme-toggle tab-theme-toggle ui-button z-40 gap-2 text-[10.5px] font-medium sm:text-xs"
+            class="theme-toggle tab-theme-toggle ui-button z-40 text-[10.5px] font-medium sm:text-xs"
             on:click={toggleTheme}
             aria-pressed={theme === 'light'}
             aria-label={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
             title={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
           >
-            <span class="hidden sm:inline">{theme === 'dark' ? 'Light' : 'Dark'}</span>
             <span class="theme-toggle-track" aria-hidden="true">
-              <span class={`theme-toggle-thumb ${theme === 'light' ? 'is-light' : ''}`}></span>
+              <span class={`theme-toggle-thumb ${theme === 'light' ? 'is-light' : ''}`} data-theme-icon={theme}>
+                {#if theme === 'light'}
+                  <svg class="theme-toggle-icon" viewBox="0 0 20 20" aria-hidden="true">
+                    <circle cx="10" cy="10" r="3.25" fill="currentColor" />
+                    <path
+                      d="M10 2.25v2M10 15.75v2M4.5 4.5l1.4 1.4M14.1 14.1l1.4 1.4M2.25 10h2M15.75 10h2M4.5 15.5l1.4-1.4M14.1 5.9l1.4-1.4"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-linecap="round"
+                      stroke-width="1.8"
+                    />
+                  </svg>
+                {:else}
+                  <svg class="theme-toggle-icon" viewBox="0 0 20 20" aria-hidden="true">
+                    <path
+                      d="M15.35 12.55A6.9 6.9 0 0 1 7.45 4.65a6.7 6.7 0 1 0 7.9 7.9Z"
+                      fill="currentColor"
+                    />
+                  </svg>
+                {/if}
+              </span>
             </span>
           </button>
         </TabShell>
