@@ -48,8 +48,8 @@
             {t.label}
           </button>
         {/each}
+        <slot name="tab-extra" />
       </div>
-      <slot name="tab-extra" />
     </div>
   </div>
 

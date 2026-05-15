@@ -1,3 +1,4 @@
+import AxeBuilder from '@axe-core/playwright';
 import { expect, type Page, test } from '@playwright/test';
 
 const RESPONSIVE_VIEWPORTS = [
@@ -16,6 +17,11 @@ const RESPONSIVE_VIEWPORTS = [
   { width: 384, height: 854 },
 ] as const;
 
+const CONTRAST_VIEWPORTS = [
+  { name: 'desktop', width: 1920, height: 1080 },
+  { name: 'mobile', width: 384, height: 854 },
+] as const;
+
 const FULL_DATA_TABS = [
   'CRI calculator',
   'Drug in bag',
@@ -27,11 +33,20 @@ const FULL_DATA_TABS = [
 ] as const;
 
 type TabName = (typeof FULL_DATA_TABS)[number];
+type Theme = 'dark' | 'light';
 
 async function openApp(page: Page, viewport: { width: number; height: number }) {
   await page.setViewportSize(viewport);
   await page.goto('/vetmedcalc/');
   await expect(page.getByRole('tablist', { name: 'Tool tabs' })).toBeVisible();
+}
+
+async function setTheme(page: Page, theme: Theme) {
+  await page.evaluate((value) => {
+    localStorage.setItem('vetmedcalc.theme', value);
+    document.documentElement.dataset.theme = value;
+  }, theme);
+  await expect(page.locator('html')).toHaveAttribute('data-theme', theme);
 }
 
 async function selectTab(page: Page, tabName: TabName) {
@@ -165,6 +180,41 @@ async function expectThemeToggleIconMatchesTheme(page: Page, label: string) {
   expect(violations, label).toEqual([]);
 }
 
+async function expectThemeToggleUsesTabGridSpace(page: Page, label: string) {
+  const violations = await page.evaluate(() => {
+    const toggle = document.querySelector<HTMLElement>('.tab-theme-toggle');
+    const tablist = document.querySelector<HTMLElement>('.ui-tablist');
+    const firstTab = document.querySelector<HTMLElement>('.ui-tab');
+    const cprTab = [...document.querySelectorAll<HTMLElement>('.ui-tab')]
+      .find((tab) => tab.textContent?.trim() === 'CPR labels');
+    const issues: string[] = [];
+
+    if (!toggle || !tablist || !firstTab || !cprTab) return ['Tab strip elements are missing.'];
+    if (toggle.parentElement !== tablist) issues.push('Theme toggle is outside the tab button frame.');
+
+    if (window.innerWidth < 640) {
+      const tolerance = 2;
+      const toggleRect = toggle.getBoundingClientRect();
+      const cprRect = cprTab.getBoundingClientRect();
+      const firstRect = firstTab.getBoundingClientRect();
+
+      if (Math.abs(cprRect.width - firstRect.width) > tolerance) {
+        issues.push(`CPR tab width ${cprRect.width} differs from tab width ${firstRect.width}.`);
+      }
+      if (Math.abs(toggleRect.top - cprRect.top) > tolerance) {
+        issues.push('Theme toggle is not on the final mobile tab row.');
+      }
+      if (toggleRect.right <= cprRect.right + tolerance) {
+        issues.push('Theme toggle is not placed in the mobile bottom-right tab space.');
+      }
+    }
+
+    return issues;
+  });
+
+  expect(violations, label).toEqual([]);
+}
+
 async function expectTabListHasNoHorizontalOverflow(page: Page, label: string) {
   const violations = await page.evaluate(() => {
     const tablist = document.querySelector<HTMLElement>('.ui-tablist');
@@ -267,6 +317,24 @@ async function expectPageHasNoVerticalOverflow(page: Page, label: string) {
   expect(violations, label).toEqual([]);
 }
 
+async function expectAxeColorContrast(page: Page, label: string) {
+  const builder = new AxeBuilder({ page }).withRules(['color-contrast']);
+  builder.include('.ui-tablist');
+  builder.include('[role="tabpanel"] > div:not([hidden])');
+
+  const results = await builder.analyze();
+
+  const violations = results.violations.flatMap((violation) =>
+    violation.nodes.map((node) => ({
+      target: node.target.join(', '),
+      html: node.html.replace(/\s+/g, ' ').slice(0, 180),
+      summary: node.failureSummary?.replace(/\s+/g, ' ').trim(),
+    })),
+  );
+
+  expect(violations, label).toEqual([]);
+}
+
 test.describe('responsive layout guardrails', () => {
   test('theme toggle does not overlap tab buttons', async ({ page }) => {
     for (const viewport of RESPONSIVE_VIEWPORTS) {
@@ -275,6 +343,7 @@ test.describe('responsive layout guardrails', () => {
 
       await expectThemeToggleNotToOverlapTabs(page, label);
       await expectThemeToggleIconMatchesTheme(page, label);
+      await expectThemeToggleUsesTabGridSpace(page, label);
     }
   });
 
@@ -333,6 +402,22 @@ test.describe('responsive layout guardrails', () => {
       await expectPageHasNoHorizontalOverflow(page, `${tabName} mobile horizontal overflow`);
       await expectTabListHasNoHorizontalOverflow(page, `${tabName} mobile tab overflow`);
       await expectThemeToggleNotToOverlapTabs(page, `${tabName} mobile toggle overlap`);
+    }
+  });
+
+  test('filled tabs meet text contrast thresholds', async ({ page }) => {
+    test.setTimeout(120_000);
+
+    for (const theme of ['dark', 'light'] as const) {
+      for (const viewport of CONTRAST_VIEWPORTS) {
+        await openApp(page, viewport);
+        await setTheme(page, theme);
+
+        for (const tabName of FULL_DATA_TABS) {
+          await fillTabData(page, tabName);
+          await expectAxeColorContrast(page, `${theme} ${viewport.name} ${tabName}`);
+        }
+      }
     }
   });
 });

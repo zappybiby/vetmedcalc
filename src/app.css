@@ -76,7 +76,7 @@
     --ui-text-100: #0f172a;
     --ui-text-200: #1e293b;
     --ui-text-300: #334155;
-    --ui-text-400: #64748b;
+    --ui-text-400: #475569;
     --ui-link: #0369a1;
     --ui-link-hover: #0284c7;
     --ui-input-scheme: light;
@@ -286,7 +286,7 @@
   }
 
   .ui-tablist {
-    @apply flex w-full max-w-full min-w-0 flex-wrap items-center justify-center gap-1 rounded-lg px-1 py-1 sm:flex-1 sm:rounded-xl sm:px-1.5;
+    @apply grid w-full max-w-full min-w-0 grid-cols-3 items-center justify-center gap-1 rounded-lg px-1 py-1 sm:rounded-xl sm:px-1.5;
     background-color: color-mix(in srgb, var(--ui-tab-bg) 85%, var(--ui-surface));
     border: 1px solid var(--ui-tab-border);
     box-shadow: 0 1px 0 rgba(255, 255, 255, 0.04) inset;
@@ -314,6 +314,10 @@
   }
 
   @media (min-width: 640px) {
+    .ui-tablist {
+      grid-template-columns: repeat(auto-fit, minmax(7.25rem, 1fr));
+    }
+
     .ui-tab {
       flex: 1 1 7.25rem;
       min-height: 2.75rem;
@@ -323,6 +327,11 @@
   }
 
   @media (min-width: 1024px) {
+    .ui-tablist {
+      display: flex;
+      flex-wrap: wrap;
+    }
+
     .ui-tab {
       flex: 0 1 auto;
       font-size: 13px;
@@ -334,6 +343,7 @@
   @media (min-width: 1280px) {
     .ui-tablist {
       flex: 0 1 auto;
+      flex-wrap: nowrap;
     }
 
     .ui-tab {
@@ -390,7 +400,7 @@
 
   .ui-label {
     @apply text-xs font-semibold uppercase leading-none tracking-wide;
-    color: var(--ui-text-400);
+    color: var(--ui-text-300);
     letter-spacing: 0.025em;
   }
 
@@ -436,15 +446,23 @@
   }
 
   .tab-theme-toggle {
-    flex: 0 0 4rem;
+    grid-column: 3;
     min-height: 3.25rem;
     padding: 0;
+    width: 100%;
   }
 
   @media (min-width: 640px) {
     .tab-theme-toggle {
-      flex-basis: 3.25rem;
+      grid-column: auto;
       min-height: 2.75rem;
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .tab-theme-toggle {
+      flex: 0 0 3.25rem;
+      width: auto;
     }
   }
 
@@ -537,6 +555,45 @@
 
 :root[data-theme='light'] .text-slate-400 {
   color: var(--ui-text-400);
+}
+
+:root[data-theme='light'] .text-emerald-100 {
+  color: #064e3b;
+}
+
+:root[data-theme='light'] .bg-emerald-950\/35 {
+  background-color: #d1fae5;
+}
+
+:root[data-theme='light'] .border-emerald-300\/25 {
+  border-color: rgba(4, 120, 87, 0.46);
+}
+
+:root[data-theme='light'] .text-amber-100,
+:root[data-theme='light'] .text-amber-300,
+:root[data-theme='light'] .text-amber-500 {
+  color: #78350f;
+}
+
+:root[data-theme='light'] .bg-amber-950\/35,
+:root[data-theme='light'] .bg-amber-950\/40 {
+  background-color: #fef3c7;
+}
+
+:root[data-theme='light'] .border-amber-300\/30 {
+  border-color: rgba(180, 83, 9, 0.48);
+}
+
+:root[data-theme='light'] .text-rose-100 {
+  color: #881337;
+}
+
+:root[data-theme='light'] .bg-rose-950\/40 {
+  background-color: #ffe4e6;
+}
+
+:root[data-theme='light'] .border-rose-300\/30 {
+  border-color: rgba(190, 18, 60, 0.45);
 }
 
 :root[data-theme='light'] .border-slate-800\/80 {

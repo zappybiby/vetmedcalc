@@ -15,6 +15,7 @@
     "check:commit": "npm run check && npm run build && npm run test:layout"
   },
   "devDependencies": {
+    "@axe-core/playwright": "^4.11.3",
     "@playwright/test": "^1.60.0",
     "@rollup/rollup-linux-x64-gnu": "^4.50.1",
     "@sveltejs/vite-plugin-svelte": "^6.1.1",
