@@ -6,6 +6,7 @@
 @layer base {
   :root {
     color-scheme: dark;
+    scrollbar-gutter: stable both-edges;
     --ui-bg: #0b1119;
     --ui-surface: #111a26;
     --ui-surface-2: #1a2839;
@@ -344,6 +345,7 @@
     .ui-tablist {
       flex: 0 1 auto;
       flex-wrap: nowrap;
+      width: fit-content;
     }
 
     .ui-tab {

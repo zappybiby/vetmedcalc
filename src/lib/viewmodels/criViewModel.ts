@@ -24,23 +24,9 @@ export type ResultCard = {
   runtimeNoteText?: string;
 };
 
-export type StepBar = {
-  label: string;
-  valueText: string;
-  fillPct: number; // 0–100
-  severity: 'ok' | 'warn';
-};
-
-export type StepPopover = {
-  title: string;
-  lines: string[];
-  bars?: StepBar[];
-};
-
 export type StepRow = {
   label: string;
   math: string;
-  popover?: StepPopover;
 };
 
 export type StepByStep = {
@@ -152,11 +138,6 @@ function doseToMgKgHrMath(dose: number, unit: DoseUnit): string {
     default:
       return `Dose_mg/kg/hr = Dose × 60 ÷ 1000 = ${fmt(dose, 3)} × 60 ÷ 1000 = ${fmt(result, 4)} mg/kg/hr`;
   }
-}
-
-function clamp01(v: number): number {
-  if (!Number.isFinite(v)) return 0;
-  return Math.max(0, Math.min(1, v));
 }
 
 // ---------- builder ----------
@@ -294,48 +275,13 @@ export function buildCRIViewModel(params: BuildParams): CRIViewModel | null {
     : plan.stockConcentrationMgPerMl;
   const targetRuntimeHr = plan.desiredRateMlPerHr > 0 ? (plan.finalTotalVolumeMl / plan.desiredRateMlPerHr) : Number(durationHr);
 
-  const concTolPct = plan.optimization.tolerancePct.concentration;
-  const volTolPct = plan.optimization.tolerancePct.totalVolume;
-  const concErrPct = plan.relConcentrationErrorPct;
-  const volErrPct = plan.relTotalVolumeErrorPct;
-
-  const concQuality = clamp01(1 - concErrPct / Math.max(1e-9, concTolPct)) * 100;
-  const volQuality = clamp01(1 - volErrPct / Math.max(1e-9, volTolPct)) * 100;
-
-  const optimizationPopover: StepPopover = {
-    title: 'Tick-snap optimization',
-    lines: [
-      plan.optimization.method === 'search'
-        ? `Method: tick-search (scored ${plan.optimization.candidatesScored}/${plan.optimization.candidatesConsidered} candidates)`
-        : `Method: fallback rounding (search scored ${plan.optimization.candidatesScored}/${plan.optimization.candidatesConsidered} candidates)`,
-      `Objective: ${Math.round(plan.optimization.weight.conc * 100)}% concentration, ${Math.round(plan.optimization.weight.vol * 100)}% volume`,
-      `Ideal: stock ${fmt(plan.rawStockVolumeMl, 3)} mL, diluent ${fmt(plan.rawDiluentVolumeMl, 3)} mL`,
-      `Chosen: stock ${fmt(plan.snappedStockVolumeMl, 3)} mL, diluent ${fmt(plan.snappedDiluentVolumeMl, 3)} mL`,
-    ],
-    bars: [
-      {
-        label: 'Concentration',
-        valueText: `${fmt(concErrPct, 2)}% error (tol ${fmt(concTolPct, 2)}%)`,
-        fillPct: concQuality,
-        severity: concErrPct > concTolPct ? 'warn' : 'ok',
-      },
-      {
-        label: 'Volume',
-        valueText: `${fmt(volErrPct, 2)}% error (tol ${fmt(volTolPct, 2)}%)`,
-        fillPct: volQuality,
-        severity: volErrPct > volTolPct ? 'warn' : 'ok',
-      },
-    ],
-  };
-
+  const deliveredDoseLine = formatDose(actualDoseMgPerKgHr, doseUnit);
+  const deliveredDoseMgKgHrLine = formatDose(actualDoseMgPerKgHr, 'mg/kg/hr');
+  const deliveredDoseSuffix = doseUnit === 'mg/kg/hr' ? '' : ` (= ${deliveredDoseLine})`;
   const snappedStockDelta = plan.snappedStockVolumeMl - plan.rawStockVolumeMl;
   const snappedDilDelta = plan.snappedDiluentVolumeMl - plan.rawDiluentVolumeMl;
   const hasStockDelta = Math.abs(snappedStockDelta) > 1e-9;
   const hasDilDelta = Math.abs(snappedDilDelta) > 1e-9;
-
-  const deliveredDoseLine = formatDose(actualDoseMgPerKgHr, doseUnit);
-  const deliveredDoseMgKgHrLine = formatDose(actualDoseMgPerKgHr, 'mg/kg/hr');
-  const deliveredDoseSuffix = doseUnit === 'mg/kg/hr' ? '' : ` (= ${deliveredDoseLine})`;
 
   const resultCard: ResultCard = {
     title: 'Result',
@@ -371,8 +317,7 @@ export function buildCRIViewModel(params: BuildParams): CRIViewModel | null {
     },
     {
       label: 'Tick-snap result',
-      math: `stock ${fmt(plan.snappedStockVolumeMl, 2)} mL${hasStockDelta ? ` (Δ ${fmt(snappedStockDelta, 2)} mL)` : ''} + dil ${fmt(plan.snappedDiluentVolumeMl, 2)} mL${hasDilDelta ? ` (Δ ${fmt(snappedDilDelta, 2)} mL)` : ''} → C_final ${fmt(plan.chosenConcentrationMgPerMl, 4)} mg/mL (ΔC ${fmt(concErrPct, 2)}%, ΔV ${fmt(volErrPct, 2)}%)`,
-      popover: optimizationPopover,
+      math: `stock ${fmt(plan.snappedStockVolumeMl, 2)} mL${hasStockDelta ? ` (Δ ${fmt(snappedStockDelta, 2)} mL)` : ''} + dil ${fmt(plan.snappedDiluentVolumeMl, 2)} mL${hasDilDelta ? ` (Δ ${fmt(snappedDilDelta, 2)} mL)` : ''} → C_final ${fmt(plan.chosenConcentrationMgPerMl, 4)} mg/mL (ΔC ${fmt(plan.relConcentrationErrorPct, 2)}%, ΔV ${fmt(plan.relTotalVolumeErrorPct, 2)}%)`,
     },
     {
       label: 'Delivered dose',

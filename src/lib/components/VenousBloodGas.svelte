@@ -209,7 +209,7 @@
             {#each speciesOptions as option (option.value)}
               <button
                 type="button"
-                class={`rounded-md border px-3 py-2 text-sm font-semibold transition-colors ${selectedSpecies === option.value ? 'border-sky-400/60 bg-sky-400/15 text-slate-100' : 'border-slate-700/50 bg-surface-sunken text-slate-300 hover:border-slate-600/70'}`}
+                class={`rounded-md border px-3 py-2 text-sm font-extrabold transition-colors ${selectedSpecies === option.value ? 'border-sky-400/60 bg-sky-400/15 text-slate-100' : 'border-slate-700/50 bg-surface-sunken text-slate-300 hover:border-slate-600/70'}`}
                 aria-pressed={selectedSpecies === option.value}
                 on:click={() => selectSpecies(option.value)}
               >

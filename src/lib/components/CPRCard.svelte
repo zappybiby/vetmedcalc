@@ -7,6 +7,7 @@
     renderCprLabelMarkup,
     CPR_LABEL_PRINT_STYLES,
   } from '../labels/cprLabel';
+  import { cprBatchMode } from '../stores/cprUi';
 
   $: p = $patient;
   $: label = computeCprLabel(p);
@@ -50,16 +51,23 @@
 </script>
 
 <section class="grid gap-2 sm:gap-3" aria-label="CPR Card">
-  <div class="flex flex-wrap items-center justify-between gap-2 sm:gap-3">
-    <div class="text-[13px] font-black uppercase tracking-wide text-slate-100 sm:text-sm">CPR Card</div>
-    <div class="print:hidden">
-      <button class="ui-button px-2.5 py-1 text-xs font-bold sm:px-3 sm:py-1.5 sm:text-sm" on:click={printLabel} disabled={!p.weightKg || !p.species}>
+  <div class="ui-card grid gap-2 p-2.5 sm:p-4">
+    <div class="cpr-control-grid print:hidden">
+      <label class="ui-inset cpr-batch-toggle inline-flex items-center gap-2 px-2.5 py-2 text-sm font-semibold text-slate-200 sm:px-3" for="cpr-batch-toggle">
+        <input
+          id="cpr-batch-toggle"
+          type="checkbox"
+          class="field-checkbox h-4 w-4"
+          bind:checked={$cprBatchMode}
+        />
+        Batch mode
+      </label>
+
+      <button class="ui-button cpr-print-button px-2.5 py-2 text-xs font-bold sm:px-3 sm:text-sm" on:click={printLabel} disabled={!p.weightKg || !p.species}>
         Print label
       </button>
     </div>
-  </div>
 
-  <div class="ui-card grid gap-2 p-2.5 sm:p-4">
     <div class="cpr-patient-grid grid min-w-0 gap-2 sm:gap-3">
       <label class="grid min-w-0 gap-1.5">
         <span class="ui-label">Patient name</span>
@@ -93,7 +101,7 @@
     <article class="ui-inset p-2.5 sm:p-3">
       <div class="flex items-start justify-between gap-3">
         <div class="min-w-0">
-          <div class="text-xs font-black uppercase tracking-wide text-slate-300">Epi</div>
+          <div class="text-xs font-black uppercase tracking-wide text-slate-300">Epinephrine</div>
           <div class="mt-1 text-sm font-semibold text-slate-100">
             {label.epiMed?.concentration.value ?? '—'} {label.epiMed?.concentration.units ?? ''}
           </div>
@@ -159,8 +167,29 @@
 </div>
 
 <style>
+  .cpr-control-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.5rem;
+    align-items: stretch;
+  }
+
+  .cpr-batch-toggle,
+  .cpr-print-button {
+    min-width: 0;
+    min-height: 2.35rem;
+  }
+
+  .cpr-batch-toggle {
+    justify-self: start;
+  }
+
+  .cpr-print-button {
+    justify-self: end;
+  }
+
   .cpr-patient-grid {
-    grid-template-columns: minmax(0, 1fr);
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   .cpr-species-grid {
