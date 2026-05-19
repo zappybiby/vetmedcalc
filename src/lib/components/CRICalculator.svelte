@@ -334,9 +334,9 @@
       </summary>
 
       <div class="border-t border-slate-700/40 px-2 py-2 sm:px-3 lg:px-3.5">
-        <div class="divide-y divide-slate-700/40">
+        <div class="grid gap-2">
           {#each vm.stepByStep.rows as row}
-            <div class="grid gap-1.5 px-2.5 py-2 sm:px-3 lg:grid-cols-[168px_minmax(0,1fr)] lg:items-center lg:gap-3 lg:py-1.5">
+            <div class="ui-inset grid gap-1.5 px-2.5 py-2 sm:px-3 lg:grid-cols-[168px_minmax(0,1fr)] lg:items-center lg:gap-3 lg:py-1.5">
               <div class="text-[12px] font-semibold leading-snug text-slate-200">{row.label}</div>
 
               <div class="min-w-0 font-mono text-[11px] leading-snug tracking-tight text-slate-100 sm:text-[11.5px]">

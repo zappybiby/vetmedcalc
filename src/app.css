@@ -26,6 +26,9 @@
     --ui-field-border-strong: #cbd5e1;
     --ui-shadow: 0 1px 0 rgba(255, 255, 255, 0.08) inset, 0 18px 48px rgba(0, 0, 0, 0.55);
     --ui-shadow-sm: 0 1px 0 rgba(255, 255, 255, 0.08) inset, 0 10px 26px rgba(0, 0, 0, 0.45);
+    --ui-surface-shadow:
+      0 1px 0 rgba(255, 255, 255, 0.07) inset,
+      0 16px 24px -18px rgba(0, 0, 0, 0.72);
     --ui-text-100: #eff4fb;
     --ui-text-200: #d9e2ee;
     --ui-text-300: #b7c4d6;
@@ -74,6 +77,9 @@
     --ui-field-border-strong: #1e293b;
     --ui-shadow: 0 1px 0 rgba(255, 255, 255, 0.96) inset, 0 16px 38px rgba(15, 23, 42, 0.14);
     --ui-shadow-sm: 0 1px 0 rgba(255, 255, 255, 0.96) inset, 0 8px 18px rgba(15, 23, 42, 0.12);
+    --ui-surface-shadow:
+      0 1px 0 rgba(255, 255, 255, 0.92) inset,
+      0 16px 22px -18px rgba(15, 23, 42, 0.34);
     --ui-text-100: #0f172a;
     --ui-text-200: #1e293b;
     --ui-text-300: #334155;
@@ -234,7 +240,7 @@
     color: var(--ui-text-100);
     background-color: var(--ui-surface);
     border: 1px solid var(--ui-panel-border);
-    box-shadow: var(--ui-shadow-sm);
+    box-shadow: var(--ui-surface-shadow);
   }
 
   .ui-panel-contrast {
@@ -244,9 +250,7 @@
       color-mix(in srgb, var(--ui-surface) 92%, var(--ui-panel-contrast-glow)),
       var(--ui-surface)
     );
-    box-shadow:
-      0 0 0 1px color-mix(in srgb, var(--ui-panel-contrast-border) 52%, transparent),
-      var(--ui-shadow-sm);
+    box-shadow: var(--ui-surface-shadow);
   }
 
   .ui-card {
@@ -254,16 +258,14 @@
     color: var(--ui-text-100);
     background-color: var(--ui-surface-2);
     border: 1px solid var(--ui-card-border);
-    box-shadow:
-      0 1px 0 rgba(255, 255, 255, 0.04) inset,
-      0 10px 22px rgba(2, 6, 23, 0.14);
+    box-shadow: var(--ui-surface-shadow);
   }
 
   .ui-inset {
     @apply rounded-lg;
     background-color: var(--ui-surface-3);
     border: 1px solid var(--ui-inset-border);
-    box-shadow: 0 1px 0 rgba(255, 255, 255, 0.04) inset;
+    box-shadow: var(--ui-surface-shadow);
   }
 
   .ui-chip {
