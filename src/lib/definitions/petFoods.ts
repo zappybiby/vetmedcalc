@@ -1,0 +1,27 @@
+import type { PetFoodCanDef } from './types';
+
+export const PET_FOOD_CANS: readonly PetFoodCanDef[] = [
+  { id: 'hills-ad-urgent-care', name: "Hill's a/d Urgent Care", canSize: '5.5 oz', species: 'both', kcalPerCan: 183 },
+  { id: 'hills-cd-feline-urinary-ocean-fish', name: "Hill's c/d Feline Urinary Ocean Fish", canSize: '5.5 oz', species: 'cat', kcalPerCan: 178 },
+  { id: 'hills-cd-feline-urinary-chicken', name: "Hill's c/d Feline Urinary Chicken", canSize: '5.5 oz', species: 'cat', kcalPerCan: 174 },
+  { id: 'purina-dm-dietetic-management', name: 'Purina DM Dietetic Management', canSize: '5.5 oz', species: 'cat', kcalPerCan: 163 },
+  { id: 'hills-id-digestive-care-feline-chicken-pate', name: "Hill's i/d Digestive Care Feline Chicken Pâté", canSize: '5.5 oz', species: 'cat', kcalPerCan: 172 },
+  { id: 'hills-kd-pate-with-chicken', name: "Hill's k/d Pâté with Chicken", canSize: '5.5 oz', species: 'cat', kcalPerCan: 182 },
+  { id: 'hills-kd-kidney-care-chicken-vegetable-stew', name: "Hill's k/d Kidney Care Chicken & Vegetable Stew", canSize: '2.9 oz', species: 'cat', kcalPerCan: 71 },
+  { id: 'hills-zd-food-sensitivity-original-hydrolyzed-chicken', name: "Hill's z/d Food Sensitivity Original/Hydrolyzed Chicken", canSize: '5.5 oz', species: 'cat', kcalPerCan: 173 },
+  { id: 'royal-canin-recovery', name: 'Royal Canin Recovery', canSize: '5.1 oz', species: 'both', kcalPerCan: 149 },
+  { id: 'hills-gi-biome-feline-chicken-vegetable-stew', name: "Hill's GI Biome Feline Chicken & Vegetable Stew", canSize: '2.9 oz', species: 'cat', kcalPerCan: 68 },
+  { id: 'hills-science-diet-kitten-liver-chicken', name: "Hill's Science Diet Kitten Liver & Chicken", canSize: '2.9 oz', species: 'cat', kcalPerCan: 104 },
+  { id: 'royal-canin-urinary-so-calm-gravy', name: 'Royal Canin Urinary SO + Calm Gravy', canSize: '3 oz', species: 'cat', kcalPerCan: 63 },
+  { id: 'hills-cd-multicare-chicken-vegetable-stew', name: "Hill's c/d Multicare Chicken & Vegetable Stew", canSize: '12.5 oz', species: 'dog', kcalPerCan: 266 },
+  { id: 'hills-gi-biome-chicken-vegetable-stew', name: "Hill's GI Biome Chicken & Vegetable Stew", canSize: '12.5 oz', species: 'dog', kcalPerCan: 287 },
+  { id: 'royal-canin-gastrointestinal-low-fat-loaf', name: 'Royal Canin Gastrointestinal Low Fat Loaf', canSize: '13.5 oz', species: 'dog', kcalPerCan: 345 },
+  { id: 'hills-id-low-fat-rice-vegetable-chicken-stew', name: "Hill's i/d Low Fat Rice, Vegetable & Chicken Stew", canSize: '12.5 oz', species: 'dog', kcalPerCan: 279 },
+  { id: 'hills-id-low-fat-original-flavor', name: "Hill's i/d Low Fat Original Flavor", canSize: '13 oz', species: 'dog', kcalPerCan: 328 },
+  { id: 'hills-id-chicken-vegetable-stew', name: "Hill's i/d Chicken & Vegetable Stew", canSize: '12.5 oz', species: 'dog', kcalPerCan: 276 },
+  { id: 'hills-kd-canine-chicken', name: "Hill's k/d Canine Chicken", canSize: '13 oz', species: 'dog', kcalPerCan: 433 },
+  { id: 'hills-ld-liver-care-chicken-flavor', name: "Hill's l/d Liver Care Chicken Flavor", canSize: '13 oz', species: 'dog', kcalPerCan: 565 },
+  { id: 'hills-wd-chicken', name: "Hill's w/d Chicken", canSize: '13 oz', species: 'dog', kcalPerCan: 305 },
+  { id: 'hills-zd-hydrolyzed-chicken-flavor', name: "Hill's z/d Hydrolyzed Chicken Flavor", canSize: '13 oz', species: 'dog', kcalPerCan: 358 },
+  { id: 'hills-science-diet-puppy-chicken-barley', name: "Hill's Science Diet Puppy Chicken & Barley", canSize: '13 oz', species: 'dog', kcalPerCan: 495 },
+];

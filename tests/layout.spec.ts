@@ -1,5 +1,5 @@
 import AxeBuilder from '@axe-core/playwright';
-import { expect, type Page, test } from '@playwright/test';
+import { expect, type Locator, type Page, test } from '@playwright/test';
 
 const RESPONSIVE_VIEWPORTS = [
   { width: 1920, height: 1080 },
@@ -22,17 +22,6 @@ const CONTRAST_VIEWPORTS = [
   { name: 'mobile', width: 384, height: 854 },
 ] as const;
 
-const FULL_DATA_TABS = [
-  'CRI calculator',
-  'Drug in bag',
-  'Ins / outs',
-  'RER calculator',
-  'Venous blood gas',
-  'Blood transfusion',
-  'CPR labels',
-] as const;
-
-type TabName = (typeof FULL_DATA_TABS)[number];
 type Theme = 'dark' | 'light';
 
 async function openApp(page: Page, viewport: { width: number; height: number }) {
@@ -49,7 +38,18 @@ async function setTheme(page: Page, theme: Theme) {
   await expect(page.locator('html')).toHaveAttribute('data-theme', theme);
 }
 
-async function selectTab(page: Page, tabName: TabName) {
+async function getToolTabNames(page: Page) {
+  const tabNames = await page.getByRole('tab').evaluateAll((tabs) =>
+    tabs
+      .map((tab) => tab.textContent?.trim())
+      .filter((name): name is string => Boolean(name)),
+  );
+
+  expect(tabNames).not.toEqual([]);
+  return tabNames;
+}
+
+async function selectTab(page: Page, tabName: string) {
   const tab = page.getByRole('tab', { name: tabName });
   await tab.click();
   await expect(tab).toHaveAttribute('aria-selected', 'true');
@@ -79,7 +79,53 @@ async function expandActivePanel(page: Page) {
   }
 }
 
-async function fillTabData(page: Page, tabName: TabName) {
+const TAB_FILLERS: Record<string, (page: Page, panel: Locator) => Promise<void>> = {
+  'CRI calculator': async (page) => {
+    await page.locator('#cri-dose').fill('0.4');
+    await page.locator('#cri-duration').fill('12');
+    await page.locator('#cri-rate').fill('8');
+  },
+  'Drug in bag': async (page) => {
+    await page.locator('#drugbag-dose').fill('1');
+    await page.locator('#drugbag-bag').fill('1000');
+    await page.locator('#drugbag-rate').fill('60');
+  },
+  'Ins / outs': async (page) => {
+    await page.locator('#ins-total').fill('240');
+    await page.locator('#out-total').fill('120');
+    await page.locator('#io-duration').fill('4');
+  },
+  'RER calculator': async (_page, panel) => {
+    await panel.getByLabel('Diet density (kcal/mL)', { exact: true }).fill('1.1');
+    await panel.getByLabel('RER factor', { exact: true }).fill('1.2');
+    await panel.getByLabel('Interval (hours)', { exact: true }).fill('6');
+  },
+  'Food calc': async (_page, panel) => {
+    await panel.getByRole('button', { name: 'Dog' }).click();
+    await panel.getByLabel('RER factor', { exact: true }).fill('1.2');
+    await panel.getByLabel('Interval (hours)', { exact: true }).fill('6');
+  },
+  'Venous blood gas': async (_page, panel) => {
+    await panel.getByRole('button', { name: 'Dog' }).click();
+    await panel.getByLabel('pH', { exact: true }).fill('7.2');
+    await panel.getByLabel('pCO2', { exact: true }).fill('55');
+    await panel.getByLabel('HCO3', { exact: true }).fill('18');
+    await panel.getByLabel('Base excess', { exact: true }).fill('-8');
+    await panel.getByLabel('TCO2 (optional)', { exact: true }).fill('19');
+    await panel.getByLabel('pO2 (optional)', { exact: true }).fill('42');
+  },
+  'Blood transfusion': async (_page, panel) => {
+    await panel.getByLabel('Total volume (mL)', { exact: true }).fill('250');
+    await panel.getByLabel('Total time (hr)', { exact: true }).fill('4');
+  },
+  'CPR labels': async (page, panel) => {
+    await fillCommonPatientData(page);
+    await page.locator('#cpr-patient-name').fill('Bailey');
+    await panel.getByRole('button', { name: 'Dog' }).click();
+  },
+};
+
+async function fillTabData(page: Page, tabName: string) {
   await selectTab(page, tabName);
 
   if (tabName !== 'CPR labels') {
@@ -87,47 +133,7 @@ async function fillTabData(page: Page, tabName: TabName) {
   }
 
   const panel = activePanel(page);
-
-  switch (tabName) {
-    case 'CRI calculator':
-      await page.locator('#cri-dose').fill('0.4');
-      await page.locator('#cri-duration').fill('12');
-      await page.locator('#cri-rate').fill('8');
-      break;
-    case 'Drug in bag':
-      await page.locator('#drugbag-dose').fill('1');
-      await page.locator('#drugbag-bag').fill('1000');
-      await page.locator('#drugbag-rate').fill('60');
-      break;
-    case 'Ins / outs':
-      await page.locator('#ins-total').fill('240');
-      await page.locator('#out-total').fill('120');
-      await page.locator('#io-duration').fill('4');
-      break;
-    case 'RER calculator':
-      await panel.getByLabel('Diet density (kcal/mL)', { exact: true }).fill('1.1');
-      await panel.getByLabel('RER factor', { exact: true }).fill('1.2');
-      await panel.getByLabel('Interval (hours)', { exact: true }).fill('6');
-      break;
-    case 'Venous blood gas':
-      await panel.getByRole('button', { name: 'Dog' }).click();
-      await panel.getByLabel('pH', { exact: true }).fill('7.2');
-      await panel.getByLabel('pCO2', { exact: true }).fill('55');
-      await panel.getByLabel('HCO3', { exact: true }).fill('18');
-      await panel.getByLabel('Base excess', { exact: true }).fill('-8');
-      await panel.getByLabel('TCO2 (optional)', { exact: true }).fill('19');
-      await panel.getByLabel('pO2 (optional)', { exact: true }).fill('42');
-      break;
-    case 'Blood transfusion':
-      await panel.getByLabel('Total volume (mL)', { exact: true }).fill('250');
-      await panel.getByLabel('Total time (hr)', { exact: true }).fill('4');
-      break;
-    case 'CPR labels':
-      await fillCommonPatientData(page);
-      await page.locator('#cpr-patient-name').fill('Bailey');
-      await panel.getByRole('button', { name: 'Dog' }).click();
-      break;
-  }
+  await TAB_FILLERS[tabName]?.(page, panel);
 
   await expandActivePanel(page);
 }
@@ -372,7 +378,7 @@ test.describe('responsive layout guardrails', () => {
   test('tab content has no redundant frame and uses a consistent card shell', async ({ page }) => {
     await openApp(page, { width: 1280, height: 720 });
 
-    for (const tabName of FULL_DATA_TABS) {
+    for (const tabName of await getToolTabNames(page)) {
       await selectTab(page, tabName);
 
       await expectTabPanelHasNoExtraFrame(page, `${tabName} tab panel frame`);
@@ -383,7 +389,7 @@ test.describe('responsive layout guardrails', () => {
   test('filled desktop tabs fit vertically at 1920x1080', async ({ page }) => {
     await openApp(page, { width: 1920, height: 1080 });
 
-    for (const tabName of FULL_DATA_TABS) {
+    for (const tabName of await getToolTabNames(page)) {
       await fillTabData(page, tabName);
       await page.evaluate(() => window.scrollTo(0, 0));
 
@@ -395,7 +401,7 @@ test.describe('responsive layout guardrails', () => {
   test('filled mobile tabs do not create horizontal overflow on a Galaxy S24+ sized viewport', async ({ page }) => {
     await openApp(page, { width: 384, height: 854 });
 
-    for (const tabName of FULL_DATA_TABS) {
+    for (const tabName of await getToolTabNames(page)) {
       await fillTabData(page, tabName);
       await page.evaluate(() => window.scrollTo(0, 0));
 
@@ -413,7 +419,7 @@ test.describe('responsive layout guardrails', () => {
         await openApp(page, viewport);
         await setTheme(page, theme);
 
-        for (const tabName of FULL_DATA_TABS) {
+        for (const tabName of await getToolTabNames(page)) {
           await fillTabData(page, tabName);
           await expectAxeColorContrast(page, `${theme} ${viewport.name} ${tabName}`);
         }

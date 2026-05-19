@@ -39,3 +39,13 @@ export type MaintenanceFluidRate = {
   mlPerKgPerDay: number;
   notes?: string;
 };
+
+export type PetFoodSpecies = Species | 'both';
+
+export type PetFoodCanDef = {
+  id: string;
+  name: string;
+  canSize: string;
+  species: PetFoodSpecies;
+  kcalPerCan: number;
+};

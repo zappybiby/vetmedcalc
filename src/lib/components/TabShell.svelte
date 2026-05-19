@@ -3,6 +3,7 @@
   import CPRLabelsTool from './CPRLabelsTool.svelte';
   import CRICalculator from './CRICalculator.svelte';
   import DrugInBag from './DrugInBag.svelte';
+  import FoodCalc from './FoodCalc.svelte';
   import InsOuts from './InsOuts.svelte';
   import PatientPanel from './PatientPanel.svelte';
   import RERCalculator from './RERCalculator.svelte';
@@ -15,6 +16,7 @@
     { id: 'drugbag', label: 'Drug in bag' },
     { id: 'insouts', label: 'Ins / outs' },
     { id: 'rer',     label: 'RER calculator' },
+    { id: 'food',    label: 'Food calc' },
     { id: 'venousbg', label: 'Venous blood gas' },
     { id: 'blood',   label: 'Blood transfusion' },
     { id: 'cpr',     label: 'CPR labels' },
@@ -72,6 +74,9 @@
     </div>
     <div hidden={active !== 'rer'}>
       <RERCalculator />
+    </div>
+    <div hidden={active !== 'food'}>
+      <FoodCalc />
     </div>
     <div hidden={active !== 'venousbg'}>
       <VenousBloodGas />

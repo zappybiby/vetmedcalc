@@ -19,9 +19,13 @@ export type RERPlan = {
   mlPerInterval: number;
 };
 
+export function calculateRERKcalPerDay(weightKg: number): number {
+  return 70 * weightKg ** 0.75;
+}
+
 export function calculateRERPlan(input: RERPlanInput): RERPlan {
   const { weightKg, kcalPerMl, rerFactor, intervalHours } = input;
-  const rerKcalPerDay = 70 * weightKg ** 0.75;
+  const rerKcalPerDay = calculateRERKcalPerDay(weightKg);
   const targetKcalPerDay = rerKcalPerDay * rerFactor;
   const kcalPerHour = targetKcalPerDay / 24;
   const kcalPerInterval = kcalPerHour * intervalHours;
