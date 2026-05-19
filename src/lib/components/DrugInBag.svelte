@@ -4,13 +4,8 @@
   import { CUSTOM_MEDICATION_ID, MEDICATIONS, SYRINGES, getDefaultMedicationDoseUnit } from '@defs';
   import type { DoseUnit, MedicationDef, SyringeDef } from '@defs';
 
-  const UNIT_FACTOR_DETAILS: Record<DoseUnit, string> = {
-    'mg/kg/day': 'bag hours ÷ 24',
-    'mg/kg/hr': 'bag hours',
-    'mg/kg/min': 'bag hours × 60',
-    'mcg/kg/hr': 'bag hours ÷ 1000',
-    'mcg/kg/min': '(bag hours × 60) ÷ 1000',
-  };
+  type MathToken = { kind: 'num' | 'op' | 'text'; text: string };
+  type CalculationRow = { label: string; math: string };
 
   function concMgPerMl(m?: MedicationDef | null): number | null {
     if (!m) return null;
@@ -67,6 +62,56 @@
     const converted = convertMgPerKgHrToUnit(value, unit);
     if (!Number.isFinite(converted)) return '—';
     return `${Number(converted).toFixed(3)} ${unit}`;
+  }
+
+  function tokenizeMath(expr: string): MathToken[] {
+    const tokens: MathToken[] = [];
+    const re = /(-?\d+(?:\.\d+)?)|([=×÷→()+;])/g;
+    let lastIndex = 0;
+    let match: RegExpExecArray | null;
+
+    while ((match = re.exec(expr)) !== null) {
+      const idx = match.index;
+      if (idx > lastIndex) {
+        tokens.push({ kind: 'text', text: expr.slice(lastIndex, idx) });
+      }
+
+      if (match[1]) tokens.push({ kind: 'num', text: match[1] });
+      else if (match[2]) tokens.push({ kind: 'op', text: match[2] });
+
+      lastIndex = idx + match[0].length;
+    }
+
+    if (lastIndex < expr.length) {
+      tokens.push({ kind: 'text', text: expr.slice(lastIndex) });
+    }
+
+    return tokens;
+  }
+
+  function formatDoseValue(value: number | ''): string {
+    return value === '' ? '0' : Number(value).toString();
+  }
+
+  function formatDrugAmountMath(unit: DoseUnit): string {
+    const doseText = `${formatDoseValue(dose)} ${unit}`;
+    const weightText = `${fmt(p.weightKg ?? 0, 2)} kg`;
+    const hoursText = `${fmt(bagHours, 3)} hr`;
+    const resultText = `${fmt(mgToAdd, 2)} mg`;
+
+    if (unit === 'mg/kg/day') {
+      return `${doseText} × ${weightText} × (${hoursText} ÷ 24) = ${resultText}`;
+    }
+    if (unit === 'mg/kg/min') {
+      return `${doseText} × ${weightText} × (${hoursText} × 60) = ${resultText}`;
+    }
+    if (unit === 'mcg/kg/hr') {
+      return `${doseText} × ${weightText} × ${hoursText} ÷ 1000 = ${resultText}`;
+    }
+    if (unit === 'mcg/kg/min') {
+      return `${doseText} × ${weightText} × (${hoursText} × 60) ÷ 1000 = ${resultText}`;
+    }
+    return `${doseText} × ${weightText} × ${hoursText} = ${resultText}`;
   }
 
   // Patient
@@ -178,6 +223,28 @@
 
   let hasRoundingChange: boolean = false;
   $: hasRoundingChange = !!(roundingDeltaMl != null && Math.abs(roundingDeltaMl) > 1e-6);
+
+  let calculationRows: CalculationRow[] = [];
+  $: calculationRows = [
+    {
+      label: 'Hours the bag runs',
+      math: `${fmt(bagVolumeValue, 2)} mL ÷ ${fmt(maintRateValue, 2)} mL/hr = ${fmt(bagHours, 3)} hr`,
+    },
+    {
+      label: 'Drug amount for bag',
+      math: formatDrugAmountMath(doseUnit),
+    },
+    {
+      label: 'Stock volume to draw',
+      math: `${fmt(mgToAdd, 2)} mg ÷ ${fmt(concentrationMgPerMl, 2)} mg/mL = ${fmt(rawMlToAdd, 3)} mL`,
+    },
+    ...(hasRoundingChange
+      ? [{
+          label: 'Rounded draw volume',
+          math: `${fmt(rawMlToAdd, 3)} mL → ${fmt(snappedMlToAdd, volumeDigits)} mL; Δ ${fmt(roundingDeltaMl, volumeDigits)} mL`,
+        }]
+      : []),
+  ];
 
   let ready: boolean = false;
   $: ready = !!(p.weightKg && dose !== '' && bagVolumeMl !== '' && maintRateMlHr !== '');
@@ -336,48 +403,43 @@
         </div>
       </div>
 
-      <details class="ui-inset p-3">
-        <summary class="ui-summary cursor-pointer select-none">
-          <span class="ui-label-strong">How calculated</span>
+      <details class="group ui-card overflow-hidden">
+        <summary class="ui-summary flex cursor-pointer items-center justify-between gap-3 px-3 py-2.5 sm:px-3.5 sm:py-3 lg:px-4">
+          <div class="ui-section-title">Step-By-Step calculations</div>
+          <svg class="h-5 w-5 flex-none text-slate-400 transition group-open:rotate-180" viewBox="0 0 20 20" aria-hidden="true">
+            <path
+              fill="currentColor"
+              fill-rule="evenodd"
+              d="M5.23 7.21a.75.75 0 011.06.02L10 11.173l3.71-3.94a.75.75 0 011.08 1.04l-4.24 4.5a.75.75 0 01-1.08 0l-4.24-4.5a.75.75 0 01.02-1.06z"
+              clip-rule="evenodd"
+            />
+          </svg>
         </summary>
-        <table class="mt-3 w-full table-fixed border-collapse text-sm">
-          <tbody>
-            <tr>
-              <th class="py-1 pr-3 text-left font-semibold text-slate-300">Hours the bag runs</th>
-              <td class="py-1 text-right tabular-nums text-slate-100">
-                {fmt(bagHours, 3)} <span class="ml-1 text-xs font-semibold uppercase tracking-wide text-slate-400">hr</span>
-              </td>
-            </tr>
-            <tr>
-              <th class="py-1 pr-3 text-left font-semibold text-slate-300">Unit conversion factor</th>
-              <td class="py-1 text-right tabular-nums text-slate-100">
-                {fmt(unitFactor, 4)}
-                <span class="ml-1 text-xs font-semibold uppercase tracking-wide text-slate-400">({UNIT_FACTOR_DETAILS[doseUnit]})</span>
-              </td>
-            </tr>
-            <tr>
-              <th class="py-1 pr-3 text-left font-semibold text-slate-300">mL to add</th>
-              <td class="py-1 text-right tabular-nums text-slate-100">
-                (<span class="font-black">{dose || 0}</span>
-                × <span class="font-black">{fmt(p.weightKg ?? 0, 2)}</span>
-                × <span class="font-black">{fmt(unitFactor, 4)}</span>)
-                ÷ <span class="font-black">{fmt(concentrationMgPerMl, 2)}</span>
-                = <span class="font-black">{fmt(rawMlToAdd, 3)}</span>
-                <span class="ml-1 text-xs font-semibold uppercase tracking-wide text-slate-400">mL</span>
-              </td>
-            </tr>
-            {#if hasRoundingChange}
-              <tr>
-                <th class="py-1 pr-3 text-left font-semibold text-slate-300">Rounded to syringe ticks</th>
-                <td class="py-1 text-right font-black tabular-nums text-slate-100">
-                  {fmt(snappedMlToAdd, volumeDigits)}
-                  <span class="ml-1 text-xs font-semibold uppercase tracking-wide text-slate-400">mL</span>
-                  <div class="mt-1 text-xs text-slate-400">Δ {fmt(roundingDeltaMl, volumeDigits)} mL</div>
-                </td>
-              </tr>
-            {/if}
-          </tbody>
-        </table>
+
+        <div class="border-t border-slate-700/40 px-2 py-2 sm:px-3 lg:px-3.5">
+          <div class="divide-y divide-slate-700/40">
+            {#each calculationRows as row}
+              <div class="grid gap-1.5 px-2.5 py-2 sm:px-3 lg:grid-cols-[168px_minmax(0,1fr)] lg:items-center lg:gap-3 lg:py-1.5">
+                <div class="text-[12px] font-semibold leading-snug text-slate-200">{row.label}</div>
+
+                <div class="min-w-0 font-mono text-[11px] leading-snug tracking-tight text-slate-100 sm:text-[11.5px]">
+                  <span class="whitespace-pre-wrap break-words">
+                    {#each tokenizeMath(row.math) as t}
+                      <span class={t.kind === 'num'
+                        ? 'font-semibold text-slate-100'
+                        : t.kind === 'op'
+                          ? 'text-slate-400'
+                          : 'text-slate-200'}
+                      >
+                        {t.text}
+                      </span>
+                    {/each}
+                  </span>
+                </div>
+              </div>
+            {/each}
+          </div>
+        </div>
       </details>
     </div>
   {/if}
