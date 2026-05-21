@@ -23,6 +23,8 @@
 
   let rerFactor: number | '' = DEFAULT_RER_FACTOR;
   let intervalHours: number | '' = DEFAULT_INTERVAL_HOURS;
+  let customKcalPerCan: number | '' = '';
+  let customKcalInput: HTMLInputElement;
 
   function numeric(value: number | '' | null | undefined): number | null {
     if (value == null || value === '') return null;
@@ -42,22 +44,32 @@
     return Math.round(Number(value)).toString();
   }
 
-  function fmtCompact(value: number | null | undefined, maxDigits = 2): string {
-    if (value == null || Number.isNaN(value)) return '—';
-    return Number(Number(value).toFixed(maxDigits)).toString();
-  }
-
   function selectSpecies(species: Species): void {
     patient.update(prev => prev.species === species ? prev : { ...prev, species });
   }
 
+  function focusCustomKcal(): void {
+    customKcalInput?.focus();
+  }
+
+  function foodBrandRank(food: PetFoodCanDef): number {
+    if (food.name.startsWith("Hill's ")) return 0;
+    if (food.name.startsWith('Royal Canin ')) return 1;
+    if (food.name.startsWith('Purina ')) return 2;
+    return 3;
+  }
+
   let rerFactorValue: number | null = null;
   let intervalHoursValue: number | null = null;
+  let customKcalPerCanValue: number | null = null;
   $: rerFactorValue = numeric(rerFactor);
   $: intervalHoursValue = numeric(intervalHours);
+  $: customKcalPerCanValue = numeric(customKcalPerCan);
 
   let foods: readonly PetFoodCanDef[] = [];
-  $: foods = PET_FOOD_CANS.filter(food => food.species === selectedSpecies || food.species === 'both');
+  $: foods = PET_FOOD_CANS
+    .filter(food => food.species === selectedSpecies || food.species === 'both')
+    .sort((a, b) => foodBrandRank(a) - foodBrandRank(b));
 
   let issues: string[] = [];
   $: {
@@ -93,6 +105,29 @@
 
   let firstPlan: FoodFeedingPlan | undefined;
   $: firstPlan = plans[0];
+
+  let customPlan: FoodFeedingPlan | null = null;
+  $: customPlan = (
+    weightKg != null &&
+    rerFactorValue != null &&
+    intervalHoursValue != null &&
+    customKcalPerCanValue != null &&
+    customKcalPerCanValue > 0 &&
+    issues.length === 0
+  )
+    ? buildFoodFeedingPlan({
+        weightKg,
+        rerFactor: rerFactorValue,
+        intervalHours: intervalHoursValue,
+        food: {
+          id: 'custom',
+          name: 'Custom',
+          canSize: '',
+          species: 'both',
+          kcalPerCan: customKcalPerCanValue,
+        },
+      })
+    : null;
 </script>
 
 <section class="grid min-w-0 gap-2 text-slate-200 sm:gap-3" aria-label="Food calculator">
@@ -155,15 +190,47 @@
 
     {#if firstPlan}
       <div class="ui-card min-w-0 overflow-hidden">
-        <div class="border-b border-slate-700/60 px-2.5 py-1.5 text-[11px] font-semibold tabular-nums text-slate-400 sm:px-3">
-          <span class="font-black text-slate-100">q{fmtCompact(firstPlan.intervalHours)}h</span>
-          <span class="mx-1.5 text-slate-600">/</span>
-          <span class="font-black text-slate-100">{fmtWhole(firstPlan.kcalPerInterval)} kcal/feed</span>
-          <span class="mx-1.5 text-slate-600">/</span>
-          <span class="font-black text-slate-100">{fmtWhole(firstPlan.targetKcalPerDay)} kcal/day</span>
-        </div>
-
         <div class="grid gap-px bg-slate-800/70 p-px sm:gap-1.5 sm:bg-transparent sm:p-2 min-[860px]:grid-cols-2 min-[1540px]:grid-cols-3">
+          <article class="grid min-w-0 grid-cols-[minmax(0,1fr)_auto] gap-x-2 gap-y-0.5 bg-surface-sunken px-2.5 py-1.5 text-sm text-slate-200 sm:rounded-lg sm:border sm:border-slate-700/40">
+            <div class="flex min-w-0 items-center gap-2">
+              <button
+                type="button"
+                class="inline-flex h-8 shrink-0 items-center rounded-md border border-sky-400/35 bg-sky-400/10 px-2 text-xs font-black uppercase tracking-wide text-slate-100"
+                on:click={focusCustomKcal}
+              >
+                Custom
+              </button>
+              <input
+                bind:this={customKcalInput}
+                class="field-control h-8 max-w-[7.25rem] px-2 py-1 text-right text-sm font-black tabular-nums"
+                type="number"
+                min="0"
+                step="1"
+                bind:value={customKcalPerCan}
+                inputmode="decimal"
+                aria-label="Custom kcal/can"
+                placeholder="kcal/can"
+              />
+            </div>
+
+            <div class="row-span-2 self-center rounded-md border border-sky-400/35 bg-sky-400/10 px-2 py-1 text-right">
+              <div class="whitespace-nowrap text-[15px] font-black leading-tight tabular-nums text-slate-100">
+                {customPlan ? formatCanPortion(customPlan.roundedCansPerInterval) : '—'}
+              </div>
+              <div class="mt-0.5 whitespace-nowrap text-[10px] leading-tight tabular-nums text-slate-400">
+                {#if customPlan}{fmt(customPlan.exactCansPerInterval, 2)} exact{:else}<span aria-hidden="true">&nbsp;</span>{/if}
+              </div>
+            </div>
+
+            <div class="min-w-0 text-[11px] leading-tight tabular-nums text-slate-400">
+              {#if customPlan}
+                <span>{fmtWhole(customPlan.roundedKcalPerInterval)} kcal/feed</span>
+              {:else}
+                <span aria-hidden="true">&nbsp;</span>
+              {/if}
+            </div>
+          </article>
+
           {#each plans as plan (plan.food.id)}
             <article class="grid min-w-0 grid-cols-[minmax(0,1fr)_auto] gap-x-2 gap-y-0.5 bg-surface-sunken px-2.5 py-1.5 text-sm text-slate-200 sm:rounded-lg sm:border sm:border-slate-700/40">
               <div class="min-w-0">
@@ -172,7 +239,7 @@
               </div>
 
               <div class="row-span-2 self-center rounded-md border border-sky-400/35 bg-sky-400/10 px-2 py-1 text-right">
-                <div class="whitespace-nowrap text-[13px] font-black leading-tight tabular-nums text-slate-100">{formatCanPortion(plan.roundedCansPerInterval)}</div>
+                <div class="whitespace-nowrap text-[15px] font-black leading-tight tabular-nums text-slate-100">{formatCanPortion(plan.roundedCansPerInterval)}</div>
                 <div class="mt-0.5 whitespace-nowrap text-[10px] leading-tight tabular-nums text-slate-400">{fmt(plan.exactCansPerInterval, 2)} exact</div>
               </div>
 

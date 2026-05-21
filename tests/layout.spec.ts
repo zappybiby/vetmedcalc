@@ -104,6 +104,7 @@ const TAB_FILLERS: Record<string, (page: Page, panel: Locator) => Promise<void>>
     await panel.getByRole('button', { name: 'Dog' }).click();
     await panel.getByLabel('RER factor', { exact: true }).fill('1.2');
     await panel.getByLabel('Interval (hours)', { exact: true }).fill('6');
+    await panel.getByLabel('Custom kcal/can', { exact: true }).fill('200');
   },
   'Venous blood gas': async (_page, panel) => {
     await panel.getByRole('button', { name: 'Dog' }).click();
