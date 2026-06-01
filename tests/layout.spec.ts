@@ -387,6 +387,32 @@ test.describe('responsive layout guardrails', () => {
     }
   });
 
+  test('browser print keeps visible app content on a white page', async ({ page }) => {
+    await openApp(page, { width: 1280, height: 720 });
+    await page.emulateMedia({ media: 'print' });
+
+    const printState = await page.evaluate(() => {
+      const visibleTextElements = [...document.querySelectorAll<HTMLElement>('#app *')]
+        .filter((element) => {
+          const rect = element.getBoundingClientRect();
+          const style = getComputedStyle(element);
+          const text = element.textContent?.replace(/\s+/g, ' ').trim();
+          return Boolean(text) && rect.width > 0 && rect.height > 0 && style.display !== 'none' && style.visibility !== 'hidden';
+        });
+
+      const bodyStyle = getComputedStyle(document.body);
+      return {
+        bodyBackgroundColor: bodyStyle.backgroundColor,
+        bodyBackgroundImage: bodyStyle.backgroundImage,
+        visibleTextCount: visibleTextElements.length,
+      };
+    });
+
+    expect(printState.visibleTextCount).toBeGreaterThan(0);
+    expect(printState.bodyBackgroundColor).toBe('rgb(255, 255, 255)');
+    expect(printState.bodyBackgroundImage).toBe('none');
+  });
+
   test('filled desktop tabs fit vertically at 1920x1080', async ({ page }) => {
     await openApp(page, { width: 1920, height: 1080 });
 

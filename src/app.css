@@ -628,3 +628,71 @@
 :root[data-theme='light'] .bg-slate-700\/40 {
   background-color: rgba(100, 116, 139, 0.36);
 }
+
+@media print {
+  @page {
+    margin: 0.5in;
+  }
+
+  :root,
+  :root[data-theme='light'] {
+    color-scheme: light;
+  }
+
+  html,
+  body {
+    min-height: auto !important;
+    color: #000 !important;
+    background: #fff !important;
+  }
+
+  body {
+    -webkit-print-color-adjust: economy;
+            print-color-adjust: economy;
+  }
+
+  body *,
+  body *::before,
+  body *::after {
+    box-shadow: none !important;
+    text-shadow: none !important;
+  }
+
+  #app {
+    color: #000 !important;
+    background: #fff !important;
+  }
+
+  #app * {
+    color: #000 !important;
+    background-color: transparent !important;
+    background-image: none !important;
+  }
+
+  #app main {
+    padding-block: 0 !important;
+  }
+
+  #app a {
+    color: #000 !important;
+    text-decoration: underline;
+  }
+
+  #app .ui-panel,
+  #app .ui-panel-contrast,
+  #app .ui-card,
+  #app .ui-inset,
+  #app .ui-tablist,
+  #app .ui-tab,
+  #app .ui-button,
+  #app .field-control,
+  #app .field-select {
+    border-color: #777 !important;
+    background: transparent !important;
+  }
+
+  #app .field-control,
+  #app .field-select {
+    background-color: #fff !important;
+  }
+}
