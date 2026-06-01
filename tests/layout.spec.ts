@@ -95,7 +95,7 @@ const TAB_FILLERS: Record<string, (page: Page, panel: Locator) => Promise<void>>
     await page.locator('#out-total').fill('120');
     await page.locator('#io-duration').fill('4');
   },
-  'RER calculator': async (_page, panel) => {
+  'Tube Feeding': async (_page, panel) => {
     await panel.getByLabel('Diet density (kcal/mL)', { exact: true }).fill('1.1');
     await panel.getByLabel('RER factor', { exact: true }).fill('1.2');
     await panel.getByLabel('Interval (hours)', { exact: true }).fill('6');

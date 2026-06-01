@@ -329,7 +329,7 @@
       </div>
 
       <div class="flex min-w-0 flex-col gap-1.5 sm:gap-2">
-        <label class="ui-label" for="drugbag-rate">Maintenance rate (mL/hr)</label>
+        <label class="ui-label" for="drugbag-rate">Maint. rate (mL/hr)</label>
         <input
           id="drugbag-rate"
           class="field-control"

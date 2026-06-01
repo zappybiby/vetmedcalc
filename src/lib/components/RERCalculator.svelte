@@ -2,6 +2,9 @@
   import { calculateRERPlan, type RERPlan } from '../helpers/rer';
   import { patient, type Patient } from '../stores/patient';
 
+  type MathToken = { kind: 'num' | 'op' | 'text'; text: string };
+  type CalculationRow = { label: string; math: string };
+
   const DEFAULT_KCAL_PER_ML = 0.9;
   const DEFAULT_RER_FACTOR = 1.0;
   const DEFAULT_INTERVAL_HOURS = 6;
@@ -37,6 +40,31 @@
   function fmtCompact(value: number | null | undefined, maxDigits = 2): string {
     if (value == null || Number.isNaN(value)) return '—';
     return Number(Number(value).toFixed(maxDigits)).toString();
+  }
+
+  function tokenizeMath(expr: string): MathToken[] {
+    const tokens: MathToken[] = [];
+    const re = /(-?\d+(?:\.\d+)?)|([=×÷^()+;])/g;
+    let lastIndex = 0;
+    let match: RegExpExecArray | null;
+
+    while ((match = re.exec(expr)) !== null) {
+      const idx = match.index;
+      if (idx > lastIndex) {
+        tokens.push({ kind: 'text', text: expr.slice(lastIndex, idx) });
+      }
+
+      if (match[1]) tokens.push({ kind: 'num', text: match[1] });
+      else if (match[2]) tokens.push({ kind: 'op', text: match[2] });
+
+      lastIndex = idx + match[0].length;
+    }
+
+    if (lastIndex < expr.length) {
+      tokens.push({ kind: 'text', text: expr.slice(lastIndex) });
+    }
+
+    return tokens;
   }
 
   let kcalPerMlValue: number | null = null;
@@ -81,6 +109,28 @@
         intervalHours: intervalHoursValue
       })
     : null;
+
+  let calculationRows: CalculationRow[] = [];
+  $: calculationRows = plan
+    ? [
+        {
+          label: 'RER',
+          math: `RER = 70 × ${fmtCompact(plan.weightKg)}^0.75 = ${fmt(plan.rerKcalPerDay, 2)} kcal/day`
+        },
+        {
+          label: 'Calorie goal',
+          math: `Calorie goal = ${fmt(plan.rerKcalPerDay, 2)} kcal/day × ${fmtCompact(plan.rerFactor)} = ${fmt(plan.targetKcalPerDay, 2)} kcal/day`
+        },
+        {
+          label: 'Daily volume',
+          math: `Daily volume = ${fmt(plan.targetKcalPerDay, 2)} kcal/day ÷ ${fmt(plan.kcalPerMl, 2)} kcal/mL = ${fmt(plan.totalMlPerDay, 2)} mL/day`
+        },
+        {
+          label: 'Continuous rate',
+          math: `Continuous rate = ${fmt(plan.totalMlPerDay, 2)} mL/day ÷ 24 hr = ${fmt(plan.mlPerHour, 2)} mL/hr`
+        }
+      ]
+    : [];
 </script>
 
 <section class="grid min-w-0 gap-2 text-slate-200 sm:gap-3" aria-label="Tube Feeding">
@@ -154,33 +204,7 @@
           </div>
         </div>
 
-        <div class="mt-2 grid gap-2 sm:mt-3 sm:gap-3 xl:grid-cols-[minmax(0,1.3fr)_minmax(280px,1fr)]">
-          <div class="ui-inset p-3 sm:p-4">
-            <header class="text-xs font-semibold uppercase tracking-wide text-slate-300">Calculation summary</header>
-            <div class="mt-2 grid gap-2 text-sm text-slate-300 sm:mt-3 sm:gap-3">
-              <div class="rounded-lg border border-slate-700/40 bg-surface-sunken px-3 py-2.5 sm:py-3">
-                <div class="text-xs font-semibold uppercase tracking-wide text-slate-400">Step 1</div>
-                <div class="mt-1 text-slate-100">
-                  RER = 70 x {fmtCompact(plan.weightKg)}^0.75 = <span class="font-black tabular-nums">{fmtWhole(plan.rerKcalPerDay)} kcal/day</span>
-                </div>
-              </div>
-
-              <div class="rounded-lg border border-slate-700/40 bg-surface-sunken px-3 py-2.5 sm:py-3">
-                <div class="text-xs font-semibold uppercase tracking-wide text-slate-400">Step 2</div>
-                <div class="mt-1 text-slate-100">
-                  Calorie goal = {fmtWhole(plan.rerKcalPerDay)} x {fmtCompact(plan.rerFactor)} = <span class="font-black tabular-nums">{fmtWhole(plan.targetKcalPerDay)} kcal/day</span>
-                </div>
-              </div>
-
-              <div class="rounded-lg border border-slate-700/40 bg-surface-sunken px-3 py-2.5 sm:py-3">
-                <div class="text-xs font-semibold uppercase tracking-wide text-slate-400">Step 3</div>
-                <div class="mt-1 text-slate-100">
-                  Daily volume = {fmtWhole(plan.targetKcalPerDay)} / {fmt(plan.kcalPerMl, 2)} = <span class="font-black tabular-nums">{fmtWhole(plan.totalMlPerDay)} mL/day</span>
-                </div>
-              </div>
-            </div>
-          </div>
-
+        <div class="mt-2 sm:mt-3">
           <div class="ui-inset p-3 sm:p-4">
             <header class="text-xs font-semibold uppercase tracking-wide text-slate-300">Quick reference</header>
             <div class="mt-2 grid gap-2 text-sm sm:mt-3 sm:gap-3">
@@ -207,6 +231,45 @@
           </div>
         </div>
       </div>
+
+      <details class="group ui-card overflow-hidden">
+        <summary class="ui-summary flex cursor-pointer items-center justify-between gap-3 px-3 py-2.5 sm:px-3.5 sm:py-3 lg:px-4">
+          <div class="ui-section-title">Calculation summary</div>
+          <svg class="h-5 w-5 flex-none text-slate-400 transition group-open:rotate-180" viewBox="0 0 20 20" aria-hidden="true">
+            <path
+              fill="currentColor"
+              fill-rule="evenodd"
+              d="M5.23 7.21a.75.75 0 011.06.02L10 11.173l3.71-3.94a.75.75 0 011.08 1.04l-4.24 4.5a.75.75 0 01-1.08 0l-4.24-4.5a.75.75 0 01.02-1.06z"
+              clip-rule="evenodd"
+            />
+          </svg>
+        </summary>
+
+        <div class="border-t border-slate-700/40 px-2 py-2 sm:px-3 lg:px-3.5">
+          <div class="grid gap-2">
+            {#each calculationRows as row}
+              <div class="ui-inset grid gap-1.5 px-2.5 py-2 sm:px-3 lg:grid-cols-[168px_minmax(0,1fr)] lg:items-center lg:gap-3 lg:py-1.5">
+                <div class="text-[12px] font-semibold leading-snug text-slate-200">{row.label}</div>
+
+                <div class="min-w-0 font-mono text-[11px] leading-snug tracking-tight text-slate-100 sm:text-[11.5px]">
+                  <span class="whitespace-pre-wrap break-words">
+                    {#each tokenizeMath(row.math) as t}
+                      <span class={t.kind === 'num'
+                        ? 'font-semibold text-slate-100'
+                        : t.kind === 'op'
+                          ? 'text-slate-400'
+                          : 'text-slate-200'}
+                      >
+                        {t.text}
+                      </span>
+                    {/each}
+                  </span>
+                </div>
+              </div>
+            {/each}
+          </div>
+        </div>
+      </details>
     {/if}
   </div>
 </section>
