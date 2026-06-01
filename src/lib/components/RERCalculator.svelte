@@ -4,7 +4,7 @@
 
   const DEFAULT_KCAL_PER_ML = 0.9;
   const DEFAULT_RER_FACTOR = 1.0;
-  const DEFAULT_INTERVAL_HOURS = 4;
+  const DEFAULT_INTERVAL_HOURS = 6;
 
   let p: Patient = { weightKg: null, species: '', name: '' };
   $: p = $patient;
@@ -83,7 +83,7 @@
     : null;
 </script>
 
-<section class="grid min-w-0 gap-2 text-slate-200 sm:gap-3" aria-label="RER calculator">
+<section class="grid min-w-0 gap-2 text-slate-200 sm:gap-3" aria-label="Tube Feeding">
   <div class="grid min-w-0 gap-2 sm:gap-4">
     <div class="ui-card min-w-0 p-2.5 sm:p-4">
       <h2 class="text-[13px] font-black uppercase tracking-wide text-slate-200 sm:text-sm">Inputs</h2>
@@ -124,7 +124,7 @@
             step="0.25"
             bind:value={intervalHours}
             inputmode="decimal"
-            placeholder="e.g., 4"
+            placeholder="e.g., 6"
           />
         </label>
       </div>

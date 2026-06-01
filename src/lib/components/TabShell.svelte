@@ -15,7 +15,7 @@
     { id: 'cri',     label: 'CRI calculator' },
     { id: 'drugbag', label: 'Drug in bag' },
     { id: 'insouts', label: 'Ins / outs' },
-    { id: 'rer',     label: 'RER calculator' },
+    { id: 'rer',     label: 'Tube Feeding' },
     { id: 'food',    label: 'Food calc' },
     { id: 'venousbg', label: 'Venous blood gas' },
     { id: 'blood',   label: 'Blood transfusion' },
