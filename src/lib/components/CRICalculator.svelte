@@ -258,7 +258,7 @@
       </div>
 
       <div class="flex min-w-0 flex-col gap-1.5">
-        <label class="ui-label" for="cri-rate">Pump rate</label>
+        <label class="ui-label" for="cri-rate">Dilute to rate</label>
         <input
           id="cri-rate"
           class="field-control"
@@ -267,7 +267,7 @@
           step="0.1"
           bind:value={desiredRateMlPerHr}
           inputmode="decimal"
-          placeholder="optional"
+          placeholder="ml/hr"
         />
       </div>
     </div>
