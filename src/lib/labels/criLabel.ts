@@ -175,7 +175,7 @@ export function renderCriLabelMarkup(ctx: CRILabelComputed): string {
         <div class="cri-prep-row cri-diluent-row">
           <div class="cri-row-label">Diluent</div>
           <div class="cri-row-value">
-            ${renderFormattedText(ctx.diluentVolumeText)}
+            <span class="cri-prep-volume">${renderFormattedText(ctx.diluentVolumeText)}</span>
             <span class="cri-diluent-options">(NaCl)&nbsp;&nbsp;(D5W)&nbsp;&nbsp;(Water)</span>
           </div>
         </div>
@@ -228,7 +228,9 @@ export function renderCriLabelMarkup(ctx: CRILabelComputed): string {
         <div class="cri-prep-row">
           <div class="cri-row-label">Drug</div>
           <div class="cri-row-value">
-            ${renderFormattedText(`${ctx.stockVolumeText} ${ctx.drugText} (${ctx.sourceConcentrationText})`)}
+            <span class="cri-prep-volume">${renderFormattedText(ctx.stockVolumeText)}</span>
+            ${renderFormattedText(ctx.drugText)}
+            <span class="cri-prep-concentration">(${renderFormattedText(ctx.sourceConcentrationText)})</span>
           </div>
         </div>
         <div class="cri-prep-row cri-total-row">
@@ -482,6 +484,16 @@ export const CRI_LABEL_PRINT_STYLES = `
     font-weight: 900;
     line-height: 1.08;
     white-space: nowrap;
+  }
+
+  .cri-prep-volume {
+    font-size: 5.95pt;
+    line-height: 1;
+  }
+
+  .cri-prep-concentration {
+    font-size: 4.82pt;
+    line-height: 1;
   }
 
   .cri-total-row {

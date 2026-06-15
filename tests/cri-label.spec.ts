@@ -244,6 +244,8 @@ test.describe('CRI label print guardrails', () => {
           '.cri-prep-section',
           '.cri-prep-row',
           '.cri-diluent-options',
+          '.cri-prep-volume',
+          '.cri-prep-concentration',
           '.cri-num',
           '.cri-row-label',
           '.cri-row-value',
@@ -304,6 +306,8 @@ test.describe('CRI label print guardrails', () => {
           '.cri-final-value',
           '.cri-delivers-box',
           '.cri-diluent-options',
+          '.cri-prep-volume',
+          '.cri-prep-concentration',
           '.cri-row-label',
           '.cri-row-value',
         ].join(','));
@@ -455,6 +459,32 @@ test.describe('CRI label print guardrails', () => {
           const [firstSize] = prepValueSizes;
           if (prepValueSizes.some((size) => Math.abs(size - firstSize) > 0.25)) {
             issues.push(`${prefix}: prep row value font sizes are inconsistent.`);
+          }
+        }
+
+        const prepVolumeSizes = [...sheet.querySelectorAll<HTMLElement>('.cri-prep-volume')]
+          .map((value) => Number.parseFloat(getComputedStyle(value).fontSize));
+        if (prepVolumeSizes.length > 0 && prepValueSizes.length > 0) {
+          const [firstVolumeSize] = prepVolumeSizes;
+          const [basePrepValueSize] = prepValueSizes;
+          if (prepVolumeSizes.some((size) => Math.abs(size - firstVolumeSize) > 0.25)) {
+            issues.push(`${prefix}: prep volume font sizes are inconsistent.`);
+          }
+          if (firstVolumeSize <= basePrepValueSize + 0.25) {
+            issues.push(`${prefix}: prep volume font size is not larger than the surrounding prep text.`);
+          }
+        }
+
+        const concentrationSizes = [...sheet.querySelectorAll<HTMLElement>('.cri-prep-concentration')]
+          .map((value) => Number.parseFloat(getComputedStyle(value).fontSize));
+        if (concentrationSizes.length > 0 && prepValueSizes.length > 0) {
+          const [firstConcentrationSize] = concentrationSizes;
+          const [basePrepValueSize] = prepValueSizes;
+          if (concentrationSizes.some((size) => Math.abs(size - firstConcentrationSize) > 0.25)) {
+            issues.push(`${prefix}: stock concentration font sizes are inconsistent.`);
+          }
+          if (firstConcentrationSize >= basePrepValueSize - 0.25) {
+            issues.push(`${prefix}: stock concentration font size is not smaller than the surrounding prep text.`);
           }
         }
 
