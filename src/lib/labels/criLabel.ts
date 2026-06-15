@@ -106,14 +106,6 @@ function formatWeightKg(weightKg: number | null | undefined): string {
   return `${trimFixed(weightKg, 2)} kg`;
 }
 
-function decimalsForDoseValue(value: number): number {
-  const abs = Math.abs(value);
-  if (abs >= 10) return 1;
-  if (abs >= 1) return 2;
-  if (abs >= 0.01) return 3;
-  return 4;
-}
-
 function formatDeliveredDoseForLabel(doseText: string): string {
   const match = doseText.match(/^(-?\d+(?:\.\d+)?)\s+(.+)$/);
   if (!match) return doseText;
@@ -122,7 +114,7 @@ function formatDeliveredDoseForLabel(doseText: string): string {
   const unit = match[2];
   if (!Number.isFinite(value) || !unit) return doseText;
 
-  return `${trimFixed(value, decimalsForDoseValue(value))} ${unit}`;
+  return `${value.toFixed(2)} ${unit}`;
 }
 
 function formatPumpRateForLabel(valueMlPerHr: number): string {

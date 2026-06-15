@@ -506,6 +506,12 @@ test.describe('CRI label print guardrails', () => {
           }
         }
 
+        const deliveryDose = sheet.querySelector<HTMLElement>('.cri-delivers-box strong:first-of-type');
+        const deliveryDoseText = deliveryDose?.textContent?.trim() ?? '';
+        if (!/^-?\d+\.\d{2}\s+/.test(deliveryDoseText)) {
+          issues.push(`${prefix}: delivery dose is not rounded to the nearest hundredth.`);
+        }
+
         const headerSecondarySizes = [metaRow, initialsRow]
           .filter((row): row is HTMLElement => !!row)
           .map((row) => Number.parseFloat(getComputedStyle(row).fontSize));
