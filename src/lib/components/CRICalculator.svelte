@@ -6,6 +6,7 @@
   import type { Patient } from '../stores/patient';
   import { CUSTOM_MEDICATION_ID, MEDICATIONS, getDefaultMedicationDoseUnit } from '@defs';
   import type { MedicationDef } from '@defs';
+  import { buildCriLabel, CRI_LABEL_PRINT_STYLES, renderCriLabelMarkup } from '../labels/criLabel';
 
   type MathToken = { kind: 'num' | 'op' | 'text'; text: string };
   type PrepareLine = { label: string; value: string };
@@ -172,6 +173,56 @@
 
     return tokens;
   }
+
+  function printCriLabel(): void {
+    if (!vm || !med) return;
+
+    const labelMarkup = renderCriLabelMarkup(buildCriLabel({ medication: med, viewModel: vm, patientWeightKg: p.weightKg }));
+
+    const iframe = document.createElement('iframe');
+    iframe.title = 'CRI Label Print';
+    iframe.style.position = 'fixed';
+    iframe.style.width = '0';
+    iframe.style.height = '0';
+    iframe.style.opacity = '0';
+    iframe.style.pointerEvents = 'none';
+    iframe.style.border = '0';
+    document.body.appendChild(iframe);
+
+    const doc = iframe.contentDocument;
+    if (!doc) {
+      iframe.remove();
+      return;
+    }
+
+    const pageMarkup = `<div class="cri-label-page"><div class="cri-label-sheet">${labelMarkup}</div></div>`;
+
+    doc.open();
+    doc.write(`<!doctype html><html><head><meta charset="utf-8" />
+<title>CRI Label</title>
+<style>${CRI_LABEL_PRINT_STYLES}</style>
+</head><body class="print-mode-single">${pageMarkup}</body></html>`);
+    doc.close();
+
+    const win = iframe.contentWindow;
+    if (!win) {
+      iframe.remove();
+      return;
+    }
+
+    const cleanup = () => {
+      setTimeout(() => {
+        iframe.remove();
+      }, 0);
+    };
+
+    win.addEventListener('afterprint', cleanup, { once: true });
+    win.focus();
+    setTimeout(() => {
+      win.print();
+      cleanup();
+    }, 100);
+  }
 </script>
 
 <section class="grid min-w-0 gap-2 text-slate-200 sm:gap-3" aria-label="CRI calculator">
@@ -288,22 +339,35 @@
 
     <article class="ui-card overflow-hidden">
       <section class="px-3 py-3 sm:px-3.5 sm:py-3.5 lg:px-4 lg:py-4">
-        <div class="ui-label-strong">Instruction</div>
-        <div class="mt-1.5 flex flex-wrap items-baseline gap-x-1.5 gap-y-1 text-[14px] leading-relaxed text-slate-300 sm:gap-x-2 sm:gap-y-1.5 sm:text-[15px]">
-          <span>Draw up</span>
-          {#if stockLine}
-            <span class="ui-statement-value">{stockLine.value}</span>
-            <span>of</span>
-          {/if}
-          <span class="font-semibold text-slate-100">{med?.name ?? 'drug'}</span>
-          {#if diluentLine}
-            <span>+</span>
-            <span class="ui-statement-value">{diluentLine.value}</span>
-            <span>diluent</span>
-          {/if}
-          <span>and run at</span>
-          <span class="ui-statement-value">{vm.resultCard.pumpRateText}</span>
-          <span>.</span>
+        <div class="grid min-w-0 gap-3 md:grid-cols-[minmax(0,1fr)_auto] md:items-center">
+          <div class="min-w-0">
+            <div class="ui-label-strong">Instruction</div>
+            <div class="mt-1.5 flex flex-wrap items-baseline gap-x-1.5 gap-y-1 text-[14px] leading-relaxed text-slate-300 sm:gap-x-2 sm:gap-y-1.5 sm:text-[15px]">
+              <span>Draw up</span>
+              {#if stockLine}
+                <span class="ui-statement-value">{stockLine.value}</span>
+                <span>of</span>
+              {/if}
+              <span class="font-semibold text-slate-100">{med?.name ?? 'drug'}</span>
+              {#if diluentLine}
+                <span>+</span>
+                <span class="ui-statement-value">{diluentLine.value}</span>
+                <span>diluent</span>
+              {/if}
+              <span>and run at</span>
+              <span class="ui-statement-value">{vm.resultCard.pumpRateText}</span>
+              <span>.</span>
+            </div>
+          </div>
+
+          <button
+            type="button"
+            class="ui-button hidden min-h-10 items-center justify-center whitespace-nowrap px-3 py-2 text-sm font-bold print:hidden md:inline-flex"
+            on:click={printCriLabel}
+            disabled={!med}
+          >
+            Print label
+          </button>
         </div>
       </section>
 

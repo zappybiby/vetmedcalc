@@ -8,6 +8,7 @@ export type VMAlert = { severity: 'warn' | 'info'; message: string };
 export type DrawCard = {
   kind: 'stock' | 'diluent';
   title: string;
+  volumeMl: number;
   volumeText: string; // e.g. "12.30 mL"
   syringeText?: string; // e.g. "3 cc (0.1 mL ticks)"
   tickText?: string; // optional: prefer showing ticks via label; omit to avoid duplication
@@ -16,8 +17,11 @@ export type DrawCard = {
 
 export type ResultCard = {
   title: string;
+  totalVolumeMl: number;
   totalVolumeText: string;
+  finalConcentrationMgPerMl: number;
   finalConcentrationText: string;
+  pumpRateMlPerHr: number;
   pumpRateText: string;
   deliveredDoseText: string;
   runtimeText: string;
@@ -171,6 +175,7 @@ export function buildCRIViewModel(params: BuildParams): CRIViewModel | null {
     const drawCard: DrawCard = {
       kind: 'stock',
       title: 'Stock to Draw Up',
+      volumeMl: drawVol,
       volumeText: `${fmt(drawVol, 2)} mL`,
       syringeText,
       tickText: syringeHasTickInfo ? undefined : `${syr.incrementMl} mL ticks`,
@@ -213,8 +218,11 @@ export function buildCRIViewModel(params: BuildParams): CRIViewModel | null {
 
     const resultCard: ResultCard = {
       title: 'Result',
+      totalVolumeMl: drawVol,
       totalVolumeText: `${fmt(drawVol, 2)} mL`,
+      finalConcentrationMgPerMl: stockConcMgPerMl,
       finalConcentrationText: `${fmt(stockConcMgPerMl, 4)} mg/mL`,
+      pumpRateMlPerHr: rateMlHr,
       pumpRateText: `${fmt(rateMlHr, 2)} mL/hr`,
       deliveredDoseText: formatDose(actualDoseMgPerKgHr, doseUnit),
       runtimeText: `${fmt(actualRuntimeHr, 2)} hr`,
@@ -253,6 +261,7 @@ export function buildCRIViewModel(params: BuildParams): CRIViewModel | null {
     {
       kind: 'stock',
       title: 'Stock to Draw Up',
+      volumeMl: plan.snappedStockVolumeMl,
       volumeText: `${fmt(plan.snappedStockVolumeMl, 2)} mL`,
       syringeText: plan.stockDraw.syringeLabel ?? `${plan.stockDraw.syringeSizeMl} cc`,
       fills: plan.stockDraw.fills > 1 ? plan.stockDraw.fills : undefined,
@@ -262,6 +271,7 @@ export function buildCRIViewModel(params: BuildParams): CRIViewModel | null {
     drawCards.push({
       kind: 'diluent',
       title: 'Diluent to Draw Up',
+      volumeMl: plan.snappedDiluentVolumeMl,
       volumeText: `${fmt(plan.snappedDiluentVolumeMl, 2)} mL`,
       syringeText: plan.diluentDraw.syringeLabel ?? `${plan.diluentDraw.syringeSizeMl} cc`,
       fills: plan.diluentDraw.fills > 1 ? plan.diluentDraw.fills : undefined,
@@ -285,8 +295,11 @@ export function buildCRIViewModel(params: BuildParams): CRIViewModel | null {
 
   const resultCard: ResultCard = {
     title: 'Result',
+    totalVolumeMl: plan.finalTotalVolumeMl,
     totalVolumeText: `${fmt(plan.finalTotalVolumeMl, 2)} mL`,
+    finalConcentrationMgPerMl: plan.chosenConcentrationMgPerMl,
     finalConcentrationText: `${fmt(plan.chosenConcentrationMgPerMl, 4)} mg/mL`,
+    pumpRateMlPerHr: plan.desiredRateMlPerHr,
     pumpRateText: `${fmt(plan.desiredRateMlPerHr, 2)} mL/hr`,
     deliveredDoseText: formatDose(actualDoseMgPerKgHr, doseUnit),
     runtimeText: `${fmt(targetRuntimeHr, 2)} hr`,
