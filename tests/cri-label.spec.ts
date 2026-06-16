@@ -508,8 +508,14 @@ test.describe('CRI label print guardrails', () => {
 
         const deliveryDose = sheet.querySelector<HTMLElement>('.cri-delivers-box strong:first-of-type');
         const deliveryDoseText = deliveryDose?.textContent?.trim() ?? '';
-        if (!/^-?\d+\.\d{2}\s+/.test(deliveryDoseText)) {
-          issues.push(`${prefix}: delivery dose is not rounded to the nearest hundredth.`);
+        if (!/^-?\d+\.\d\s+/.test(deliveryDoseText)) {
+          issues.push(`${prefix}: delivery dose is not rounded to the nearest tenth.`);
+        }
+
+        const finalConcentration = sheet.querySelector<HTMLElement>('.cri-final-value');
+        const finalConcentrationText = finalConcentration?.textContent?.trim() ?? '';
+        if (!/^-?\d+\.\d{2}\s+mg\/mL$/.test(finalConcentrationText)) {
+          issues.push(`${prefix}: final concentration is not rounded to the nearest hundredth.`);
         }
 
         const headerSecondarySizes = [metaRow, initialsRow]

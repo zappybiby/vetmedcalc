@@ -88,7 +88,7 @@ function formatMassMg(valueMg: number): string {
 }
 
 function formatConcentrationMgPerMl(valueMgPerMl: number): string {
-  return `${trimFixed(valueMgPerMl, 4)} mg/mL`;
+  return `${valueMgPerMl.toFixed(2)} mg/mL`;
 }
 
 function formatStockConcentration(medication: MedicationDef): string {
@@ -114,7 +114,7 @@ function formatDeliveredDoseForLabel(doseText: string): string {
   const unit = match[2];
   if (!Number.isFinite(value) || !unit) return doseText;
 
-  return `${value.toFixed(2)} ${unit}`;
+  return `${value.toFixed(1)} ${unit}`;
 }
 
 function formatPumpRateForLabel(valueMlPerHr: number): string {
