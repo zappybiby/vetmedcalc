@@ -2,6 +2,7 @@ import { CPR_DRUG_DOSES, CPR_MEDICATIONS, SYRINGES } from '@defs';
 import type { CPRDrugDose, MedicationDef, Species, SyringeDef } from '@defs';
 import { estimateEtForPatient } from '../helpers/etTube';
 import type { EtTubeEstimate } from '../helpers/etTube';
+import { LABEL_PAGE_SIZE, LABEL_PRINT_GEOMETRY_STYLES } from './geometry';
 
 export type CPRLabelPatient = {
   name: string;
@@ -221,8 +222,14 @@ export function renderCprLabelMarkup(ctx: CPRLabelComputed): string {
 }
 
 export const CPR_LABEL_PRINT_STYLES = `
-  @page { size: 3in 2.25in; margin: 0; }
-  :root { color-scheme: light; }
+  @page { size: ${LABEL_PAGE_SIZE}; margin: 0; }
+  ${LABEL_PRINT_GEOMETRY_STYLES}
+  :root {
+    color-scheme: light;
+    --cpr-label-scale: 1.123;
+    --cpr-space-scale: 0.84;
+    --cpr-dose-scale: 1;
+  }
   html, body { margin: 0; padding: 0; background: #fff; color: #000; }
   body { font-family: system-ui, Arial, Helvetica, sans-serif; }
 
@@ -239,14 +246,15 @@ export const CPR_LABEL_PRINT_STYLES = `
   }
 
   .label-page {
-    width: 100%;
-    min-height: 100vh;
+    width: var(--label-stock-width);
+    height: var(--label-stock-height);
+    min-height: var(--label-stock-height);
     box-sizing: border-box;
     display: flex;
     align-items: center;
     justify-content: center;
     margin: 0 auto;
-    padding: 0;
+    padding: var(--label-safe-inset-top) 0 var(--label-safe-inset-bottom);
     break-after: page;
     page-break-after: always;
   }
@@ -257,8 +265,8 @@ export const CPR_LABEL_PRINT_STYLES = `
   }
 
   .label-sheet {
-    width: 3in;
-    height: 2.25in;
+    width: var(--label-safe-width);
+    height: var(--label-safe-height);
     box-sizing: border-box;
     display: flex;
     overflow: hidden;
@@ -268,10 +276,10 @@ export const CPR_LABEL_PRINT_STYLES = `
     height: 100%;
     box-sizing: border-box;
     border: 2px solid #000;
-    padding: 0.05in 0.05in;
+    padding: calc(0.045in * var(--cpr-space-scale)) calc(0.058in * var(--cpr-space-scale));
     display: grid;
-    grid-template-rows: auto minmax(0, 1.5fr) minmax(0, 0.5fr);
-    gap: 0.04in;
+    grid-template-rows: auto minmax(0, 1.45fr) minmax(0, 0.48fr);
+    gap: calc(0.036in * var(--cpr-space-scale));
     align-content: stretch;
     color: #000;
     -webkit-print-color-adjust: exact;
@@ -280,24 +288,24 @@ export const CPR_LABEL_PRINT_STYLES = `
   .label-hdr {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 0.04in;
+    gap: calc(0.045in * var(--cpr-space-scale));
     border: 2px solid #000;
     border-radius: .06in;
-    padding: 0.03in 0.045in;
+    padding: calc(0.028in * var(--cpr-space-scale)) calc(0.05in * var(--cpr-space-scale));
     font-weight: 800;
-    font-size: 9.3pt;
+    font-size: calc(8.9pt * var(--cpr-label-scale));
     line-height: 1.08;
   }
   .label-name {
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
-    font-size: 13pt;
+    font-size: calc(12.7pt * var(--cpr-label-scale));
     line-height: 1.1;
   }
   .label-weight {
     text-align: right;
-    font-size: 13pt;
+    font-size: calc(12.7pt * var(--cpr-label-scale));
     line-height: 1.1;
   }
   .label-table {
@@ -316,26 +324,26 @@ export const CPR_LABEL_PRINT_STYLES = `
   }
   .label-row:last-child { border-bottom: none; }
   .med {
-    padding: 0.035in 0.05in;
+    padding: calc(0.034in * var(--cpr-space-scale)) calc(0.056in * var(--cpr-space-scale));
     display: grid;
     grid-template-rows: auto auto;
-    row-gap: 0.01in;
+    row-gap: calc(0.012in * var(--cpr-space-scale));
     align-content: center;
   }
-  .drug { font-weight: 800; font-size: 8.6pt; line-height: 1.05; }
-  .perkg { font-size: 7.8pt; line-height: 1; opacity: .9; }
+  .drug { font-weight: 800; font-size: calc(8.55pt * var(--cpr-label-scale)); line-height: 1.05; }
+  .perkg { font-size: calc(7.55pt * var(--cpr-label-scale)); line-height: 1; opacity: .9; }
   .dose {
     border-left: 2px solid #000;
     display: flex;
     justify-content: center;
     align-items: center;
-    gap: 0.035in;
-    padding: 0.02in 0.035in;
+    gap: calc(0.034in * var(--cpr-space-scale));
+    padding: calc(0.018in * var(--cpr-space-scale)) calc(0.04in * var(--cpr-space-scale));
     font-weight: 900;
     text-align: center;
   }
-  .dose-value { font-size: 13.4pt; line-height: 1; white-space: nowrap; }
-  .dose-unit { font-size: 9.8pt; font-weight: 800; line-height: 1; }
+  .dose-value { font-size: calc(13.1pt * var(--cpr-label-scale) * var(--cpr-dose-scale)); line-height: 1; white-space: nowrap; }
+  .dose-unit { font-size: calc(9.45pt * var(--cpr-label-scale)); font-weight: 800; line-height: 1; }
   .label-bolus {
     display: flex;
     flex-direction: column;
@@ -347,9 +355,9 @@ export const CPR_LABEL_PRINT_STYLES = `
   .bolus-box {
     border: 2px solid #000;
     border-radius: .06in;
-    padding: 0.028in;
+    padding: calc(0.026in * var(--cpr-space-scale));
     font-weight: 900;
-    font-size: 9.2pt;
+    font-size: calc(8.8pt * var(--cpr-label-scale));
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -370,9 +378,9 @@ export const CPR_LABEL_PRINT_STYLES = `
     flex: 1 1 auto;
     width: 100%;
   }
-  .et-label { font-weight: 800; font-size: 9pt; text-align: center; }
-  .et-row { display: flex; justify-content: center; align-items: baseline; gap: 0.045in; }
-  .et-small { font-weight: 700; font-size: 9pt; opacity: .9; }
-  .et-big { font-weight: 900; font-size: 13pt; }
-  .dash { font-weight: 800; font-size: 11pt; line-height: 1; }
+  .et-label { font-weight: 800; font-size: calc(8.8pt * var(--cpr-label-scale)); text-align: center; }
+  .et-row { display: flex; justify-content: center; align-items: baseline; gap: calc(0.045in * var(--cpr-space-scale)); }
+  .et-small { font-weight: 700; font-size: calc(8.8pt * var(--cpr-label-scale)); opacity: .9; }
+  .et-big { font-weight: 900; font-size: calc(12.9pt * var(--cpr-label-scale) * var(--cpr-dose-scale)); }
+  .dash { font-weight: 800; font-size: calc(10.6pt * var(--cpr-label-scale)); line-height: 1; }
 `;

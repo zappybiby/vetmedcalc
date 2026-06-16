@@ -1,5 +1,6 @@
 import type { MedicationDef } from '@defs';
 import type { CRIViewModel, DrawCard } from '../viewmodels/criViewModel';
+import { LABEL_PAGE_SIZE, LABEL_PRINT_GEOMETRY_STYLES } from './geometry';
 
 export type CRILabelComputed = {
   dateTimeText: string;
@@ -168,7 +169,11 @@ export function renderCriLabelMarkup(ctx: CRILabelComputed): string {
           <div class="cri-row-label">Diluent</div>
           <div class="cri-row-value">
             <span class="cri-prep-volume">${renderFormattedText(ctx.diluentVolumeText)}</span>
-            <span class="cri-diluent-options">(NaCl)&nbsp;&nbsp;(D5W)&nbsp;&nbsp;(Water)</span>
+            <span class="cri-diluent-options">
+              <span>(NaCl)</span>
+              <span>(D5W)</span>
+              <span>(Water)</span>
+            </span>
           </div>
         </div>
       `
@@ -178,7 +183,7 @@ export function renderCriLabelMarkup(ctx: CRILabelComputed): string {
     <div class="cri-label-outer">
       <header class="cri-patient-block">
         <div class="cri-handwritten-row">
-          <span class="cri-handwritten-label">Patient name:</span>
+          <span class="cri-handwritten-label">Patient Name:</span>
           <span class="cri-name-space" aria-hidden="true"></span>
         </div>
 
@@ -199,7 +204,6 @@ export function renderCriLabelMarkup(ctx: CRILabelComputed): string {
       </header>
 
       <section class="cri-drug-heading">
-        <span class="cri-heading-label">CRI</span>
         <strong class="cri-drug-name">${renderFormattedText(ctx.drugText)}</strong>
       </section>
 
@@ -236,8 +240,16 @@ export function renderCriLabelMarkup(ctx: CRILabelComputed): string {
 }
 
 export const CRI_LABEL_PRINT_STYLES = `
-  @page { size: 2.13in 2in; margin: 0; }
-  :root { color-scheme: light; }
+  @page { size: ${LABEL_PAGE_SIZE}; margin: 0; }
+  ${LABEL_PRINT_GEOMETRY_STYLES}
+  :root {
+    color-scheme: light;
+    --cri-label-scale: 1.22;
+    --cri-space-scale: 0.96;
+    --cri-clinical-scale: 1.08;
+    --cri-prep-scale: 1.16;
+    --cri-clinical-label-width: 0.68in;
+  }
   html, body { margin: 0; padding: 0; background: #fff; color: #000; }
   body { font-family: system-ui, Arial, Helvetica, sans-serif; }
 
@@ -249,19 +261,20 @@ export const CRI_LABEL_PRINT_STYLES = `
   }
 
   .cri-label-page {
-    width: 100%;
-    min-height: 100vh;
+    width: var(--label-stock-width);
+    height: var(--label-stock-height);
+    min-height: var(--label-stock-height);
     box-sizing: border-box;
     display: flex;
     align-items: center;
     justify-content: center;
     margin: 0 auto;
-    padding: 0;
+    padding: var(--label-safe-inset-top) 0 var(--label-safe-inset-bottom);
   }
 
   .cri-label-sheet {
-    width: 2.13in;
-    height: 2in;
+    width: var(--label-safe-width);
+    height: var(--label-safe-height);
     box-sizing: border-box;
     display: flex;
     overflow: hidden;
@@ -272,9 +285,9 @@ export const CRI_LABEL_PRINT_STYLES = `
     height: 100%;
     box-sizing: border-box;
     border: 1.5px solid #000;
-    padding: 0.132in 0.07in 0.03in;
+    padding: 0.086in calc(0.08in * var(--cri-space-scale)) 0.035in;
     display: grid;
-    grid-template-rows: auto auto auto auto;
+    grid-template-rows: auto auto auto minmax(0, 1fr);
     align-content: start;
     gap: 0;
     color: #000;
@@ -284,7 +297,7 @@ export const CRI_LABEL_PRINT_STYLES = `
 
   .cri-patient-block {
     display: grid;
-    gap: 0.113in;
+    gap: calc(0.042in * var(--cri-space-scale));
     min-width: 0;
   }
 
@@ -297,8 +310,8 @@ export const CRI_LABEL_PRINT_STYLES = `
   }
 
   .cri-handwritten-row {
-    gap: 0.058in;
-    font-size: 8.45pt;
+    gap: calc(0.06in * var(--cri-space-scale));
+    font-size: calc(8.2pt * var(--cri-label-scale));
     font-weight: 900;
     line-height: 1.05;
   }
@@ -326,9 +339,9 @@ export const CRI_LABEL_PRINT_STYLES = `
     grid-template-columns: max-content max-content;
     justify-content: space-between;
     align-items: baseline;
-    column-gap: 0.04in;
+    column-gap: calc(0.06in * var(--cri-space-scale));
     min-width: 0;
-    font-size: 6.05pt;
+    font-size: calc(5.3pt * var(--cri-label-scale) * var(--cri-prep-scale));
     font-weight: 850;
     line-height: 1.05;
   }
@@ -341,14 +354,14 @@ export const CRI_LABEL_PRINT_STYLES = `
     display: flex;
     justify-content: flex-start;
     min-width: 0;
-    font-size: 6.05pt;
+    font-size: calc(5.3pt * var(--cri-label-scale) * var(--cri-prep-scale));
     font-weight: 850;
     line-height: 1.05;
   }
 
   .cri-initials {
-    width: 1in;
-    gap: 0.024in;
+    width: 1.16in;
+    gap: calc(0.028in * var(--cri-space-scale));
     justify-content: flex-start;
     white-space: nowrap;
   }
@@ -356,24 +369,24 @@ export const CRI_LABEL_PRINT_STYLES = `
   .cri-initials-space {
     display: block;
     flex: 1 1 auto;
-    min-width: 0.4in;
+    min-width: 0.48in;
   }
 
   .cri-weight-row {
-    gap: 0.022in;
+    gap: calc(0.025in * var(--cri-space-scale));
   }
 
   .cri-drug-heading {
     min-width: 0;
-    margin-top: 0.029in;
+    margin-top: calc(0.09in * var(--cri-space-scale));
     border-top: 1.8px solid #000;
-    padding-top: 0.021in;
+    padding-top: calc(0.026in * var(--cri-space-scale));
   }
 
   .cri-heading-label,
   .cri-box-label {
     display: block;
-    font-size: 5.05pt;
+    font-size: calc(5.25pt * var(--cri-label-scale));
     font-weight: 900;
     line-height: 1.04;
     text-transform: uppercase;
@@ -382,7 +395,7 @@ export const CRI_LABEL_PRINT_STYLES = `
 
   .cri-row-label {
     display: block;
-    font-size: 5.28pt;
+    font-size: calc(5.3pt * var(--cri-label-scale) * var(--cri-prep-scale));
     font-weight: 900;
     line-height: 1.04;
     text-transform: uppercase;
@@ -391,8 +404,8 @@ export const CRI_LABEL_PRINT_STYLES = `
 
   .cri-drug-name {
     display: block;
-    margin-top: 0.007in;
-    font-size: 9.15pt;
+    margin-top: 0;
+    font-size: calc(9.25pt * var(--cri-label-scale));
     font-weight: 900;
     line-height: 0.98;
     overflow-wrap: anywhere;
@@ -400,52 +413,52 @@ export const CRI_LABEL_PRINT_STYLES = `
 
   .cri-clinical-boxes {
     min-width: 0;
-    margin-top: 0.004in;
+    margin-top: calc(0.024in * var(--cri-space-scale));
     display: grid;
     grid-template-columns: minmax(0, 1fr);
-    gap: 0.028in;
+    gap: calc(0.03in * var(--cri-space-scale));
   }
 
   .cri-final-box,
   .cri-delivers-box {
     min-width: 0;
     border: 1.45px solid #000;
-    padding: 0.034in 0.042in;
+    padding: calc(0.034in * var(--cri-space-scale)) calc(0.05in * var(--cri-space-scale));
     display: grid;
     align-items: baseline;
     align-content: center;
   }
 
   .cri-final-box {
-    grid-template-columns: auto minmax(0, 1fr);
-    column-gap: 0.055in;
+    grid-template-columns: var(--cri-clinical-label-width) minmax(0, 1fr);
+    column-gap: calc(0.045in * var(--cri-space-scale));
   }
 
   .cri-final-value {
     display: block;
     justify-self: start;
-    font-size: 9.05pt;
+    font-size: calc(8.95pt * var(--cri-label-scale) * var(--cri-clinical-scale));
     font-weight: 900;
     line-height: 1;
     white-space: nowrap;
   }
 
   .cri-delivers-box {
-    grid-template-columns: auto minmax(0, 1fr) auto;
-    column-gap: 0.038in;
+    grid-template-columns: var(--cri-clinical-label-width) minmax(0, 1fr) auto;
+    column-gap: calc(0.045in * var(--cri-space-scale));
     font-weight: 900;
     line-height: 1.05;
   }
 
   .cri-delivers-box strong {
     display: block;
-    font-size: 6.32pt;
+    font-size: calc(8.95pt * var(--cri-label-scale) * var(--cri-clinical-scale));
     line-height: 1.05;
     white-space: nowrap;
   }
 
   .cri-delivers-box strong:first-of-type {
-    font-size: 6.32pt;
+    font-size: calc(8.95pt * var(--cri-label-scale) * var(--cri-clinical-scale));
   }
 
   .cri-delivers-box strong:last-child {
@@ -454,37 +467,37 @@ export const CRI_LABEL_PRINT_STYLES = `
 
   .cri-prep-section {
     min-width: 0;
-    margin-top: 0.046in;
+    margin-top: calc(0.04in * var(--cri-space-scale));
     border-top: 1.8px solid #000;
-    padding-top: 0.034in;
+    padding-top: calc(0.035in * var(--cri-space-scale));
     display: grid;
     align-content: start;
-    gap: 0.027in;
+    gap: calc(0.029in * var(--cri-space-scale));
   }
 
   .cri-prep-row {
     display: grid;
-    grid-template-columns: 0.4in minmax(0, 1fr);
-    column-gap: 0.028in;
+    grid-template-columns: 0.48in minmax(0, 1fr);
+    column-gap: calc(0.034in * var(--cri-space-scale));
     align-items: baseline;
     min-width: 0;
   }
 
   .cri-row-value {
     min-width: 0;
-    font-size: 5.52pt;
+    font-size: calc(5.65pt * var(--cri-label-scale) * var(--cri-prep-scale));
     font-weight: 900;
     line-height: 1.08;
     white-space: nowrap;
   }
 
   .cri-prep-volume {
-    font-size: 5.95pt;
+    font-size: calc(6.15pt * var(--cri-label-scale) * var(--cri-prep-scale));
     line-height: 1;
   }
 
   .cri-prep-concentration {
-    font-size: 4.82pt;
+    font-size: calc(4.85pt * var(--cri-label-scale) * var(--cri-prep-scale));
     line-height: 1;
   }
 
@@ -493,14 +506,17 @@ export const CRI_LABEL_PRINT_STYLES = `
   }
 
   .cri-total-row .cri-row-value {
-    font-size: 5.52pt;
+    font-size: calc(5.65pt * var(--cri-label-scale) * var(--cri-prep-scale));
   }
 
   .cri-diluent-row {
-    margin-top: 0.054in;
+    margin-top: calc(0.054in * var(--cri-space-scale));
   }
 
   .cri-diluent-options {
+    display: inline-flex;
+    gap: 0.14in;
+    margin-left: 0.14in;
     font-size: inherit;
     font-weight: 900;
     white-space: nowrap;
