@@ -4,12 +4,12 @@ export const LABEL_PRINT_GEOMETRY = {
   driverStockHeightIn: 3.08,
   canvasWidthIn: 3.08,
   canvasHeightIn: 2.13,
-  safeWidthIn: 2.87,
+  safeWidthIn: 2.91,
   safeHeightIn: 2.13,
   safeInsetTopIn: 0,
-  safeInsetRightIn: 0.03,
+  safeInsetRightIn: 0.02,
   safeInsetBottomIn: 0,
-  safeInsetLeftIn: 0.18,
+  safeInsetLeftIn: 0.15,
 } as const;
 
 const inches = (value: number) => `${value}in`;
