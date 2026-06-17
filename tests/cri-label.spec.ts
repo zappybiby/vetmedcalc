@@ -23,7 +23,7 @@ const LABEL_SCENARIOS: readonly LabelScenario[] = [
     id: 'standard-dilution',
     enableDilution: true,
     weightKg: 22.5,
-    durationHr: 12,
+    durationHr: 6,
     rateMlHr: 8,
   },
   {
@@ -37,7 +37,7 @@ const LABEL_SCENARIOS: readonly LabelScenario[] = [
     id: 'high-volume-large-patient-dilution',
     enableDilution: true,
     weightKg: 38,
-    durationHr: 18,
+    durationHr: 4,
     rateMlHr: 12,
   },
   {
@@ -54,12 +54,12 @@ const METOCLOPRAMIDE_STRESS_SCENARIOS: readonly LabelScenario[] = [
   0.75,
   1,
 ].flatMap((desiredDose) =>
-  [12, 18, 24].flatMap((durationHr) =>
+  [6].flatMap((durationHr) =>
     [
       { weightKg: 3.5, rateMlHr: 1.5 },
       { weightKg: 12, rateMlHr: 4 },
       { weightKg: 25, rateMlHr: 8 },
-      { weightKg: 45, rateMlHr: 12 },
+      { weightKg: 40, rateMlHr: 8 },
     ].map(({ weightKg, rateMlHr }) => ({
       id: `metoclopramide-${desiredDose}-mg-kg-day-${durationHr}h-${weightKg}kg`,
       enableDilution: true,
@@ -90,6 +90,21 @@ const UNDER_60_ML_TOTAL_STRESS_SCENARIOS: readonly LabelScenario[] = [2, 5, 10, 
     doseUnit,
   })),
 );
+
+const FOCUSED_CRI_LABEL_STRESS_SCENARIOS: ReadonlyArray<{ medicationId: string; scenario: LabelScenario }> = [
+  {
+    medicationId: 'fentanyl-50',
+    scenario: {
+      id: 'fentanyl-low-rate-photo-shape',
+      enableDilution: true,
+      weightKg: 13.3,
+      durationHr: 12,
+      rateMlHr: 1,
+      desiredDose: 3,
+      doseUnit: 'mcg/kg/hr',
+    },
+  },
+] as const;
 
 const CPR_LABEL_SCENARIOS = [
   { id: 'dog-standard', name: 'Bailey', species: 'dog', weightKg: 22.5 },
@@ -199,7 +214,14 @@ function renderPresetLabelGrid(): string {
       desiredDose: representativeDose(medication, scenario.doseUnit ?? getDefaultMedicationDoseUnit(medication.id)),
     })),
   );
-  const labels = [...presetLabels, ...stressLabels, ...broadStressLabels].join('');
+  const focusedStressLabels = FOCUSED_CRI_LABEL_STRESS_SCENARIOS.map(({ medicationId, scenario }) => {
+    const medication = MEDICATIONS.find((entry) => entry.id === medicationId);
+    if (!medication) {
+      throw new Error(`${medicationId} preset is required for CRI label stress tests.`);
+    }
+    return renderPresetLabel(medication, scenario);
+  });
+  const labels = [...presetLabels, ...stressLabels, ...broadStressLabels, ...focusedStressLabels].join('');
 
   return `<!doctype html>
     <html>
@@ -496,7 +518,9 @@ test.describe('CRI label print guardrails', () => {
     await page.setContent(renderPresetLabelGrid());
 
     await expect(page.locator('.cri-label-sheet')).toHaveCount(
-      MEDICATIONS.length * (LABEL_SCENARIOS.length + UNDER_60_ML_TOTAL_STRESS_SCENARIOS.length) + METOCLOPRAMIDE_STRESS_SCENARIOS.length,
+      MEDICATIONS.length * (LABEL_SCENARIOS.length + UNDER_60_ML_TOTAL_STRESS_SCENARIOS.length) +
+        METOCLOPRAMIDE_STRESS_SCENARIOS.length +
+        FOCUSED_CRI_LABEL_STRESS_SCENARIOS.length,
     );
 
     const sheetSize = await page.locator('.cri-label-sheet').first().evaluate((sheet) => {

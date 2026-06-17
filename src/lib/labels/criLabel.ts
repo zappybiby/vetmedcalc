@@ -246,7 +246,7 @@ export const CRI_LABEL_PRINT_STYLES = `
     color-scheme: light;
     --cri-label-scale: 1.22;
     --cri-space-scale: 0.96;
-    --cri-clinical-scale: 1;
+    --cri-clinical-scale: 0.9;
     --cri-prep-scale: 1.16;
     --cri-clinical-label-width: 0.68in;
   }
@@ -269,7 +269,7 @@ export const CRI_LABEL_PRINT_STYLES = `
     align-items: center;
     justify-content: center;
     margin: 0 auto;
-    padding: var(--label-safe-inset-top) 0 var(--label-safe-inset-bottom);
+    padding: var(--label-safe-inset-top) var(--label-safe-inset-right) var(--label-safe-inset-bottom) var(--label-safe-inset-left);
   }
 
   .cri-label-sheet {
@@ -285,7 +285,7 @@ export const CRI_LABEL_PRINT_STYLES = `
     height: 100%;
     box-sizing: border-box;
     border: 1.5px solid #000;
-    padding: 0.086in calc(0.08in * var(--cri-space-scale)) 0.035in;
+    padding: 0.086in calc(0.045in * var(--cri-space-scale)) 0.035in;
     display: grid;
     grid-template-rows: auto auto auto minmax(0, 1fr);
     align-content: start;
@@ -515,8 +515,8 @@ export const CRI_LABEL_PRINT_STYLES = `
 
   .cri-diluent-options {
     display: inline-flex;
-    gap: 0.13in;
-    margin-left: 0.12in;
+    gap: 0.11in;
+    margin-left: 0.08in;
     font-size: inherit;
     font-weight: 900;
     white-space: nowrap;

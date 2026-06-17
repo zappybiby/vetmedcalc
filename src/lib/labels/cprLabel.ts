@@ -254,7 +254,7 @@ export const CPR_LABEL_PRINT_STYLES = `
     align-items: center;
     justify-content: center;
     margin: 0 auto;
-    padding: var(--label-safe-inset-top) 0 var(--label-safe-inset-bottom);
+    padding: var(--label-safe-inset-top) var(--label-safe-inset-right) var(--label-safe-inset-bottom) var(--label-safe-inset-left);
     break-after: page;
     page-break-after: always;
   }
