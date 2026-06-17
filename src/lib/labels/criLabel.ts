@@ -477,8 +477,8 @@ export const CRI_LABEL_PRINT_STYLES = `
 
   .cri-prep-row {
     display: grid;
-    grid-template-columns: 0.48in minmax(0, 1fr);
-    column-gap: calc(0.034in * var(--cri-space-scale));
+    grid-template-columns: 0.51in minmax(0, 1fr);
+    column-gap: calc(0.04in * var(--cri-space-scale));
     align-items: baseline;
     min-width: 0;
   }
@@ -515,8 +515,8 @@ export const CRI_LABEL_PRINT_STYLES = `
 
   .cri-diluent-options {
     display: inline-flex;
-    gap: 0.14in;
-    margin-left: 0.14in;
+    gap: 0.13in;
+    margin-left: 0.12in;
     font-size: inherit;
     font-weight: 900;
     white-space: nowrap;

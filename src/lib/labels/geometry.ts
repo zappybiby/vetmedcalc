@@ -1,12 +1,13 @@
 export const LABEL_PRINT_GEOMETRY = {
-  driverStockWidthIn: 2.36,
-  driverStockHeightIn: 3.48,
-  canvasWidthIn: 3.48,
-  canvasHeightIn: 2.36,
-  safeWidthIn: 3.48,
+  // Printer reports 638 dots wide by 924 dots long at 300 dpi.
+  driverStockWidthIn: 2.13,
+  driverStockHeightIn: 3.08,
+  canvasWidthIn: 3.08,
+  canvasHeightIn: 2.13,
+  safeWidthIn: 3.08,
   safeHeightIn: 2.13,
-  safeInsetTopIn: 0.12,
-  safeInsetBottomIn: 0.11,
+  safeInsetTopIn: 0,
+  safeInsetBottomIn: 0,
 } as const;
 
 const inches = (value: number) => `${value}in`;

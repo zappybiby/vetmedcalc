@@ -717,6 +717,13 @@ test.describe('CRI label print guardrails', () => {
           if (verticalOverlap(labelRect, valueRect) > tolerance && labelRect.right > valueRect.left + tolerance) {
             issues.push(`${prefix}: "${label.textContent?.trim() ?? ''}" overlaps "${value.textContent?.trim() ?? ''}".`);
           }
+          const labelText = label.textContent?.trim() ?? '';
+          if (labelText) {
+            const labelTextGap = valueRect.left - (labelRect.left + label.scrollWidth);
+            if (labelTextGap < 3) {
+              issues.push(`${prefix}: "${labelText}" is visually cramped against its prep value.`);
+            }
+          }
         }
 
         const drugLabel = sheet.querySelector<HTMLElement>('.cri-prep-row:not(.cri-total-row) .cri-row-label');
