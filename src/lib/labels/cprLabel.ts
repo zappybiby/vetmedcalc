@@ -318,7 +318,7 @@ export const CPR_LABEL_PRINT_STYLES = `
   }
   .label-row {
     display: grid;
-    grid-template-columns: 1.48fr 0.92fr;
+    grid-template-columns: 1.66fr 0.74fr;
     align-items: stretch;
     border-bottom: 2px solid #000;
   }
@@ -330,7 +330,12 @@ export const CPR_LABEL_PRINT_STYLES = `
     row-gap: calc(0.012in * var(--cpr-space-scale));
     align-content: center;
   }
-  .drug { font-weight: 800; font-size: calc(8.55pt * var(--cpr-label-scale)); line-height: 1.05; }
+  .drug {
+    font-weight: 800;
+    font-size: calc(8.55pt * var(--cpr-label-scale));
+    line-height: 1.05;
+    white-space: nowrap;
+  }
   .perkg { font-size: calc(7.55pt * var(--cpr-label-scale)); line-height: 1; opacity: .9; }
   .dose {
     border-left: 2px solid #000;

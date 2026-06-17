@@ -246,7 +246,7 @@ export const CRI_LABEL_PRINT_STYLES = `
     color-scheme: light;
     --cri-label-scale: 1.22;
     --cri-space-scale: 0.96;
-    --cri-clinical-scale: 1.08;
+    --cri-clinical-scale: 1;
     --cri-prep-scale: 1.16;
     --cri-clinical-label-width: 0.68in;
   }

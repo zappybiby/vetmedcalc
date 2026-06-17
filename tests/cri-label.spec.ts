@@ -72,6 +72,25 @@ const METOCLOPRAMIDE_STRESS_SCENARIOS: readonly LabelScenario[] = [
   ),
 );
 
+const ALL_CRI_DOSE_UNITS: readonly DoseUnit[] = [
+  'mcg/kg/min',
+  'mg/kg/min',
+  'mg/kg/hr',
+  'mg/kg/day',
+  'mcg/kg/hr',
+] as const;
+
+const UNDER_60_ML_TOTAL_STRESS_SCENARIOS: readonly LabelScenario[] = [2, 5, 10, 20, 40].flatMap((weightKg) =>
+  ALL_CRI_DOSE_UNITS.map((doseUnit) => ({
+    id: `under-60ml-${weightKg}kg-${doseUnit.replaceAll('/', '-')}`,
+    enableDilution: true,
+    weightKg,
+    durationHr: 6,
+    rateMlHr: 8,
+    doseUnit,
+  })),
+);
+
 const CPR_LABEL_SCENARIOS = [
   { id: 'dog-standard', name: 'Bailey', species: 'dog', weightKg: 22.5 },
   { id: 'dog-small', name: 'Roo', species: 'dog', weightKg: 3.5 },
@@ -155,6 +174,9 @@ function renderPresetLabel(medication: MedicationDef, scenario: LabelScenario): 
       data-scenario="${escapeAttr(scenario.id)}"
       data-med-id="${escapeAttr(medication.id)}"
       data-med-name="${escapeAttr(medication.name)}"
+      data-dose-unit="${escapeAttr(doseUnit)}"
+      data-weight-kg="${scenario.weightKg}"
+      data-total-volume-ml="${viewModel.resultCard.totalVolumeMl}"
     >
       ${renderCriLabelMarkup(label)}
     </div>
@@ -171,7 +193,13 @@ function renderPresetLabelGrid(): string {
   }
 
   const stressLabels = METOCLOPRAMIDE_STRESS_SCENARIOS.map((scenario) => renderPresetLabel(metoclopramide, scenario));
-  const labels = [...presetLabels, ...stressLabels].join('');
+  const broadStressLabels = MEDICATIONS.flatMap((medication) =>
+    UNDER_60_ML_TOTAL_STRESS_SCENARIOS.map((scenario) => renderPresetLabel(medication, {
+      ...scenario,
+      desiredDose: representativeDose(medication, scenario.doseUnit ?? getDefaultMedicationDoseUnit(medication.id)),
+    })),
+  );
+  const labels = [...presetLabels, ...stressLabels, ...broadStressLabels].join('');
 
   return `<!doctype html>
     <html>
@@ -468,7 +496,7 @@ test.describe('CRI label print guardrails', () => {
     await page.setContent(renderPresetLabelGrid());
 
     await expect(page.locator('.cri-label-sheet')).toHaveCount(
-      MEDICATIONS.length * LABEL_SCENARIOS.length + METOCLOPRAMIDE_STRESS_SCENARIOS.length,
+      MEDICATIONS.length * (LABEL_SCENARIOS.length + UNDER_60_ML_TOTAL_STRESS_SCENARIOS.length) + METOCLOPRAMIDE_STRESS_SCENARIOS.length,
     );
 
     const sheetSize = await page.locator('.cri-label-sheet').first().evaluate((sheet) => {
@@ -500,6 +528,11 @@ test.describe('CRI label print guardrails', () => {
         const scenario = sheet.dataset.scenario ?? 'unknown scenario';
         const prefix = `${medName} ${scenario}`;
         const sheetRect = sheet.getBoundingClientRect();
+        const totalVolumeMl = Number(sheet.dataset.totalVolumeMl);
+
+        if (scenario.startsWith('under-60ml-') && (!Number.isFinite(totalVolumeMl) || totalVolumeMl > 60)) {
+          issues.push(`${prefix}: generated under-60 mL scenario has ${totalVolumeMl.toFixed(2)} mL total volume.`);
+        }
 
         if (sheet.scrollWidth > sheet.clientWidth + textTolerance) {
           issues.push(`${prefix}: sheet has horizontal overflow (${sheet.scrollWidth} > ${sheet.clientWidth}).`);
@@ -891,6 +924,15 @@ test.describe('CRI label print guardrails', () => {
             issues.push(`${prefix}: delivery dose is not aligned with final concentration value.`);
           }
         }
+        const deliveryRate = sheet.querySelector<HTMLElement>('.cri-delivers-box strong:last-child');
+        if (deliveryDose && deliveryRate) {
+          const deliveryDoseRect = deliveryDose.getBoundingClientRect();
+          const deliveryRateRect = deliveryRate.getBoundingClientRect();
+          const deliveryTextGap = deliveryRateRect.left - deliveryDoseRect.right;
+          if (deliveryTextGap < 4) {
+            issues.push(`${prefix}: delivery dose is visually cramped against the pump rate.`);
+          }
+        }
         if (deliveryValueSizes.some((size) => Math.abs(size - finalValueSize) > 0.25)) {
           issues.push(`${prefix}: delivery values should match final concentration value size.`);
         }
@@ -1078,6 +1120,15 @@ test.describe('CPR label print guardrails', () => {
           .map((value) => Number.parseFloat(getComputedStyle(value).fontSize));
         const drugSizes = [...sheet.querySelectorAll<HTMLElement>('.drug')]
           .map((value) => Number.parseFloat(getComputedStyle(value).fontSize));
+        const epinephrineDrug = [...sheet.querySelectorAll<HTMLElement>('.drug')]
+          .find((drug) => drug.textContent?.trim().startsWith('EPINEPHRINE'));
+        if (epinephrineDrug) {
+          const rect = epinephrineDrug.getBoundingClientRect();
+          const lineHeight = Number.parseFloat(getComputedStyle(epinephrineDrug).lineHeight);
+          if (rect.height > lineHeight * 1.35) {
+            issues.push(`${scenario}: epinephrine concentration should stay on one line.`);
+          }
+        }
 
         if (doseValueSizes.some((size) => size <= (doseUnitSizes[0] ?? 0) + 0.5)) {
           issues.push(`${scenario}: dose values are not visually dominant over dose units.`);
