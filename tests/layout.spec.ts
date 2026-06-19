@@ -413,6 +413,26 @@ test.describe('responsive layout guardrails', () => {
     expect(printState.bodyBackgroundImage).toBe('none');
   });
 
+  test('venous blood gas explains alkalemia without TCO2 overriding metabolic markers', async ({ page }) => {
+    await openApp(page, { width: 1280, height: 720 });
+    await selectTab(page, 'Venous blood gas');
+
+    const panel = activePanel(page);
+    await panel.getByRole('button', { name: 'Dog' }).click();
+    await panel.getByLabel('pH', { exact: true }).fill('7.482');
+    await panel.getByLabel('pCO2', { exact: true }).fill('34.5');
+    await panel.getByLabel('HCO3', { exact: true }).fill('25.8');
+    await panel.getByLabel('Base excess', { exact: true }).fill('2.4');
+    await panel.getByLabel('TCO2 (optional)', { exact: true }).fill('24.7');
+    await panel.getByLabel('pO2 (optional)', { exact: true }).fill('31.3');
+
+    await expect(panel.getByText('Metabolic alkalosis', { exact: true }).first()).toBeVisible();
+    await expect(panel.getByText('No compensation', { exact: true }).first()).toBeVisible();
+    await expect(panel.getByText('Interpretation details', { exact: true })).toBeVisible();
+    await expect(panel.getByText('TCO2 is optional context and does not outvote HCO3/base excess.')).toBeVisible();
+    await expect(panel.getByText('Confidence', { exact: true })).toHaveCount(0);
+  });
+
   test('filled desktop tabs fit vertically at 1920x1080', async ({ page }) => {
     await openApp(page, { width: 1920, height: 1080 });
 

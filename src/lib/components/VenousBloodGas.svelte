@@ -70,15 +70,10 @@
     INDETERMINATE: 'Indeterminate',
   };
 
-  const confidenceLabels = {
-    STANDARD: 'Standard',
-    MODERATE: 'Moderate',
-    LOW: 'Low',
-  };
-
   const noteLabels = {
     METABOLIC_COMPONENT_DISCORDANT: 'Metabolic markers are discordant.',
     PRIMARY_PROCESS_UNCERTAIN: 'Primary process is uncertain from these values.',
+    PH_DRIVEN_METABOLIC_PATTERN: 'pH direction and pCO2 pattern point to a metabolic process.',
     PH_WITHIN_RI_WITH_ISOLATED_COMPONENT_ABNORMALITY: 'pH is within RI with an abnormal component.',
     QUALITATIVE_COMPENSATION_ASSESSMENT: 'Compensation assessment is qualitative for cats.',
     RESPIRATORY_RESPONSE_APPROPRIATE: 'pCO2 fits expected dog compensation.',
@@ -290,10 +285,21 @@
                 <span class="text-slate-300">Metabolic</span>
                 <span class={stateClass(result.metabolicComponent)}>{componentLabels[result.metabolicComponent]}</span>
               </div>
-              <div class="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-2">
-                <span class="text-slate-300">Confidence</span>
-                <span class="font-black text-slate-100">{confidenceLabels[result.confidence]}</span>
-              </div>
+            </div>
+          </div>
+
+          <div class="ui-inset p-3">
+            <div class="text-xs font-semibold uppercase text-[color:var(--ui-text-400)]">Interpretation details</div>
+            <div class="mt-2 grid gap-2 text-xs leading-snug">
+              {#each result.details as detail}
+                <div class="grid gap-0.5 border-t border-[color:var(--ui-divider)] pt-2 first:border-t-0 first:pt-0">
+                  <div class="flex min-w-0 flex-wrap items-baseline justify-between gap-x-2 gap-y-0.5">
+                    <span class="font-semibold uppercase text-[color:var(--ui-text-400)]">{detail.label}</span>
+                    <span class="font-black text-[color:var(--ui-text-100)]">{detail.value}</span>
+                  </div>
+                  <p class="text-[color:var(--ui-text-300)]">{detail.detail}</p>
+                </div>
+              {/each}
             </div>
           </div>
 
