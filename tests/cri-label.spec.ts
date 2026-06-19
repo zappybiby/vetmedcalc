@@ -91,6 +91,9 @@ const UNDER_60_ML_TOTAL_STRESS_SCENARIOS: readonly LabelScenario[] = [2, 5, 10, 
   })),
 );
 
+const ALL_CRI_DOSE_STRESS_WEIGHTS: readonly number[] = [2, 5, 10, 20, 40];
+const ALL_CRI_DOSE_STRESS_POINTS: ReadonlyArray<'min' | 'mid' | 'max'> = ['min', 'mid', 'max'];
+
 const FOCUSED_CRI_LABEL_STRESS_SCENARIOS: ReadonlyArray<{ medicationId: string; scenario: LabelScenario }> = [
   {
     medicationId: 'fentanyl-50',
@@ -102,6 +105,18 @@ const FOCUSED_CRI_LABEL_STRESS_SCENARIOS: ReadonlyArray<{ medicationId: string; 
       rateMlHr: 1,
       desiredDose: 3,
       doseUnit: 'mcg/kg/hr',
+    },
+  },
+  {
+    medicationId: 'lidocaine-20',
+    scenario: {
+      id: 'lidocaine-mcg-kg-min-delivery-spacing-photo-shape',
+      enableDilution: false,
+      weightKg: 36,
+      durationHr: 12,
+      rateMlHr: '',
+      desiredDose: 25,
+      doseUnit: 'mcg/kg/min',
     },
   },
 ] as const;
@@ -166,6 +181,22 @@ function representativeDose(medication: MedicationDef, unit: DoseUnit): number {
   return Number(doseFromMgPerKgHr(midpointMgPerKgHr, unit).toFixed(4));
 }
 
+function doseForRangePoint(medication: MedicationDef, unit: DoseUnit, point: 'min' | 'mid' | 'max'): number {
+  if (!medication.criDoseRange) {
+    return fallbackDoseForUnit(unit);
+  }
+
+  const { minMgPerKgHr, maxMgPerKgHr } = medication.criDoseRange;
+  const valueMgPerKgHr =
+    point === 'min'
+      ? minMgPerKgHr
+      : point === 'max'
+        ? maxMgPerKgHr
+        : (minMgPerKgHr + maxMgPerKgHr) / 2;
+
+  return Number(doseFromMgPerKgHr(valueMgPerKgHr, unit).toFixed(4));
+}
+
 function renderPresetLabel(medication: MedicationDef, scenario: LabelScenario): string {
   const doseUnit = scenario.doseUnit ?? getDefaultMedicationDoseUnit(medication.id);
   const viewModel = buildCRIViewModel({
@@ -214,6 +245,21 @@ function renderPresetLabelGrid(): string {
       desiredDose: representativeDose(medication, scenario.doseUnit ?? getDefaultMedicationDoseUnit(medication.id)),
     })),
   );
+  const allDoseConfigLabels = MEDICATIONS.flatMap((medication) =>
+    ALL_CRI_DOSE_STRESS_WEIGHTS.flatMap((weightKg) =>
+      ALL_CRI_DOSE_UNITS.flatMap((doseUnit) =>
+        ALL_CRI_DOSE_STRESS_POINTS.map((point) => renderPresetLabel(medication, {
+          id: `all-dose-${medication.id}-${weightKg}kg-${doseUnit.replaceAll('/', '-')}-${point}`,
+          enableDilution: true,
+          weightKg,
+          durationHr: 6,
+          rateMlHr: 8,
+          doseUnit,
+          desiredDose: doseForRangePoint(medication, doseUnit, point),
+        })),
+      ),
+    ),
+  );
   const focusedStressLabels = FOCUSED_CRI_LABEL_STRESS_SCENARIOS.map(({ medicationId, scenario }) => {
     const medication = MEDICATIONS.find((entry) => entry.id === medicationId);
     if (!medication) {
@@ -221,7 +267,7 @@ function renderPresetLabelGrid(): string {
     }
     return renderPresetLabel(medication, scenario);
   });
-  const labels = [...presetLabels, ...stressLabels, ...broadStressLabels, ...focusedStressLabels].join('');
+  const labels = [...presetLabels, ...stressLabels, ...broadStressLabels, ...allDoseConfigLabels, ...focusedStressLabels].join('');
 
   return `<!doctype html>
     <html>
@@ -519,6 +565,7 @@ test.describe('CRI label print guardrails', () => {
 
     await expect(page.locator('.cri-label-sheet')).toHaveCount(
       MEDICATIONS.length * (LABEL_SCENARIOS.length + UNDER_60_ML_TOTAL_STRESS_SCENARIOS.length) +
+        MEDICATIONS.length * ALL_CRI_DOSE_STRESS_WEIGHTS.length * ALL_CRI_DOSE_UNITS.length * ALL_CRI_DOSE_STRESS_POINTS.length +
         METOCLOPRAMIDE_STRESS_SCENARIOS.length +
         FOCUSED_CRI_LABEL_STRESS_SCENARIOS.length,
     );
@@ -581,6 +628,7 @@ test.describe('CRI label print guardrails', () => {
           '.cri-final-box',
           '.cri-final-value',
           '.cri-delivers-box',
+          '.cri-delivery-values',
           '.cri-box-label',
           '.cri-prep-section',
           '.cri-prep-row',
@@ -608,7 +656,7 @@ test.describe('CRI label print guardrails', () => {
           }
         }
 
-        for (const parent of [...sheet.querySelectorAll<HTMLElement>('.cri-final-box, .cri-delivers-box, .cri-prep-row')]) {
+        for (const parent of [...sheet.querySelectorAll<HTMLElement>('.cri-final-box, .cri-delivers-box, .cri-delivery-values, .cri-prep-row')]) {
           const parentRect = parent.getBoundingClientRect();
           const children = [...parent.children] as HTMLElement[];
           for (const child of children) {
@@ -646,6 +694,7 @@ test.describe('CRI label print guardrails', () => {
           '.cri-box-label',
           '.cri-final-value',
           '.cri-delivers-box',
+          '.cri-delivers-box strong',
           '.cri-diluent-options',
           '.cri-prep-volume',
           '.cri-prep-concentration',
@@ -952,9 +1001,16 @@ test.describe('CRI label print guardrails', () => {
         if (deliveryDose && deliveryRate) {
           const deliveryDoseRect = deliveryDose.getBoundingClientRect();
           const deliveryRateRect = deliveryRate.getBoundingClientRect();
+          const sameLineOverlap = verticalOverlap(deliveryDoseRect, deliveryRateRect);
           const deliveryTextGap = deliveryRateRect.left - deliveryDoseRect.right;
-          if (deliveryTextGap < 4) {
+
+          if (sameLineOverlap > tolerance && deliveryTextGap < 4) {
             issues.push(`${prefix}: delivery dose is visually cramped against the pump rate.`);
+          }
+
+          const deliveryRateRightGap = deliversBox ? deliversBox.getBoundingClientRect().right - deliveryRateRect.right : 0;
+          if (deliversBox && deliveryRateRightGap > 8) {
+            issues.push(`${prefix}: pump rate is not right-aligned within the delivers box.`);
           }
         }
         if (deliveryValueSizes.some((size) => Math.abs(size - finalValueSize) > 0.25)) {

@@ -215,8 +215,10 @@ export function renderCriLabelMarkup(ctx: CRILabelComputed): string {
 
         <div class="cri-delivers-box">
           <span class="cri-box-label">Delivers</span>
-          <strong>${renderFormattedText(ctx.deliveryDoseText)}</strong>
-          <strong>at ${renderFormattedText(ctx.deliveryRateText)}</strong>
+          <span class="cri-delivery-values">
+            <strong class="cri-delivery-dose">${renderFormattedText(ctx.deliveryDoseText)}</strong>
+            <strong class="cri-delivery-rate">at ${renderFormattedText(ctx.deliveryRateText)}</strong>
+          </span>
         </div>
       </section>
 
@@ -444,14 +446,26 @@ export const CRI_LABEL_PRINT_STYLES = `
   }
 
   .cri-delivers-box {
-    grid-template-columns: var(--cri-clinical-label-width) minmax(0, 1fr) auto;
+    grid-template-columns: var(--cri-clinical-label-width) minmax(0, 1fr);
     column-gap: calc(0.045in * var(--cri-space-scale));
+    row-gap: calc(0.012in * var(--cri-space-scale));
     font-weight: 900;
     line-height: 1.05;
   }
 
+  .cri-delivery-values {
+    min-width: 0;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    justify-content: space-between;
+    column-gap: calc(0.055in * var(--cri-space-scale));
+    row-gap: calc(0.006in * var(--cri-space-scale));
+  }
+
   .cri-delivers-box strong {
     display: block;
+    flex: 0 0 auto;
     font-size: calc(8.95pt * var(--cri-label-scale) * var(--cri-clinical-scale));
     line-height: 1.05;
     white-space: nowrap;
@@ -462,6 +476,7 @@ export const CRI_LABEL_PRINT_STYLES = `
   }
 
   .cri-delivers-box strong:last-child {
+    margin-left: auto;
     justify-self: end;
   }
 
