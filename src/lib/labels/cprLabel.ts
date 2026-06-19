@@ -246,13 +246,15 @@ export const CPR_LABEL_PRINT_STYLES = `
   }
 
   .label-page {
-    width: var(--label-page-width);
-    height: var(--label-page-height);
-    min-height: var(--label-page-height);
+    width: var(--label-stock-width);
+    height: var(--label-stock-height);
+    min-height: var(--label-stock-height);
     box-sizing: border-box;
-    position: relative;
-    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     margin: 0 auto;
+    padding: var(--label-safe-inset-top) var(--label-safe-inset-right) var(--label-safe-inset-bottom) var(--label-safe-inset-left);
     break-after: page;
     page-break-after: always;
   }
@@ -268,14 +270,6 @@ export const CPR_LABEL_PRINT_STYLES = `
     box-sizing: border-box;
     display: flex;
     overflow: hidden;
-  }
-
-  .label-page > .label-sheet {
-    position: absolute;
-    top: var(--label-safe-inset-left);
-    left: calc(var(--label-stock-height) - var(--label-safe-inset-top));
-    transform: rotate(90deg);
-    transform-origin: top left;
   }
   .label-outer {
     width: 100%;

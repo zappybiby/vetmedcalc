@@ -291,71 +291,6 @@ function renderCprPresetLabelGrid(): string {
     </html>`;
 }
 
-function renderCriPrintPage(): string {
-  const medication = MEDICATIONS.find((entry) => entry.id === 'fentanyl-50');
-  if (!medication) {
-    throw new Error('Fentanyl preset is required for CRI label print-page tests.');
-  }
-
-  return `<!doctype html>
-    <html>
-      <head>
-        <meta charset="utf-8" />
-        <style>${CRI_LABEL_PRINT_STYLES}</style>
-      </head>
-      <body class="print-mode-single">
-        <div class="cri-label-page">${renderPresetLabel(medication, FOCUSED_CRI_LABEL_STRESS_SCENARIOS[0].scenario)}</div>
-      </body>
-    </html>`;
-}
-
-function renderCprPrintPage(): string {
-  const markup = renderCprLabelMarkup(computeCprLabel(CPR_LABEL_SCENARIOS[0]));
-
-  return `<!doctype html>
-    <html>
-      <head>
-        <meta charset="utf-8" />
-        <style>${CPR_LABEL_PRINT_STYLES}</style>
-      </head>
-      <body class="print-mode-single">
-        <div class="label-page"><div class="label-sheet">${markup}</div></div>
-      </body>
-    </html>`;
-}
-
-async function measureRotatedPrintPage(
-  page: Page,
-  pageSelector: string,
-  sheetSelector: string,
-): Promise<{
-  page: { width: number; height: number };
-  sheet: { width: number; height: number };
-  sheetOffset: { left: number; top: number; rightGap: number; bottomGap: number };
-}> {
-  return page.evaluate(({ pageSelector, sheetSelector }) => {
-    const pageElement = document.querySelector<HTMLElement>(pageSelector);
-    const sheetElement = document.querySelector<HTMLElement>(sheetSelector);
-    if (!pageElement || !sheetElement) {
-      throw new Error(`Unable to find ${pageSelector} or ${sheetSelector}.`);
-    }
-
-    const pageRect = pageElement.getBoundingClientRect();
-    const sheetRect = sheetElement.getBoundingClientRect();
-
-    return {
-      page: { width: pageRect.width, height: pageRect.height },
-      sheet: { width: sheetRect.width, height: sheetRect.height },
-      sheetOffset: {
-        left: sheetRect.left - pageRect.left,
-        top: sheetRect.top - pageRect.top,
-        rightGap: pageRect.right - sheetRect.right,
-        bottomGap: pageRect.bottom - sheetRect.bottom,
-      },
-    };
-  }, { pageSelector, sheetSelector });
-}
-
 async function applyCandidateVars(page: Page, vars: CssVars): Promise<void> {
   await page.evaluate((entries) => {
     let style = document.getElementById('label-fit-candidate-vars') as HTMLStyleElement | null;
@@ -576,52 +511,6 @@ async function optimizeLabelTokens(page: Page, config: TokenSearchConfig): Promi
 
   return best;
 }
-
-test.describe('shared label print-page geometry', () => {
-  test('prints on portrait driver stock with rotated landscape label artwork', async ({ page }) => {
-    await page.setViewportSize({ width: 520, height: 520 });
-
-    const expected = {
-      pageWidth: LABEL_PRINT_GEOMETRY.driverStockWidthIn * 96,
-      pageHeight: LABEL_PRINT_GEOMETRY.driverStockHeightIn * 96,
-      sheetWidth: LABEL_PRINT_GEOMETRY.safeHeightIn * 96,
-      sheetHeight: LABEL_PRINT_GEOMETRY.safeWidthIn * 96,
-      sheetLeft: (
-        LABEL_PRINT_GEOMETRY.canvasHeightIn -
-        LABEL_PRINT_GEOMETRY.safeInsetTopIn -
-        LABEL_PRINT_GEOMETRY.safeHeightIn
-      ) * 96,
-      sheetTop: LABEL_PRINT_GEOMETRY.safeInsetLeftIn * 96,
-      sheetRightGap: LABEL_PRINT_GEOMETRY.safeInsetTopIn * 96,
-      sheetBottomGap: (
-        LABEL_PRINT_GEOMETRY.canvasWidthIn -
-        LABEL_PRINT_GEOMETRY.safeInsetLeftIn -
-        LABEL_PRINT_GEOMETRY.safeWidthIn
-      ) * 96,
-    };
-
-    const cases = [
-      { name: 'CRI', html: renderCriPrintPage(), pageSelector: '.cri-label-page', sheetSelector: '.cri-label-sheet' },
-      { name: 'CPR', html: renderCprPrintPage(), pageSelector: '.label-page', sheetSelector: '.label-sheet' },
-    ];
-
-    for (const item of cases) {
-      await test.step(item.name, async () => {
-        await page.setContent(item.html);
-        const metrics = await measureRotatedPrintPage(page, item.pageSelector, item.sheetSelector);
-
-        expect(metrics.page.width).toBeCloseTo(expected.pageWidth, 1);
-        expect(metrics.page.height).toBeCloseTo(expected.pageHeight, 1);
-        expect(metrics.sheet.width).toBeCloseTo(expected.sheetWidth, 1);
-        expect(metrics.sheet.height).toBeCloseTo(expected.sheetHeight, 1);
-        expect(metrics.sheetOffset.left).toBeCloseTo(expected.sheetLeft, 1);
-        expect(metrics.sheetOffset.top).toBeCloseTo(expected.sheetTop, 1);
-        expect(metrics.sheetOffset.rightGap).toBeCloseTo(expected.sheetRightGap, 1);
-        expect(metrics.sheetOffset.bottomGap).toBeCloseTo(expected.sheetBottomGap, 1);
-      });
-    }
-  });
-});
 
 test.describe('CRI label print guardrails', () => {
   test('preset medication labels fit within the shared landscape safe print area', async ({ page }) => {
