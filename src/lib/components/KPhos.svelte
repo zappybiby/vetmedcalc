@@ -9,7 +9,9 @@
     type KPhosBaseFluidId,
   } from '@defs';
   import {
+    KPHOS_EXCESS_WARNING_FRACTION,
     calculateKPhosPlan,
+    getKPhosExcessFraction,
     type KPhosKTargetBasis,
     type KPhosMode,
     type KPhosPlan,
@@ -54,7 +56,7 @@
   function fmt(value: number | null | undefined, digits = 2): string {
     if (value == null || Number.isNaN(value)) return '—';
     const rounded = Number(value.toFixed(digits));
-    return (Object.is(rounded, -0) ? 0 : rounded).toFixed(digits);
+    return String(Object.is(rounded, -0) ? 0 : rounded);
   }
 
   function fmtCompact(value: number | null | undefined, maxDigits = 2): string {
@@ -147,8 +149,13 @@
     if (plan.fluidsMeetPhosTarget && plan.hasPhosTarget) {
       next.push('The selected fluids already meet the Phos target.');
     }
-    if (plan.phosTargetExcessMmolKgHr != null && plan.phosTargetExcessMmolKgHr > 0.0000001) {
-      next.push(`Fluid Phos exceeds the target by ${fmt(plan.phosTargetExcessMmolKgHr, 4)} mmol/kg/hr.`);
+    if (phosTargetValue != null && plan.totalPhosDeliveryMmolKgHr != null) {
+      const excessFraction = getKPhosExcessFraction(phosTargetValue, plan.totalPhosDeliveryMmolKgHr);
+      if (excessFraction != null && excessFraction >= KPHOS_EXCESS_WARNING_FRACTION) {
+        next.push(Number.isFinite(excessFraction)
+          ? `Fluid Phos exceeds the target by ${fmt(excessFraction * 100, 0)}%.`
+          : `Fluid Phos exceeds the zero target by ${fmt(plan.phosTargetExcessMmolKgHr, 4)} mmol/kg/hr.`);
+      }
     }
     if (plan.kTargetExcessMeqPerL != null) {
       next.push(`${kBasisLabel} K already exceeds the target by ${fmt(plan.kTargetExcessMeqPerL, 2)} mEq/L; no KCl is needed.`);
@@ -431,37 +438,7 @@
           {/if}
         {/if}
 
-        {#if alerts.length}
-          <div class="mt-2 border-l-2 border-amber-400/60 bg-amber-950/35 px-2.5 py-1.5 text-xs font-semibold text-amber-100">
-            {alerts.join(' ')}
-          </div>
-        {/if}
-
-        <div class="mt-3 grid gap-1.5 text-sm leading-relaxed text-slate-300" data-testid="kphos-source-summary">
-          <p>
-            The fluid bag contains {fmt(mainBagNativePhosMmol, 2)} mmol Phos and {fmt(mainBagNativeKMeq, 2)} mEq K before additives{#if plan.mainNativePhosDeliveryMmolKgHr != null && plan.mainNativeKDeliveryMeqKgHr != null}, and at {fmtCompact(mainRateValue)} mL/hr contributes <strong class="font-black tabular-nums text-slate-100">{fmt(plan.mainNativePhosDeliveryMmolKgHr, 4)} mmol/kg/hr Phos</strong> and <strong class="font-black tabular-nums text-slate-100">{fmt(plan.mainNativeKDeliveryMeqKgHr, 4)} mEq/kg/hr potassium</strong>{/if}.
-          </p>
-
-          {#if plan.hasPhosTarget}
-            <p>
-              {fmtStock(plan.kPhosStockMl)} mL of KPhos adds <strong class="font-black tabular-nums text-slate-100">{fmt(kPhosAddedKMeq, 2)} mEq K</strong> and <strong class="font-black tabular-nums text-slate-100">{fmt(kPhosAddedPhosMmol, 2)} mmol Phos</strong>{mode === 'cri' ? ' to the CRI' : ''}.
-            </p>
-          {/if}
-
-          {#if mode === 'cri' && plan.hasPhosTarget && (criDiluentKMeq > 0 || criDiluentPhosMmol > 0)}
-            <p>
-              {fmtStock(plan.criDiluentVolumeMl)} mL of {criDiluentFluid.label} diluent contributes {fmt(criDiluentKMeq, 2)} mEq K and {fmt(criDiluentPhosMmol, 2)} mmol Phos to the CRI.
-            </p>
-          {/if}
-
-          {#if plan.hasKTarget}
-            <p>
-              {fmtStock(plan.kClStockMl)} mL of KCl adds <strong class="font-black tabular-nums text-slate-100">{fmt(kClAddedKMeq, 2)} mEq K</strong> to the fluid bag.
-            </p>
-          {/if}
-        </div>
-
-        <div class="mt-3 border-t border-slate-700/45 pt-2.5 text-sm leading-relaxed text-slate-300">
+        <div class="mt-2 text-sm leading-relaxed text-slate-300">
           {#if plan.totalKDeliveryMeqKgHr != null && plan.totalPhosDeliveryMmolKgHr != null}
             <p>
               This delivers <strong class="font-black tabular-nums text-slate-100" data-testid="total-phos-delivery">{fmt(plan.totalPhosDeliveryMmolKgHr, 2)} mmol/kg/hr Phos</strong> and <strong class="font-black tabular-nums text-slate-100" data-testid="total-k-delivery">{fmt(plan.totalKDeliveryMeqKgHr, 2)} mEq/kg/hr potassium</strong>.
@@ -473,16 +450,54 @@
               <span class="sr-only" data-testid="total-k-delivery">—</span>
             </p>
           {/if}
+        </div>
 
-          <p class="mt-1.5">
-            The bag contains a total of <strong class="font-black tabular-nums text-slate-100">{fmt(finalMainBagPhosMmol, 2)} mmol Phos</strong> and <strong class="font-black tabular-nums text-slate-100" data-testid="final-main-bag-k">{fmt(finalMainBagKMeq, 2)} mEq K</strong>.
-          </p>
-
-          {#if plan.hasKTarget}
-            <p class="mt-1.5 text-slate-400">
-              Actual {kBasisLabel} K is <strong class="font-black tabular-nums text-slate-200" data-testid="selected-k-actual">{fmt(plan.selectedKActualMeqPerL, 2)} mEq/L</strong> for a {fmt(kTargetValue, 2)} mEq/L target.
-            </p>
+        <div class="mt-3 border-t border-slate-700/45 pt-2.5">
+          {#if alerts.length}
+            <div class="mb-2 border-l-2 border-amber-400/60 bg-amber-950/35 px-2.5 py-1.5 text-xs font-semibold text-amber-100">
+              {alerts.join(' ')}
+            </div>
           {/if}
+
+          <div class="grid gap-1.5 text-sm leading-relaxed text-slate-300" data-testid="kphos-source-summary">
+            <p>
+              The fluid bag contains {fmt(mainBagNativePhosMmol, 1)} mmol Phos and {fmt(mainBagNativeKMeq, 1)} mEq K before additives.
+            </p>
+
+            {#if plan.mainNativePhosDeliveryMmolKgHr != null && plan.mainNativeKDeliveryMeqKgHr != null}
+              <p>
+                at {fmtCompact(mainRateValue)} mL/hr contributes <strong class="font-black tabular-nums text-slate-100">{fmt(plan.mainNativePhosDeliveryMmolKgHr, 1)} mmol/kg/hr Phos</strong> and <strong class="font-black tabular-nums text-slate-100">{fmt(plan.mainNativeKDeliveryMeqKgHr, 1)} mEq/kg/hr potassium</strong>.
+              </p>
+            {/if}
+
+            {#if plan.hasPhosTarget}
+              <p>
+                {fmtStock(plan.kPhosStockMl)} mL of KPhos adds <strong class="font-black tabular-nums text-slate-100">{fmt(kPhosAddedKMeq, 1)} mEq K</strong> and <strong class="font-black tabular-nums text-slate-100">{fmt(kPhosAddedPhosMmol, 1)} mmol Phos</strong>{mode === 'cri' ? ' to the CRI' : ''}.
+              </p>
+            {/if}
+
+            {#if mode === 'cri' && plan.hasPhosTarget && (criDiluentKMeq > 0 || criDiluentPhosMmol > 0)}
+              <p>
+                {fmtStock(plan.criDiluentVolumeMl)} mL of {criDiluentFluid.label} diluent contributes {fmt(criDiluentKMeq, 2)} mEq K and {fmt(criDiluentPhosMmol, 2)} mmol Phos to the CRI.
+              </p>
+            {/if}
+
+            {#if plan.hasKTarget}
+              <p>
+                {fmtStock(plan.kClStockMl)} mL of KCl adds <strong class="font-black tabular-nums text-slate-100">{fmt(kClAddedKMeq, 1)} mEq K</strong> to the fluid bag.
+              </p>
+            {/if}
+
+            <p class="mt-1.5">
+              The bag contains a total of <strong class="font-black tabular-nums text-slate-100" data-testid="final-main-bag-k">{fmt(finalMainBagKMeq, 1)} mEq K</strong> and <strong class="font-black tabular-nums text-slate-100">{fmt(finalMainBagPhosMmol, 1)} mmol Phos</strong>.
+            </p>
+
+            {#if plan.hasKTarget}
+              <p class="mt-1.5 text-slate-400">
+                Actual {kBasisLabel} K is <strong class="font-black tabular-nums text-slate-200" data-testid="selected-k-actual">{fmt(plan.selectedKActualMeqPerL, 1)} mEq/L</strong> for a {fmt(kTargetValue, 1)} mEq/L target.
+              </p>
+            {/if}
+          </div>
         </div>
       </section>
     {/if}
@@ -515,7 +530,7 @@
     padding: 0.5rem 0.75rem;
     font-size: 0.9375rem;
     line-height: 1.35;
-    color: rgb(203 213 225);
+    color: var(--ui-text-300);
   }
 
   .kphos-inline-number {
@@ -527,6 +542,11 @@
     font-weight: 800;
     line-height: 1;
     font-variant-numeric: tabular-nums;
+  }
+
+  .kphos-inline-number:placeholder-shown {
+    text-align: start;
+    font-weight: 400;
   }
 
   .kphos-inline-select {
@@ -547,10 +567,10 @@
     align-items: center;
     justify-content: center;
     border-radius: 0.375rem;
-    border: 1px solid rgb(56 189 248 / 0.5);
-    background: rgb(56 189 248 / 0.13);
+    border: 1px solid var(--ui-accent-border);
+    background: var(--ui-accent-surface);
     padding: 0 0.5rem;
-    color: rgb(186 230 253);
+    color: var(--ui-link);
     font-size: 0.8125rem;
     font-weight: 800;
     text-decoration-line: underline;

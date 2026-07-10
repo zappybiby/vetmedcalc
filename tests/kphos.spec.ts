@@ -1,6 +1,11 @@
 import { expect, test } from '@playwright/test';
 import { getKPhosBaseFluid } from '../src/lib/definitions/kphos';
-import { calculateKPhosPlan, type KPhosPlanInput } from '../src/lib/helpers/kphos';
+import {
+  KPHOS_EXCESS_WARNING_FRACTION,
+  calculateKPhosPlan,
+  getKPhosExcessFraction,
+  type KPhosPlanInput,
+} from '../src/lib/helpers/kphos';
 
 const normR = getKPhosBaseFluid('norm-r');
 const isolyte = getKPhosBaseFluid('isolyte-s');
@@ -24,6 +29,13 @@ function input(overrides: Partial<KPhosPlanInput> = {}): KPhosPlanInput {
 }
 
 test.describe('KPhos calculations', () => {
+  test('warns only when Phos exceeds its target by at least 15%', () => {
+    expect(KPHOS_EXCESS_WARNING_FRACTION).toBe(0.15);
+    expect(getKPhosExcessFraction(0.03, 0.034)).toBeCloseTo(0.1333333333, 9);
+    expect((getKPhosExcessFraction(0.03, 0.034) ?? 0) >= KPHOS_EXCESS_WARNING_FRACTION).toBe(false);
+    expect((getKPhosExcessFraction(0.03, 0.035) ?? 0) >= KPHOS_EXCESS_WARNING_FRACTION).toBe(true);
+  });
+
   test('snaps KCl-only supplementation to the selected syringe ticks', () => {
     const plan = calculateKPhosPlan(input({
       weightKg: null,
@@ -262,11 +274,52 @@ test.describe('KPhos workflow', () => {
     await panel.getByLabel('Bag volume (mL)', { exact: true }).fill('250');
     await panel.getByLabel('Added K target (mEq/L)', { exact: true }).fill('30');
 
-    await expect(panel.getByTestId('kcl-stock-volume')).toContainText('3.80 mL');
+    await expect(panel.getByTestId('kcl-stock-volume')).toContainText('3.8 mL');
     await expect(panel.getByText(/ticks/i)).toHaveCount(0);
-    await expect(panel.getByTestId('selected-k-actual')).toContainText('30.40 mEq/L');
-    await expect(panel.getByTestId('final-main-bag-k')).toContainText('8.85 mEq K');
+    await expect(panel.getByTestId('selected-k-actual')).toContainText('30.4 mEq/L');
+    await expect(panel.getByTestId('final-main-bag-k')).toContainText('8.9 mEq K');
     await expect(panel.getByTestId('total-k-delivery')).toHaveText('—');
+  });
+
+  test('matches optional placeholder formatting to suggested inputs', async ({ page }) => {
+    await page.goto('/vetmedcalc/');
+
+    const placeholderStyle = async (selector: string) => page.locator(selector).evaluate((element) => {
+      const inputStyle = getComputedStyle(element);
+      const placeholder = getComputedStyle(element, '::placeholder');
+      return {
+        color: placeholder.color,
+        fontStyle: placeholder.fontStyle,
+        fontWeight: placeholder.fontWeight,
+        textAlign: inputStyle.textAlign,
+      };
+    });
+
+    expect(await placeholderStyle('#kphos-phos-target')).toEqual(await placeholderStyle('#drugbag-dose'));
+  });
+
+  test('orders and formats the bag preparation summary', async ({ page }) => {
+    const panel = await openKPhos(page);
+    await page.getByLabel('Weight (kg)', { exact: true }).fill('22');
+    await panel.getByLabel('Bag volume (mL)', { exact: true }).fill('1000');
+    await panel.getByLabel('Fluid rate (mL/hr)', { exact: true }).fill('86');
+    await panel.getByLabel('Phos target (mmol/kg/hr)', { exact: true }).fill('0.02');
+    await panel.getByLabel('Added K target (mEq/L)', { exact: true }).fill('30');
+
+    const results = panel.getByTestId('kphos-results');
+    const summary = panel.getByTestId('kphos-source-summary');
+    const resultText = (await results.innerText()).replace(/\s+/g, ' ');
+
+    await expect(results.getByTestId('kphos-stock-volume')).toHaveText('1.7 mL KPhos');
+    await expect(results.getByTestId('kcl-stock-volume')).toHaveText('11.2 mL KCl');
+    await expect(results.getByText('This delivers 0.02 mmol/kg/hr Phos and 0.14 mEq/kg/hr potassium.')).toBeVisible();
+    await expect(summary.locator('p').nth(0)).toHaveText('The fluid bag contains 0 mmol Phos and 5 mEq K before additives.');
+    await expect(summary.locator('p').nth(1)).toHaveText('at 86 mL/hr contributes 0 mmol/kg/hr Phos and 0 mEq/kg/hr potassium.');
+    await expect(summary.locator('p').nth(2)).toHaveText('1.7 mL of KPhos adds 7.5 mEq K and 5.1 mmol Phos.');
+    await expect(summary.locator('p').nth(3)).toHaveText('11.2 mL of KCl adds 22.4 mEq K to the fluid bag.');
+    await expect(summary.locator('p').nth(4)).toHaveText('The bag contains a total of 34.9 mEq K and 5.1 mmol Phos.');
+    await expect(summary.locator('p').nth(5)).toHaveText('Actual Added K is 29.9 mEq/L for a 30 mEq/L target.');
+    expect(resultText.indexOf('This delivers')).toBeLessThan(resultText.indexOf('The fluid bag contains'));
   });
 
   test('switches the potassium target between Added and Total without moving results', async ({ page }) => {
@@ -274,14 +327,14 @@ test.describe('KPhos workflow', () => {
     await fillCommonPlan(page, panel);
 
     const resultTop = await panel.getByTestId('kphos-results').evaluate((element) => element.getBoundingClientRect().top);
-    await expect(panel.getByTestId('kcl-stock-volume')).toContainText('12.00 mL');
+    await expect(panel.getByTestId('kcl-stock-volume')).toContainText('12 mL');
 
     await panel.getByTestId('k-target-basis').click();
 
     await expect(panel.getByTestId('k-target-basis')).toHaveText('Total');
     await expect(panel.getByLabel('Total K target (mEq/L)', { exact: true })).toHaveValue('30');
-    await expect(panel.getByTestId('kcl-stock-volume')).toContainText('9.60 mL');
-    await expect(panel.getByTestId('selected-k-actual')).toContainText('29.92 mEq/L');
+    await expect(panel.getByTestId('kcl-stock-volume')).toContainText('9.6 mL');
+    await expect(panel.getByTestId('selected-k-actual')).toContainText('29.9 mEq/L');
     const totalResultTop = await panel.getByTestId('kphos-results').evaluate((element) => element.getBoundingClientRect().top);
     expect(Math.abs(totalResultTop - resultTop)).toBeLessThanOrEqual(1);
   });
@@ -311,24 +364,24 @@ test.describe('KPhos workflow', () => {
       '0.9% NaCl',
     ]);
 
-    await expect(panel.getByTestId('kphos-stock-volume')).toContainText('0.40 mL');
-    await expect(panel.getByTestId('cri-diluent-volume')).toContainText('11.60 mL');
-    await expect(panel.getByTestId('cri-pump-rate')).toContainText('1.000 mL/hr');
-    await expect(panel.getByTestId('kcl-stock-volume')).toContainText('12.00 mL');
+    await expect(panel.getByTestId('kphos-stock-volume')).toContainText('0.4 mL');
+    await expect(panel.getByTestId('cri-diluent-volume')).toContainText('11.6 mL');
+    await expect(panel.getByTestId('cri-pump-rate')).toContainText('1 mL/hr');
+    await expect(panel.getByTestId('kcl-stock-volume')).toContainText('12 mL');
     await expect(panel.getByText(/ticks/i)).toHaveCount(0);
     await expect(panel.getByTestId('total-k-delivery')).toContainText('0.09');
     await expect(panel.getByTestId('total-phos-delivery')).toContainText('0.01');
-    await expect(panel.getByTestId('final-main-bag-k')).toContainText('29.00 mEq K');
-    await expect(panel.getByTestId('selected-k-actual')).toContainText('29.87 mEq/L');
+    await expect(panel.getByTestId('final-main-bag-k')).toContainText('29 mEq K');
+    await expect(panel.getByTestId('selected-k-actual')).toContainText('29.9 mEq/L');
 
     await panel.getByRole('button', { name: 'Bag', exact: true }).click();
 
     await expect(panel.getByLabel('Phos target (mmol/kg/hr)', { exact: true })).toHaveValue('0.01');
     await expect(panel.getByLabel('Added K target (mEq/L)', { exact: true })).toHaveValue('30');
-    await expect(panel.getByTestId('kphos-stock-volume')).toContainText('1.30 mL');
-    await expect(panel.getByTestId('kcl-stock-volume')).toContainText('12.00 mL');
-    await expect(panel.getByTestId('final-main-bag-k')).toContainText('34.72 mEq K');
-    await expect(panel.getByTestId('selected-k-actual')).toContainText('29.72 mEq/L');
+    await expect(panel.getByTestId('kphos-stock-volume')).toContainText('1.3 mL');
+    await expect(panel.getByTestId('kcl-stock-volume')).toContainText('12 mL');
+    await expect(panel.getByTestId('final-main-bag-k')).toContainText('34.7 mEq K');
+    await expect(panel.getByTestId('selected-k-actual')).toContainText('29.7 mEq/L');
   });
 
   test('keeps the result position fixed when switching Bag and CRI modes', async ({ page }) => {

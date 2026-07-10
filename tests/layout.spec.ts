@@ -421,8 +421,8 @@ test.describe('responsive layout guardrails', () => {
     await panel.getByLabel('Bag volume (mL)', { exact: true }).fill('250');
     await panel.getByLabel('Added K target (mEq/L)', { exact: true }).fill('30');
 
-    await expect(panel.getByTestId('kcl-stock-volume')).toContainText('3.80 mL');
-    await expect(panel.getByTestId('final-main-bag-k')).toContainText('8.85 mEq K');
+    await expect(panel.getByTestId('kcl-stock-volume')).toContainText('3.8 mL');
+    await expect(panel.getByTestId('final-main-bag-k')).toContainText('8.9 mEq K');
     await expect(panel.getByTestId('total-k-delivery')).toHaveText('—');
   });
 

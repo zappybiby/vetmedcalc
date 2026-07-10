@@ -11,6 +11,13 @@ export type KPhosMode = 'bag' | 'cri';
 export type KPhosKTargetBasis = 'added' | 'total';
 export type KPhosCriRateIssue = 'below-stock-rate' | 'diluent-exceeds-phos-target';
 
+export const KPHOS_EXCESS_WARNING_FRACTION = 0.15;
+
+export function getKPhosExcessFraction(target: number, actual: number): number | null {
+  if (actual <= target) return null;
+  return target === 0 ? Number.POSITIVE_INFINITY : (actual - target) / target;
+}
+
 export type KPhosSyringeDraw = {
   rawVolumeMl: number;
   volumeMl: number;
