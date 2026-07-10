@@ -1,0 +1,381 @@
+import { expect, test } from '@playwright/test';
+import { getKPhosBaseFluid } from '../src/lib/definitions/kphos';
+import { calculateKPhosPlan, type KPhosPlanInput } from '../src/lib/helpers/kphos';
+
+const normR = getKPhosBaseFluid('norm-r');
+const isolyte = getKPhosBaseFluid('isolyte-s');
+const saline = getKPhosBaseFluid('normal-saline');
+
+function input(overrides: Partial<KPhosPlanInput> = {}): KPhosPlanInput {
+  return {
+    mode: 'bag',
+    mainFluid: normR,
+    criDiluentFluid: saline,
+    weightKg: 10,
+    mainBagVolumeMl: 1000,
+    mainFluidRateMlHr: 25,
+    phosTargetMmolKgHr: 0.01,
+    kTargetBasis: 'added',
+    kTargetMeqPerL: 30,
+    criDurationHr: 12,
+    criRateMlHr: null,
+    ...overrides,
+  };
+}
+
+test.describe('KPhos calculations', () => {
+  test('snaps KCl-only supplementation to the selected syringe ticks', () => {
+    const plan = calculateKPhosPlan(input({
+      weightKg: null,
+      mainBagVolumeMl: 250,
+      mainFluidRateMlHr: null,
+      phosTargetMmolKgHr: null,
+    }));
+
+    expect(plan.kClRawStockMl).toBeCloseTo(3.75, 10);
+    expect(plan.kClStockMl).toBeCloseTo(3.8, 10);
+    expect(plan.kClDraw?.syringeId).toBe('6cc-0-2');
+    expect(plan.kClDraw?.incrementMl).toBeCloseTo(0.2, 10);
+    expect(plan.kClTotalMeq).toBeCloseTo(7.6, 10);
+    expect(plan.addedKActualMeqPerL).toBeCloseTo(30.4, 10);
+    expect(plan.finalMainBagKMeqPerL).toBeCloseTo(35.4, 10);
+    expect(plan.totalKDeliveryMeqKgHr).toBeNull();
+  });
+
+  test('prepares a KPhos and KCl fluid bag', () => {
+    const plan = calculateKPhosPlan(input());
+
+    expect(plan.kPhosRawStockMl).toBeCloseTo(1.3333333333, 9);
+    expect(plan.kPhosStockMl).toBeCloseTo(1.3, 10);
+    expect(plan.kPhosDraw?.syringeId).toBe('3cc-0-1');
+    expect(plan.kPhosKCreditMeqPerL).toBeCloseTo(5.72, 10);
+    expect(plan.kClRequiredMeqPerL).toBeCloseTo(24.28, 10);
+    expect(plan.kClRawStockMl).toBeCloseTo(12.14, 10);
+    expect(plan.kClStockMl).toBeCloseTo(12, 10);
+    expect(plan.kClDraw?.syringeId).toBe('35cc-1');
+    expect(plan.kClAddedMeqPerL).toBeCloseTo(24, 10);
+    expect(plan.addedKActualMeqPerL).toBeCloseTo(29.72, 10);
+    expect(plan.selectedKDeltaMeqPerL).toBeCloseTo(-0.28, 10);
+    expect(plan.finalMainBagKMeqPerL).toBeCloseTo(34.72, 10);
+    expect(plan.finalMainBagPhosMmolPerL).toBeCloseTo(3.9, 10);
+    expect(plan.totalKDeliveryMeqKgHr).toBeCloseTo(0.0868, 10);
+    expect(plan.totalPhosDeliveryMmolKgHr).toBeCloseTo(0.00975, 10);
+  });
+
+  test('builds a separate diluted CRI and keeps its K out of the physical bag', () => {
+    const plan = calculateKPhosPlan(input({ mode: 'cri', criRateMlHr: 1 }));
+
+    expect(plan.kPhosStockMl).toBeCloseTo(0.4, 10);
+    expect(plan.criDiluentVolumeMl).toBeCloseTo(11.6, 10);
+    expect(plan.kPhosDraw?.syringeId).toBe('1cc-0-01');
+    expect(plan.criDiluentDraw?.syringeId).toBe('12cc-0-2');
+    expect(plan.criPumpRateMlHr).toBeCloseTo(1, 10);
+    expect(plan.criActualRuntimeHr).toBeCloseTo(12, 10);
+    expect(plan.kPhosKCreditMeqPerL).toBeCloseTo(5.8666666667, 9);
+    expect(plan.kClStockMl).toBeCloseTo(12, 10);
+    expect(plan.kClAddedMeqPerL).toBeCloseTo(24, 10);
+    expect(plan.addedKActualMeqPerL).toBeCloseTo(29.8666666667, 9);
+    expect(plan.finalMainBagKMeqPerL).toBeCloseTo(29, 10);
+    expect(plan.combinedEquivalentKMeqPerL).toBeCloseTo(34.8666666667, 9);
+    expect(plan.totalKDeliveryMeqKgHr).toBeCloseTo(0.0871666667, 9);
+    expect(plan.totalPhosDeliveryMmolKgHr).toBeCloseTo(0.01, 10);
+  });
+
+  test('uses syringe-snapped CRI volumes in the delivered dose and runtime', () => {
+    const plan = calculateKPhosPlan(input({ mode: 'cri', criDurationHr: 13, criRateMlHr: 1 }));
+
+    expect(plan.kPhosDraw).not.toBeNull();
+    expect(plan.criDiluentDraw).not.toBeNull();
+    expect((plan.kPhosStockMl ?? 0) / (plan.kPhosDraw?.incrementMl ?? 1)).toBeCloseTo(
+      Math.round((plan.kPhosStockMl ?? 0) / (plan.kPhosDraw?.incrementMl ?? 1)),
+      10,
+    );
+    expect((plan.criDiluentVolumeMl ?? 0) / (plan.criDiluentDraw?.incrementMl ?? 1)).toBeCloseTo(
+      Math.round((plan.criDiluentVolumeMl ?? 0) / (plan.criDiluentDraw?.incrementMl ?? 1)),
+      10,
+    );
+    expect(
+      Math.abs((plan.kPhosStockMl ?? 0) - (plan.kPhosRawStockMl ?? 0)) +
+      Math.abs((plan.criDiluentVolumeMl ?? 0) - (plan.criRawDiluentVolumeMl ?? 0)),
+    ).toBeGreaterThan(0);
+    expect(plan.criActualRuntimeHr).toBeCloseTo(
+      (plan.criTotalVolumeMl ?? 0) / (plan.criPumpRateMlHr ?? 1),
+      10,
+    );
+    const snappedStockRate = (plan.criPumpRateMlHr ?? 0) * (plan.kPhosStockMl ?? 0) / (plan.criTotalVolumeMl ?? 1);
+    expect(plan.totalPhosDeliveryMmolKgHr).toBeCloseTo(
+      (snappedStockRate * 3) / 10,
+      10,
+    );
+  });
+
+  test('does not add KCl when no added-K target is entered', () => {
+    const plan = calculateKPhosPlan(input({ mode: 'cri', kTargetMeqPerL: null }));
+
+    expect(plan.kClStockMl).toBeNull();
+    expect(plan.totalKDeliveryMeqKgHr).toBeCloseTo(0.0271666667, 9);
+    expect(plan.totalPhosDeliveryMmolKgHr).toBeCloseTo(0.01, 10);
+  });
+
+  test('keeps native CRI diluent K out of the KCl subtraction', () => {
+    const plan = calculateKPhosPlan(input({
+      mode: 'cri',
+      criDiluentFluid: normR,
+      criRateMlHr: 1,
+    }));
+
+    expect(plan.criDiluentKDeliveryMeqKgHr).toBeCloseTo(0.0004833333, 9);
+    expect(plan.criDiluentKEquivalentMeqPerL).toBeCloseTo(0.1933333333, 9);
+    expect(plan.kPhosKCreditMeqPerL).toBeCloseTo(5.8666666667, 9);
+    expect(plan.kClStockMl).toBeCloseTo(12, 10);
+    expect(plan.totalKDeliveryMeqKgHr).toBeCloseTo(0.08765, 9);
+    expect(plan.combinedEquivalentKMeqPerL).toBeCloseTo(35.06, 9);
+  });
+
+  test('lets CRI diluent Phos reduce KPhos but not CRI diluent K reduce KCl', () => {
+    const plan = calculateKPhosPlan(input({
+      mode: 'cri',
+      criDiluentFluid: isolyte,
+      criRateMlHr: 1,
+    }));
+
+    expect(plan.criDiluentPhosDeliveryMmolKgHr).toBeGreaterThan(0);
+    expect(plan.kPhosRawStockMl).toBeCloseTo(0.3980663444, 9);
+    expect(plan.kPhosStockMl).toBeCloseTo(0.4, 10);
+    expect(plan.criRawDiluentVolumeMl).toBeCloseTo(11.6019336556, 9);
+    expect(plan.criDiluentVolumeMl).toBeCloseTo(11.6, 10);
+    expect(plan.kPhosKCreditMeqPerL).toBeCloseTo(5.8666666667, 9);
+    expect(plan.kClStockMl).toBeCloseTo(12, 10);
+    expect(plan.addedKActualMeqPerL).toBeCloseTo(29.8666666667, 9);
+    expect(plan.totalPhosDeliveryMmolKgHr).toBeCloseTo(0.0100483333, 9);
+  });
+
+  test('does not let native main-fluid K reduce KCl', () => {
+    const normPlan = calculateKPhosPlan(input());
+    const salinePlan = calculateKPhosPlan(input({ mainFluid: saline }));
+
+    expect(normPlan.kClStockMl).toBeCloseTo(salinePlan.kClStockMl ?? 0, 10);
+    expect(normPlan.finalMainBagKMeqPerL).toBeCloseTo(34.72, 10);
+    expect(salinePlan.finalMainBagKMeqPerL).toBeCloseTo(29.72, 10);
+  });
+
+  test('counts native fluid K only when the target basis is Total', () => {
+    const addedPlan = calculateKPhosPlan(input());
+    const totalPlan = calculateKPhosPlan(input({ kTargetBasis: 'total' }));
+
+    expect(addedPlan.kClStockMl).toBeCloseTo(12, 10);
+    expect(totalPlan.kClStockMl).toBeCloseTo(9.6, 10);
+    expect(totalPlan.selectedKActualMeqPerL).toBeCloseTo(29.92, 10);
+  });
+
+  test('does not clamp a small KCl remainder because the CRI diluent has K', () => {
+    const plan = calculateKPhosPlan(input({
+      mode: 'cri',
+      criDiluentFluid: normR,
+      criRateMlHr: 1,
+      kTargetMeqPerL: 5.9,
+    }));
+
+    expect(plan.kPhosKCreditMeqPerL).toBeCloseTo(5.8666666667, 9);
+    expect(plan.kClRequiredMeqPerL).toBeCloseTo(0.0333333333, 9);
+    expect(plan.kClRawStockMl).toBeCloseTo(0.0166666667, 9);
+    expect(plan.kClStockMl).toBeCloseTo(0.02, 10);
+    expect(plan.kClAddedMeqPerL).toBeCloseTo(0.04, 10);
+  });
+
+  test('rejects a dilute-to rate below the required KPhos stock rate', () => {
+    const plan = calculateKPhosPlan(input({
+      mode: 'cri',
+      criRateMlHr: 0.01,
+    }));
+
+    expect(plan.criRequestedRateFeasible).toBe(false);
+    expect(plan.criRateIssue).toBe('below-stock-rate');
+    expect(plan.criDiluentVolumeMl).toBeCloseTo(0, 10);
+    expect(plan.criPumpRateMlHr).toBeCloseTo(0.0333333333, 9);
+    expect(plan.totalPhosDeliveryMmolKgHr).toBeCloseTo(0.01, 10);
+  });
+
+  test('rejects a rate where phosphate-containing diluent exceeds the target', () => {
+    const plan = calculateKPhosPlan(input({
+      mode: 'cri',
+      criDiluentFluid: isolyte,
+      criRateMlHr: 250,
+    }));
+
+    expect(plan.criRequestedRateFeasible).toBe(false);
+    expect(plan.criRateIssue).toBe('diluent-exceeds-phos-target');
+    expect(plan.criDiluentVolumeMl).toBeCloseTo(0, 10);
+    expect(plan.criPumpRateMlHr).toBeCloseTo(0.0333333333, 9);
+    expect(plan.totalPhosDeliveryMmolKgHr).toBeCloseTo(0.01, 10);
+  });
+
+  test('subtracts intrinsic Isolyte Phos from the KPhos requirement', () => {
+    const plan = calculateKPhosPlan(input({
+      mainFluid: isolyte,
+      mainBagVolumeMl: 500,
+    }));
+
+    expect(plan.mainNativePhosDeliveryMmolKgHr).toBeCloseTo(0.00125, 10);
+    expect(plan.kPhosPhosDeliveryMmolKgHr).toBeCloseTo(0.0087, 10);
+    expect(plan.kPhosRawStockMl).toBeCloseTo(0.5833333333, 9);
+    expect(plan.kPhosStockMl).toBeCloseTo(0.58, 10);
+    expect(plan.kClRawStockMl).toBeCloseTo(6.224, 10);
+    expect(plan.kClStockMl).toBeCloseTo(6.2, 10);
+    expect(plan.finalMainBagKMeqPerL).toBeCloseTo(34.904, 10);
+    expect(plan.finalMainBagPhosMmolPerL).toBeCloseTo(3.98, 10);
+  });
+
+  test('clamps KCl at zero when KPhos already exceeds the added-K target', () => {
+    const plan = calculateKPhosPlan(input({ phosTargetMmolKgHr: 0.06 }));
+
+    expect(plan.kPhosKCreditMeqPerL).toBeCloseTo(35.2, 10);
+    expect(plan.kClStockMl).toBeCloseTo(0, 10);
+    expect(plan.kTargetExcessMeqPerL).toBeCloseTo(5.2, 10);
+    expect(plan.finalMainBagKMeqPerL).toBeCloseTo(40.2, 10);
+    expect(plan.totalKDeliveryMeqKgHr).toBeCloseTo(0.1005, 10);
+  });
+});
+
+test.describe('KPhos workflow', () => {
+  async function openKPhos(
+    page: import('@playwright/test').Page,
+    viewport = { width: 1280, height: 800 },
+  ) {
+    await page.setViewportSize(viewport);
+    await page.goto('/vetmedcalc/');
+    await page.getByRole('tab', { name: 'KPhos' }).click();
+    return page.locator('[role="tabpanel"] > div:not([hidden])');
+  }
+
+  async function fillCommonPlan(page: import('@playwright/test').Page, panel: import('@playwright/test').Locator) {
+    await page.getByLabel('Weight (kg)', { exact: true }).fill('10');
+    await panel.getByLabel('Bag volume (mL)', { exact: true }).fill('1000');
+    await panel.getByLabel('Fluid rate (mL/hr)', { exact: true }).fill('25');
+    await panel.getByLabel('Phos target (mmol/kg/hr)', { exact: true }).fill('0.01');
+    await panel.getByLabel('Added K target (mEq/L)', { exact: true }).fill('30');
+  }
+
+  test('supports a KCl-only 250 mL bag with no patient data', async ({ page }) => {
+    const panel = await openKPhos(page);
+
+    await panel.getByLabel('Bag volume (mL)', { exact: true }).fill('250');
+    await panel.getByLabel('Added K target (mEq/L)', { exact: true }).fill('30');
+
+    await expect(panel.getByTestId('kcl-stock-volume')).toContainText('3.80 mL');
+    await expect(panel.getByText(/ticks/i)).toHaveCount(0);
+    await expect(panel.getByTestId('selected-k-actual')).toContainText('30.40 mEq/L');
+    await expect(panel.getByTestId('final-main-bag-k')).toContainText('8.85 mEq K');
+    await expect(panel.getByTestId('total-k-delivery')).toHaveText('—');
+  });
+
+  test('switches the potassium target between Added and Total without moving results', async ({ page }) => {
+    const panel = await openKPhos(page);
+    await fillCommonPlan(page, panel);
+
+    const resultTop = await panel.getByTestId('kphos-results').evaluate((element) => element.getBoundingClientRect().top);
+    await expect(panel.getByTestId('kcl-stock-volume')).toContainText('12.00 mL');
+
+    await panel.getByTestId('k-target-basis').click();
+
+    await expect(panel.getByTestId('k-target-basis')).toHaveText('Total');
+    await expect(panel.getByLabel('Total K target (mEq/L)', { exact: true })).toHaveValue('30');
+    await expect(panel.getByTestId('kcl-stock-volume')).toContainText('9.60 mL');
+    await expect(panel.getByTestId('selected-k-actual')).toContainText('29.92 mEq/L');
+    const totalResultTop = await panel.getByTestId('kphos-results').evaluate((element) => element.getBoundingClientRect().top);
+    expect(Math.abs(totalResultTop - resultTop)).toBeLessThanOrEqual(1);
+  });
+
+  test('switches between CRI and bag preparation without losing shared inputs', async ({ page }) => {
+    const panel = await openKPhos(page);
+    await page.getByLabel('Weight (kg)', { exact: true }).fill('10');
+
+    await panel.getByRole('button', { name: 'CRI', exact: true }).click();
+    await panel.getByLabel('Bag volume (mL)', { exact: true }).fill('1000');
+    await panel.getByLabel('Fluid rate (mL/hr)', { exact: true }).fill('25');
+    await panel.getByLabel('Phos target (mmol/kg/hr)', { exact: true }).fill('0.01');
+    await panel.getByLabel('Added K target (mEq/L)', { exact: true }).fill('30');
+    await panel.getByLabel('Duration (hr)', { exact: true }).fill('12');
+    await panel.getByLabel('CRI rate (mL/hr)', { exact: true }).fill('1');
+
+    expect(await panel.locator('#kphos-main-fluid option').allTextContents()).toEqual([
+      'Norm-R',
+      'Plasma-Lyte 148',
+      'Isolyte S pH 7.4',
+      '0.9% NaCl',
+    ]);
+    expect(await panel.locator('#kphos-cri-diluent option').allTextContents()).toEqual([
+      'Norm-R',
+      'Plasma-Lyte 148',
+      'Isolyte S pH 7.4',
+      '0.9% NaCl',
+    ]);
+
+    await expect(panel.getByTestId('kphos-stock-volume')).toContainText('0.40 mL');
+    await expect(panel.getByTestId('cri-diluent-volume')).toContainText('11.60 mL');
+    await expect(panel.getByTestId('cri-pump-rate')).toContainText('1.000 mL/hr');
+    await expect(panel.getByTestId('kcl-stock-volume')).toContainText('12.00 mL');
+    await expect(panel.getByText(/ticks/i)).toHaveCount(0);
+    await expect(panel.getByTestId('total-k-delivery')).toContainText('0.09');
+    await expect(panel.getByTestId('total-phos-delivery')).toContainText('0.01');
+    await expect(panel.getByTestId('final-main-bag-k')).toContainText('29.00 mEq K');
+    await expect(panel.getByTestId('selected-k-actual')).toContainText('29.87 mEq/L');
+
+    await panel.getByRole('button', { name: 'Bag', exact: true }).click();
+
+    await expect(panel.getByLabel('Phos target (mmol/kg/hr)', { exact: true })).toHaveValue('0.01');
+    await expect(panel.getByLabel('Added K target (mEq/L)', { exact: true })).toHaveValue('30');
+    await expect(panel.getByTestId('kphos-stock-volume')).toContainText('1.30 mL');
+    await expect(panel.getByTestId('kcl-stock-volume')).toContainText('12.00 mL');
+    await expect(panel.getByTestId('final-main-bag-k')).toContainText('34.72 mEq K');
+    await expect(panel.getByTestId('selected-k-actual')).toContainText('29.72 mEq/L');
+  });
+
+  test('keeps the result position fixed when switching Bag and CRI modes', async ({ page }) => {
+    for (const viewport of [{ width: 1280, height: 800 }, { width: 384, height: 854 }]) {
+      const panel = await openKPhos(page, viewport);
+      await fillCommonPlan(page, panel);
+
+      const inputCard = panel.getByTestId('kphos-input-card');
+      const results = panel.getByTestId('kphos-results');
+      const bagGeometry = await inputCard.evaluate((element) => {
+        const input = element.getBoundingClientRect();
+        const result = document.querySelector<HTMLElement>('[data-testid="kphos-results"]')?.getBoundingClientRect();
+        return { inputHeight: input.height, inputLeft: input.left, inputRight: input.right, resultTop: result ? result.top + window.scrollY : 0, resultLeft: result?.left ?? 0, resultRight: result?.right ?? 0 };
+      });
+
+      await panel.getByRole('button', { name: 'CRI', exact: true }).click();
+      await panel.getByLabel('Duration (hr)', { exact: true }).fill('12');
+      await panel.getByLabel('CRI rate (mL/hr)', { exact: true }).fill('1');
+
+      const criGeometry = await inputCard.evaluate((element) => {
+        const input = element.getBoundingClientRect();
+        const result = document.querySelector<HTMLElement>('[data-testid="kphos-results"]')?.getBoundingClientRect();
+        return { inputHeight: input.height, inputLeft: input.left, inputRight: input.right, resultTop: result ? result.top + window.scrollY : 0, resultLeft: result?.left ?? 0, resultRight: result?.right ?? 0 };
+      });
+
+      expect(Math.abs(criGeometry.inputHeight - bagGeometry.inputHeight), `${viewport.width}px input height`).toBeLessThanOrEqual(1);
+      expect(Math.abs(criGeometry.resultTop - bagGeometry.resultTop), `${viewport.width}px result position`).toBeLessThanOrEqual(1);
+      expect(Math.abs(criGeometry.resultLeft - criGeometry.inputLeft)).toBeLessThanOrEqual(1);
+      expect(Math.abs(criGeometry.resultRight - criGeometry.inputRight)).toBeLessThanOrEqual(1);
+      await expect(results).toBeVisible();
+    }
+  });
+
+  test('fits fully filled Bag and CRI modes within 1440x900', async ({ page }) => {
+    for (const mode of ['Bag', 'CRI'] as const) {
+      const panel = await openKPhos(page, { width: 1440, height: 900 });
+      await fillCommonPlan(page, panel);
+
+      if (mode === 'CRI') {
+        await panel.getByRole('button', { name: 'CRI', exact: true }).click();
+        await panel.getByLabel('Duration (hr)', { exact: true }).fill('12');
+        await panel.getByLabel('CRI rate (mL/hr)', { exact: true }).fill('1');
+      }
+      await page.evaluate(() => window.scrollTo(0, 0));
+
+      const documentHeight = await page.evaluate(() => Math.max(document.documentElement.scrollHeight, document.body.scrollHeight));
+      expect(documentHeight, `${mode} document height`).toBeLessThanOrEqual(901);
+    }
+  });
+});

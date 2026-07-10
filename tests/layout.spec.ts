@@ -106,14 +106,14 @@ const TAB_FILLERS: Record<string, (page: Page, panel: Locator) => Promise<void>>
     await panel.getByLabel('Interval (hours)', { exact: true }).fill('6');
     await panel.getByLabel('Custom kcal/can', { exact: true }).fill('200');
   },
-  'Venous blood gas': async (_page, panel) => {
-    await panel.getByRole('button', { name: 'Dog' }).click();
-    await panel.getByLabel('pH', { exact: true }).fill('7.2');
-    await panel.getByLabel('pCO2', { exact: true }).fill('55');
-    await panel.getByLabel('HCO3', { exact: true }).fill('18');
-    await panel.getByLabel('Base excess', { exact: true }).fill('-8');
-    await panel.getByLabel('TCO2 (optional)', { exact: true }).fill('19');
-    await panel.getByLabel('pO2 (optional)', { exact: true }).fill('42');
+  'KPhos': async (_page, panel) => {
+    await panel.getByRole('button', { name: 'CRI', exact: true }).click();
+    await panel.getByLabel('Bag volume (mL)', { exact: true }).fill('1000');
+    await panel.getByLabel('Fluid rate (mL/hr)', { exact: true }).fill('56.25');
+    await panel.getByLabel('Phos target (mmol/kg/hr)', { exact: true }).fill('0.01');
+    await panel.getByLabel('Added K target (mEq/L)', { exact: true }).fill('30');
+    await panel.getByLabel('Duration (hr)', { exact: true }).fill('12');
+    await panel.getByLabel('CRI rate (mL/hr)', { exact: true }).fill('1');
   },
   'Blood transfusion': async (_page, panel) => {
     await panel.getByLabel('Total volume (mL)', { exact: true }).fill('250');
@@ -413,24 +413,17 @@ test.describe('responsive layout guardrails', () => {
     expect(printState.bodyBackgroundImage).toBe('none');
   });
 
-  test('venous blood gas explains alkalemia without TCO2 overriding metabolic markers', async ({ page }) => {
+  test('KPhos defaults to an Added K target', async ({ page }) => {
     await openApp(page, { width: 1280, height: 720 });
-    await selectTab(page, 'Venous blood gas');
+    await selectTab(page, 'KPhos');
 
     const panel = activePanel(page);
-    await panel.getByRole('button', { name: 'Dog' }).click();
-    await panel.getByLabel('pH', { exact: true }).fill('7.482');
-    await panel.getByLabel('pCO2', { exact: true }).fill('34.5');
-    await panel.getByLabel('HCO3', { exact: true }).fill('25.8');
-    await panel.getByLabel('Base excess', { exact: true }).fill('2.4');
-    await panel.getByLabel('TCO2 (optional)', { exact: true }).fill('24.7');
-    await panel.getByLabel('pO2 (optional)', { exact: true }).fill('31.3');
+    await panel.getByLabel('Bag volume (mL)', { exact: true }).fill('250');
+    await panel.getByLabel('Added K target (mEq/L)', { exact: true }).fill('30');
 
-    await expect(panel.getByText('Metabolic alkalosis', { exact: true }).first()).toBeVisible();
-    await expect(panel.getByText('No compensation', { exact: true }).first()).toBeVisible();
-    await expect(panel.getByText('Interpretation details', { exact: true })).toBeVisible();
-    await expect(panel.getByText('TCO2 is optional context and does not outvote HCO3/base excess.')).toBeVisible();
-    await expect(panel.getByText('Confidence', { exact: true })).toHaveCount(0);
+    await expect(panel.getByTestId('kcl-stock-volume')).toContainText('3.80 mL');
+    await expect(panel.getByTestId('final-main-bag-k')).toContainText('8.85 mEq K');
+    await expect(panel.getByTestId('total-k-delivery')).toHaveText('—');
   });
 
   test('filled desktop tabs fit vertically at 1920x1080', async ({ page }) => {

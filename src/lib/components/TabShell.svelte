@@ -5,9 +5,9 @@
   import DrugInBag from './DrugInBag.svelte';
   import FoodCalc from './FoodCalc.svelte';
   import InsOuts from './InsOuts.svelte';
+  import KPhos from './KPhos.svelte';
   import PatientPanel from './PatientPanel.svelte';
   import RERCalculator from './RERCalculator.svelte';
-  import VenousBloodGas from './VenousBloodGas.svelte';
   import { cprBatchMode } from '../stores/cprUi';
 
   type Tab = { id: string; label: string };
@@ -17,7 +17,7 @@
     { id: 'insouts', label: 'Ins / outs' },
     { id: 'rer',     label: 'Tube Feeding' },
     { id: 'food',    label: 'Food calc' },
-    { id: 'venousbg', label: 'Venous blood gas' },
+    { id: 'kphos',   label: 'KPhos' },
     { id: 'blood',   label: 'Blood transfusion' },
     { id: 'cpr',     label: 'CPR labels' },
   ];
@@ -78,8 +78,8 @@
     <div hidden={active !== 'food'}>
       <FoodCalc />
     </div>
-    <div hidden={active !== 'venousbg'}>
-      <VenousBloodGas />
+    <div hidden={active !== 'kphos'}>
+      <KPhos />
     </div>
     <div hidden={active !== 'blood'}>
       <BloodTransfusion />

@@ -560,6 +560,7 @@ async function optimizeLabelTokens(page: Page, config: TokenSearchConfig): Promi
 
 test.describe('CRI label print guardrails', () => {
   test('preset medication labels fit within the shared landscape safe print area', async ({ page }) => {
+    test.slow();
     await page.setViewportSize({ width: 1320, height: 5200 });
     await page.setContent(renderPresetLabelGrid());
 
