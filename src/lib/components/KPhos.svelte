@@ -135,9 +135,9 @@
       }
     }
 
-    if (plan.hasKTarget) {
-      if (kTargetValue == null || kTargetValue < 0) next.push(`${kBasisLabel} K target must be 0 or greater.`);
-      if (!isPositive(bagVolumeValue)) next.push('Enter bag volume.');
+    if (isPresent(kTargetMeqPerL)) {
+      if (kTargetValue == null || kTargetValue < 0) next.push(`${kBasisLabel} K target must be greater than 0 or blank.`);
+      if (plan.hasKTarget && !isPositive(bagVolumeValue)) next.push('Enter bag volume.');
     }
 
     issues = [...new Set(next)];
@@ -215,7 +215,7 @@
     <div class="kphos-statements border-t border-slate-700/40" data-testid="kphos-statements">
       {#if mode === 'bag'}
         <div class="kphos-statement-row">
-          <span>I want to deliver Phos of</span>
+          <span>I want to deliver <strong class="font-black text-slate-100">Phos</strong> of</span>
           <input
             id="kphos-phos-target"
             class="field-control kphos-inline-number"
@@ -239,7 +239,7 @@
           >
             {kBasisLabel}
           </button>
-          <span>K of</span>
+          <span><strong class="font-black text-slate-100">K</strong> of</span>
           <input
             id="kphos-k-target"
             class="field-control kphos-inline-number"
@@ -287,7 +287,7 @@
         </div>
       {:else}
         <div class="kphos-statement-row">
-          <span>Deliver Phos of</span>
+          <span>Deliver <strong class="font-black text-slate-100">Phos</strong> of</span>
           <input
             id="kphos-phos-target"
             class="field-control kphos-inline-number"
@@ -332,18 +332,7 @@
         </div>
 
         <div class="kphos-statement-row border-t border-slate-700/35">
-          <span>The patient is receiving a</span>
-          <input
-            id="kphos-main-bag-volume"
-            class="field-control kphos-inline-number"
-            type="number"
-            min="0"
-            step="1"
-            inputmode="decimal"
-            aria-label="Bag volume (mL)"
-            bind:value={mainBagVolumeMl}
-          />
-          <span>mL bag of</span>
+          <span>The patient is receiving</span>
           <select id="kphos-main-fluid" class="field-select kphos-inline-select" aria-label="Main bag fluid" bind:value={mainFluidId}>
             {#each KPHOS_BASE_FLUIDS as fluid}
               <option value={fluid.id}>{fluid.label}</option>
@@ -372,7 +361,7 @@
           >
             {kBasisLabel}
           </button>
-          <span>K of</span>
+          <span><strong class="font-black text-slate-100">K</strong> of</span>
           <input
             id="kphos-k-target"
             class="field-control kphos-inline-number"
@@ -384,7 +373,20 @@
             aria-label={`${kBasisLabel} K target (mEq/L)`}
             bind:value={kTargetMeqPerL}
           />
-          <span>mEq/L.</span>
+          <span>mEq/L{plan.hasKTarget ? ' in a' : '.'}</span>
+          {#if plan.hasKTarget}
+            <input
+              id="kphos-main-bag-volume"
+              class="field-control kphos-inline-number"
+              type="number"
+              min="0"
+              step="1"
+              inputmode="decimal"
+              aria-label="Bag volume (mL)"
+              bind:value={mainBagVolumeMl}
+            />
+            <span>mL bag.</span>
+          {/if}
         </div>
       {/if}
     </div>
@@ -400,7 +402,7 @@
     {:else}
       <section class="px-3 py-3 sm:px-4" aria-label="Preparation and delivery">
         {#if mode === 'bag'}
-          <p class="flex flex-wrap items-baseline gap-x-1.5 gap-y-1 text-[14px] leading-relaxed text-slate-300 sm:text-[15px]">
+          <p class="kphos-primary-result flex flex-wrap items-baseline gap-x-1.5 gap-y-1 leading-relaxed text-slate-300">
             <span>In the {fmtCompact(bagVolumeValue)} mL {mainFluid.label} bag,</span>
             {#if plan.hasPhosTarget && plan.hasKTarget}
               <span>add</span>
@@ -417,7 +419,7 @@
           </p>
         {:else}
           {#if plan.hasPhosTarget}
-            <p class="flex flex-wrap items-baseline gap-x-1.5 gap-y-1 text-[14px] leading-relaxed text-slate-300 sm:text-[15px]">
+            <p class="kphos-primary-result flex flex-wrap items-baseline gap-x-1.5 gap-y-1 leading-relaxed text-slate-300">
               <span>Prepare the KPhos CRI with</span>
               <strong class="ui-statement-value" data-testid="kphos-stock-volume">{fmtStock(plan.kPhosStockMl)} mL KPhos</strong>
               <span>+</span>
@@ -429,7 +431,7 @@
           {/if}
 
           {#if plan.hasKTarget}
-            <p class={`${plan.hasPhosTarget ? 'mt-2 border-t border-slate-700/35 pt-2' : ''} flex flex-wrap items-baseline gap-x-1.5 gap-y-1 text-[14px] leading-relaxed text-slate-300 sm:text-[15px]`}>
+            <p class={`${plan.hasPhosTarget ? 'mt-2 border-t border-slate-700/35 pt-2' : ''} kphos-primary-result flex flex-wrap items-baseline gap-x-1.5 gap-y-1 leading-relaxed text-slate-300`}>
               <span>In the separate {fmtCompact(bagVolumeValue)} mL {mainFluid.label} bag, add</span>
               <strong class="ui-statement-value" data-testid="kcl-stock-volume">{fmtStock(plan.kClStockMl)} mL KCl</strong><span>.</span>
             </p>
@@ -459,14 +461,16 @@
             </div>
           {/if}
 
-          <div class="grid gap-1.5 text-sm leading-relaxed text-slate-300" data-testid="kphos-source-summary">
-            <p>
-              The fluid bag contains {fmt(mainBagNativePhosMmol, 1)} mmol Phos and {fmt(mainBagNativeKMeq, 1)} mEq K before additives.
-            </p>
+          <div class="kphos-source-summary ui-inset overflow-hidden text-sm leading-relaxed text-slate-300" data-testid="kphos-source-summary">
+            {#if mode === 'bag' || plan.hasKTarget}
+              <p>
+                The fluid bag contains {fmt(mainBagNativePhosMmol, 1)} mmol Phos and {fmt(mainBagNativeKMeq, 1)} mEq K before additives.
+              </p>
+            {/if}
 
             {#if plan.mainNativePhosDeliveryMmolKgHr != null && plan.mainNativeKDeliveryMeqKgHr != null}
-              <p>
-                at {fmtCompact(mainRateValue)} mL/hr contributes <strong class="font-black tabular-nums text-slate-100">{fmt(plan.mainNativePhosDeliveryMmolKgHr, 1)} mmol/kg/hr Phos</strong> and <strong class="font-black tabular-nums text-slate-100">{fmt(plan.mainNativeKDeliveryMeqKgHr, 1)} mEq/kg/hr potassium</strong>.
+              <p data-testid="native-fluid-delivery">
+                At {fmtCompact(mainRateValue)} mL/hr, the fluid contributes <strong class="font-black tabular-nums text-slate-100">{fmt(plan.mainNativePhosDeliveryMmolKgHr, 4)} mmol/kg/hr Phos</strong> and <strong class="font-black tabular-nums text-slate-100">{fmt(plan.mainNativeKDeliveryMeqKgHr, 4)} mEq/kg/hr potassium</strong>.
               </p>
             {/if}
 
@@ -488,12 +492,14 @@
               </p>
             {/if}
 
-            <p class="mt-1.5">
-              The bag contains a total of <strong class="font-black tabular-nums text-slate-100" data-testid="final-main-bag-k">{fmt(finalMainBagKMeq, 1)} mEq K</strong> and <strong class="font-black tabular-nums text-slate-100">{fmt(finalMainBagPhosMmol, 1)} mmol Phos</strong>.
-            </p>
+            {#if mode === 'bag' || plan.hasKTarget}
+              <p>
+                The bag contains a total of <strong class="font-black tabular-nums text-slate-100" data-testid="final-main-bag-k">{fmt(finalMainBagKMeq, 1)} mEq K</strong> and <strong class="font-black tabular-nums text-slate-100">{fmt(finalMainBagPhosMmol, 1)} mmol Phos</strong>.
+              </p>
+            {/if}
 
             {#if plan.hasKTarget}
-              <p class="mt-1.5 text-slate-400">
+              <p class="text-slate-400">
                 Actual {kBasisLabel} K is <strong class="font-black tabular-nums text-slate-200" data-testid="selected-k-actual">{fmt(plan.selectedKActualMeqPerL, 1)} mEq/L</strong> for a {fmt(kTargetValue, 1)} mEq/L target.
               </p>
             {/if}
@@ -549,6 +555,18 @@
     font-weight: 400;
   }
 
+  .kphos-primary-result {
+    font-size: 0.9375rem;
+  }
+
+  .kphos-source-summary > p {
+    padding: 0.625rem 0.75rem;
+  }
+
+  .kphos-source-summary > p + p {
+    border-top: 1px solid var(--ui-divider);
+  }
+
   .kphos-inline-select {
     width: 9.5rem;
     height: 2rem;
@@ -593,6 +611,10 @@
       padding-right: 0.875rem;
       padding-left: 0.875rem;
       font-size: 1rem;
+    }
+
+    .kphos-primary-result {
+      font-size: 1.0625rem;
     }
   }
 

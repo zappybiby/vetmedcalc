@@ -192,12 +192,12 @@ function snapCriMixture(
 
 export function calculateKPhosPlan(input: KPhosPlanInput): KPhosPlan {
   const hasPhosTarget = input.phosTargetMmolKgHr != null;
-  const hasKTarget = input.kTargetMeqPerL != null;
   const weightKg = positive(input.weightKg);
   const mainBagVolumeMl = positive(input.mainBagVolumeMl);
   const mainFluidRateMlHr = positive(input.mainFluidRateMlHr);
   const phosTarget = nonNegative(input.phosTargetMmolKgHr);
   const kTarget = nonNegative(input.kTargetMeqPerL);
+  const hasKTarget = kTarget != null && kTarget > 0;
   const criDurationHr = positive(input.criDurationHr);
   const requestedCriRateMlHr = positive(input.criRateMlHr);
   const criRequestedRateProvided = input.criRateMlHr != null;

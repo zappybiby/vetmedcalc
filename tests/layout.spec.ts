@@ -108,10 +108,10 @@ const TAB_FILLERS: Record<string, (page: Page, panel: Locator) => Promise<void>>
   },
   'KPhos': async (_page, panel) => {
     await panel.getByRole('button', { name: 'CRI', exact: true }).click();
-    await panel.getByLabel('Bag volume (mL)', { exact: true }).fill('1000');
     await panel.getByLabel('Fluid rate (mL/hr)', { exact: true }).fill('56.25');
     await panel.getByLabel('Phos target (mmol/kg/hr)', { exact: true }).fill('0.01');
     await panel.getByLabel('Added K target (mEq/L)', { exact: true }).fill('30');
+    await panel.getByLabel('Bag volume (mL)', { exact: true }).fill('1000');
     await panel.getByLabel('Duration (hr)', { exact: true }).fill('12');
     await panel.getByLabel('CRI rate (mL/hr)', { exact: true }).fill('1');
   },

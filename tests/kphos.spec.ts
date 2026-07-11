@@ -129,6 +129,34 @@ test.describe('KPhos calculations', () => {
     expect(plan.totalPhosDeliveryMmolKgHr).toBeCloseTo(0.01, 10);
   });
 
+  test('treats a zero K value as no supplementation target', () => {
+    const plan = calculateKPhosPlan(input({
+      mode: 'cri',
+      phosTargetMmolKgHr: 0.06,
+      kTargetMeqPerL: 0,
+    }));
+
+    expect(plan.hasKTarget).toBe(false);
+    expect(plan.kClStockMl).toBeNull();
+    expect(plan.kTargetExcessMeqPerL).toBeNull();
+  });
+
+  test('prepares a CRI without a fluid bag volume or K target', () => {
+    const plan = calculateKPhosPlan(input({
+      mode: 'cri',
+      mainFluid: isolyte,
+      mainBagVolumeMl: null,
+      mainFluidRateMlHr: 100,
+      kTargetMeqPerL: null,
+    }));
+
+    expect(plan.hasKTarget).toBe(false);
+    expect(plan.kPhosStockMl).not.toBeNull();
+    expect(plan.mainNativePhosDeliveryMmolKgHr).toBeCloseTo(0.005, 10);
+    expect(plan.mainNativeKDeliveryMeqKgHr).toBeCloseTo(0.05, 10);
+    expect(plan.totalPhosDeliveryMmolKgHr).toBeCloseTo(0.01, 10);
+  });
+
   test('keeps native CRI diluent K out of the KCl subtraction', () => {
     const plan = calculateKPhosPlan(input({
       mode: 'cri',
@@ -314,12 +342,61 @@ test.describe('KPhos workflow', () => {
     await expect(results.getByTestId('kcl-stock-volume')).toHaveText('11.2 mL KCl');
     await expect(results.getByText('This delivers 0.02 mmol/kg/hr Phos and 0.14 mEq/kg/hr potassium.')).toBeVisible();
     await expect(summary.locator('p').nth(0)).toHaveText('The fluid bag contains 0 mmol Phos and 5 mEq K before additives.');
-    await expect(summary.locator('p').nth(1)).toHaveText('at 86 mL/hr contributes 0 mmol/kg/hr Phos and 0 mEq/kg/hr potassium.');
+    await expect(summary.locator('p').nth(1)).toHaveText('At 86 mL/hr, the fluid contributes 0 mmol/kg/hr Phos and 0.0195 mEq/kg/hr potassium.');
     await expect(summary.locator('p').nth(2)).toHaveText('1.7 mL of KPhos adds 7.5 mEq K and 5.1 mmol Phos.');
     await expect(summary.locator('p').nth(3)).toHaveText('11.2 mL of KCl adds 22.4 mEq K to the fluid bag.');
     await expect(summary.locator('p').nth(4)).toHaveText('The bag contains a total of 34.9 mEq K and 5.1 mmol Phos.');
     await expect(summary.locator('p').nth(5)).toHaveText('Actual Added K is 29.9 mEq/L for a 30 mEq/L target.');
     expect(resultText.indexOf('This delivers')).toBeLessThan(resultText.indexOf('The fluid bag contains'));
+  });
+
+  test('supports a Phos-only CRI and shows intrinsic fluid delivery precisely', async ({ page }) => {
+    const panel = await openKPhos(page);
+    await page.getByLabel('Weight (kg)', { exact: true }).fill('10');
+    await panel.getByRole('button', { name: 'CRI', exact: true }).click();
+    await panel.getByLabel('Main bag fluid', { exact: true }).selectOption('isolyte-s');
+    await panel.getByLabel('Fluid rate (mL/hr)', { exact: true }).fill('100');
+    await panel.getByLabel('Phos target (mmol/kg/hr)', { exact: true }).fill('0.01');
+    await panel.getByLabel('Added K target (mEq/L)', { exact: true }).fill('0');
+
+    const results = panel.getByTestId('kphos-results');
+    const summary = panel.getByTestId('kphos-source-summary');
+    await expect(panel.getByLabel('Bag volume (mL)', { exact: true })).toHaveCount(0);
+    await expect(results.getByText(/Needed:/)).toHaveCount(0);
+    await expect(results.getByText(/K already exceeds/)).toHaveCount(0);
+    await expect(results.getByTestId('kcl-stock-volume')).toHaveText('No KCl requested');
+    await expect(results.getByTestId('native-fluid-delivery')).toHaveText(
+      'At 100 mL/hr, the fluid contributes 0.005 mmol/kg/hr Phos and 0.05 mEq/kg/hr potassium.',
+    );
+    await expect(summary).not.toContainText('The fluid bag contains');
+    await expect(summary).not.toContainText('The bag contains a total');
+
+    const rowStyles = await summary.locator('p').evaluateAll((rows) => rows.map((row) => {
+      const style = getComputedStyle(row);
+      return {
+        paddingTop: style.paddingTop,
+        paddingBottom: style.paddingBottom,
+        borderTopStyle: style.borderTopStyle,
+      };
+    }));
+    expect(rowStyles.length).toBeGreaterThanOrEqual(2);
+    expect(rowStyles.every((style) => style.paddingTop === style.paddingBottom)).toBe(true);
+    expect(rowStyles.slice(1).every((style) => style.borderTopStyle === 'solid')).toBe(true);
+
+    const primaryTextSizes = await results.locator('.kphos-primary-result').evaluate((row) => ({
+      row: Number.parseFloat(getComputedStyle(row).fontSize),
+      value: Number.parseFloat(getComputedStyle(row.querySelector('.ui-statement-value') as Element).fontSize),
+    }));
+    expect(primaryTextSizes.row).toBeGreaterThanOrEqual(17);
+    expect(primaryTextSizes.value).toBeGreaterThan(primaryTextSizes.row);
+
+    const emphasizedInputWords = await panel.locator('[data-testid="kphos-statements"] strong').evaluateAll((words) =>
+      words.map((word) => ({ text: word.textContent, weight: Number.parseInt(getComputedStyle(word).fontWeight, 10) })),
+    );
+    expect(emphasizedInputWords).toEqual(expect.arrayContaining([
+      expect.objectContaining({ text: 'Phos', weight: 900 }),
+      expect.objectContaining({ text: 'K', weight: 900 }),
+    ]));
   });
 
   test('switches the potassium target between Added and Total without moving results', async ({ page }) => {
@@ -344,10 +421,10 @@ test.describe('KPhos workflow', () => {
     await page.getByLabel('Weight (kg)', { exact: true }).fill('10');
 
     await panel.getByRole('button', { name: 'CRI', exact: true }).click();
-    await panel.getByLabel('Bag volume (mL)', { exact: true }).fill('1000');
     await panel.getByLabel('Fluid rate (mL/hr)', { exact: true }).fill('25');
     await panel.getByLabel('Phos target (mmol/kg/hr)', { exact: true }).fill('0.01');
     await panel.getByLabel('Added K target (mEq/L)', { exact: true }).fill('30');
+    await panel.getByLabel('Bag volume (mL)', { exact: true }).fill('1000');
     await panel.getByLabel('Duration (hr)', { exact: true }).fill('12');
     await panel.getByLabel('CRI rate (mL/hr)', { exact: true }).fill('1');
 
