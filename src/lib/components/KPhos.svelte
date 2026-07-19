@@ -449,7 +449,7 @@
           {/if}
         {/if}
 
-        <div class="mt-2 text-sm leading-relaxed text-slate-300">
+        <div class="mt-2 text-[0.9375rem] leading-relaxed text-slate-300" data-testid="kphos-delivery-summary">
           {#if plan.totalKDeliveryMeqKgHr != null && plan.totalPhosDeliveryMmolKgHr != null}
             <p>
               This delivers <strong class="font-black tabular-nums text-slate-100" data-testid="total-phos-delivery">{fmt(plan.totalPhosDeliveryMmolKgHr, 2)} mmol/kg/hr Phos</strong> and <strong class="font-black tabular-nums text-slate-100" data-testid="total-k-delivery">{fmt(plan.totalKDeliveryMeqKgHr, 2)} mEq/kg/hr potassium</strong>.
@@ -471,11 +471,6 @@
           {/if}
 
           <div class="kphos-source-summary ui-inset overflow-hidden text-sm text-slate-300" data-testid="kphos-source-summary">
-            <header class="kphos-summary-header">
-              <span>Composition breakdown</span>
-              <h3>{mode === 'bag' ? 'How the fluid bag is built' : 'How each preparation is built'}</h3>
-            </header>
-
             {#if mode === 'bag'}
               <section class="kphos-mixture-group" aria-label="Fluid bag composition">
                 <div
@@ -516,7 +511,7 @@
 
                   <article class="kphos-mixture-card kphos-mixture-total" data-operator="=" data-testid="final-bag-component">
                     <span class="kphos-component-kind">Final bag</span>
-                    <strong>Combined contents</strong>
+                    <strong>Combined</strong>
                     <dl class="kphos-component-values">
                       <div><dt>K</dt><dd data-testid="final-main-bag-k">{fmt(finalMainBagKMeq, 1)} mEq</dd></div>
                       <div><dt>Phos</dt><dd>{fmt(finalMainBagPhosMmol, 1)} mmol</dd></div>
@@ -548,7 +543,7 @@
                       </article>
                       <article class="kphos-mixture-card kphos-mixture-total" data-operator="=" data-testid="final-bag-component">
                         <span class="kphos-component-kind">Final main bag</span>
-                        <strong>Combined contents</strong>
+                        <strong>Combined</strong>
                         <dl class="kphos-component-values">
                           <div><dt>K</dt><dd data-testid="final-main-bag-k">{fmt(finalMainBagKMeq, 1)} mEq</dd></div>
                           <div><dt>Phos</dt><dd>{fmt(finalMainBagPhosMmol, 1)} mmol</dd></div>
@@ -594,16 +589,10 @@
 
             {#if plan.mainNativePhosDeliveryMmolKgHr != null && plan.mainNativeKDeliveryMeqKgHr != null}
               <div class="kphos-delivery-note" data-testid="native-fluid-delivery">
-                <span>Native fluid at the pump</span>
+                <span>K / Phos from maintenance fluids</span>
                 <p>
                   <strong>{mainFluid.label} at {fmtCompact(mainRateValue)} mL/hr</strong> contributes <strong>{fmt(plan.mainNativePhosDeliveryMmolKgHr, 4)} mmol/kg/hr Phos</strong> and <strong>{fmt(plan.mainNativeKDeliveryMeqKgHr, 4)} mEq/kg/hr potassium</strong> toward the total delivery shown above.
                 </p>
-              </div>
-            {/if}
-
-            {#if plan.hasKTarget}
-              <div class="kphos-target-note text-slate-400">
-                Actual {kBasisLabel} K is <strong class="font-black tabular-nums text-slate-200" data-testid="selected-k-actual">{fmt(plan.selectedKActualMeqPerL, 1)} mEq/L</strong> for a {fmt(kTargetValue, 1)} mEq/L target.
               </div>
             {/if}
           </div>
@@ -662,13 +651,6 @@
     font-size: 0.9375rem;
   }
 
-  .kphos-summary-header {
-    border-bottom: 1px solid var(--ui-divider);
-    padding: 0.65rem 0.75rem;
-    background: color-mix(in srgb, var(--ui-surface-2) 74%, var(--ui-accent-surface));
-  }
-
-  .kphos-summary-header > span,
   .kphos-delivery-note > span {
     display: block;
     color: var(--ui-link);
@@ -677,14 +659,6 @@
     letter-spacing: 0.09em;
     line-height: 1.2;
     text-transform: uppercase;
-  }
-
-  .kphos-summary-header h3 {
-    margin-top: 0.15rem;
-    color: var(--ui-text-100);
-    font-size: 0.9375rem;
-    font-weight: 900;
-    line-height: 1.25;
   }
 
   .kphos-mixture-group {
@@ -802,8 +776,7 @@
     line-height: 1.2;
   }
 
-  .kphos-delivery-note,
-  .kphos-target-note {
+  .kphos-delivery-note {
     border-top: 1px solid var(--ui-divider);
     padding: 0.65rem 0.75rem;
   }
@@ -818,10 +791,6 @@
     color: var(--ui-text-100);
     font-weight: 900;
     font-variant-numeric: tabular-nums;
-  }
-
-  .kphos-target-note {
-    line-height: 1.45;
   }
 
   .kphos-inline-select {

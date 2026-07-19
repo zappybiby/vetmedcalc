@@ -304,7 +304,6 @@ test.describe('KPhos workflow', () => {
 
     await expect(panel.getByTestId('kcl-stock-volume')).toContainText('3.8 mL');
     await expect(panel.getByText(/ticks/i)).toHaveCount(0);
-    await expect(panel.getByTestId('selected-k-actual')).toContainText('30.4 mEq/L');
     await expect(panel.getByTestId('final-main-bag-k')).toContainText('8.9 mEq');
     await expect(panel.getByTestId('total-k-delivery')).toHaveText('—');
   });
@@ -341,14 +340,19 @@ test.describe('KPhos workflow', () => {
     await expect(results.getByTestId('kphos-stock-volume')).toHaveText('1.7 mL KPhos');
     await expect(results.getByTestId('kcl-stock-volume')).toHaveText('11.2 mL KCl');
     await expect(results.getByText('This delivers 0.02 mmol/kg/hr Phos and 0.14 mEq/kg/hr potassium.')).toBeVisible();
-    await expect(summary.getByRole('heading', { name: 'How the fluid bag is built' })).toBeVisible();
+    await expect(summary.getByText('Composition breakdown')).toHaveCount(0);
+    await expect(summary.getByText('How the fluid bag is built')).toHaveCount(0);
     await expect(summary.getByTestId('starting-fluid-component')).toHaveText(/Starting bag\s+1,000 mL Norm-R\s+K\s*5 mEq\s+Phos\s*0 mmol/);
     await expect(summary.getByTestId('kphos-component')).toHaveText(/KPhos additive\s+1.7 mL KPhos\s+K\s*\+7.5 mEq\s+Phos\s*\+5.1 mmol/);
     await expect(summary.getByTestId('kcl-component')).toHaveText(/KCl additive\s+11.2 mL KCl\s+K\s*\+22.4 mEq\s+Phos\s*0 mmol/);
-    await expect(summary.getByTestId('final-bag-component')).toHaveText(/Final bag\s+Combined contents\s+K\s*34.9 mEq\s+Phos\s*5.1 mmol/);
+    await expect(summary.getByTestId('final-bag-component')).toHaveText(/Final bag\s+Combined\s+K\s*34.9 mEq\s+Phos\s*5.1 mmol/);
     await expect(summary.getByTestId('native-fluid-delivery')).toHaveText(
-      'Native fluid at the pump Norm-R at 86 mL/hr contributes 0 mmol/kg/hr Phos and 0.0195 mEq/kg/hr potassium toward the total delivery shown above.',
+      'K / Phos from maintenance fluids Norm-R at 86 mL/hr contributes 0 mmol/kg/hr Phos and 0.0195 mEq/kg/hr potassium toward the total delivery shown above.',
     );
+    await expect(panel.getByTestId('selected-k-actual')).toHaveCount(0);
+    expect(await results.getByTestId('kphos-delivery-summary').evaluate((element) =>
+      Number.parseFloat(getComputedStyle(element).fontSize),
+    )).toBe(15);
 
     const compositionFlow = await summary.locator('.kphos-mixture-flow').evaluate((flow) => ({
       columns: getComputedStyle(flow).gridTemplateColumns.split(' ').length,
@@ -362,7 +366,7 @@ test.describe('KPhos workflow', () => {
       componentOrder: ['starting-fluid-component', 'kphos-component', 'kcl-component', 'final-bag-component'],
       operators: ['+', '+', '='],
     });
-    expect(resultText.indexOf('This delivers')).toBeLessThan(resultText.indexOf('COMPOSITION BREAKDOWN'));
+    expect(resultText.indexOf('This delivers')).toBeLessThan(resultText.indexOf('STARTING BAG'));
   });
 
   test('supports a Phos-only CRI and shows intrinsic fluid delivery precisely', async ({ page }) => {
@@ -381,9 +385,9 @@ test.describe('KPhos workflow', () => {
     await expect(results.getByText(/K already exceeds/)).toHaveCount(0);
     await expect(results.getByTestId('kcl-stock-volume')).toHaveText('No KCl requested');
     await expect(results.getByTestId('native-fluid-delivery')).toHaveText(
-      'Native fluid at the pump Isolyte S pH 7.4 at 100 mL/hr contributes 0.005 mmol/kg/hr Phos and 0.05 mEq/kg/hr potassium toward the total delivery shown above.',
+      'K / Phos from maintenance fluids Isolyte S pH 7.4 at 100 mL/hr contributes 0.005 mmol/kg/hr Phos and 0.05 mEq/kg/hr potassium toward the total delivery shown above.',
     );
-    await expect(summary.getByRole('heading', { name: 'How each preparation is built' })).toBeVisible();
+    await expect(summary.getByText('How each preparation is built')).toHaveCount(0);
     await expect(summary.getByRole('region', { name: 'KPhos CRI composition' })).toBeVisible();
     await expect(summary.getByTestId('starting-fluid-component')).toHaveCount(0);
     await expect(summary.getByTestId('final-bag-component')).toHaveCount(0);
@@ -430,7 +434,6 @@ test.describe('KPhos workflow', () => {
     await expect(panel.getByTestId('k-target-basis')).toHaveText('Total');
     await expect(panel.getByLabel('Total K target (mEq/L)', { exact: true })).toHaveValue('30');
     await expect(panel.getByTestId('kcl-stock-volume')).toContainText('9.6 mL');
-    await expect(panel.getByTestId('selected-k-actual')).toContainText('29.9 mEq/L');
     const totalResultTop = await panel.getByTestId('kphos-results').evaluate((element) => element.getBoundingClientRect().top);
     expect(Math.abs(totalResultTop - resultTop)).toBeLessThanOrEqual(1);
   });
@@ -468,7 +471,6 @@ test.describe('KPhos workflow', () => {
     await expect(panel.getByTestId('total-k-delivery')).toContainText('0.09');
     await expect(panel.getByTestId('total-phos-delivery')).toContainText('0.01');
     await expect(panel.getByTestId('final-main-bag-k')).toContainText('29 mEq');
-    await expect(panel.getByTestId('selected-k-actual')).toContainText('29.9 mEq/L');
 
     await panel.getByRole('button', { name: 'Bag', exact: true }).click();
 
@@ -477,7 +479,6 @@ test.describe('KPhos workflow', () => {
     await expect(panel.getByTestId('kphos-stock-volume')).toContainText('1.3 mL');
     await expect(panel.getByTestId('kcl-stock-volume')).toContainText('12 mL');
     await expect(panel.getByTestId('final-main-bag-k')).toContainText('34.7 mEq');
-    await expect(panel.getByTestId('selected-k-actual')).toContainText('29.7 mEq/L');
   });
 
   test('keeps the result position fixed when switching Bag and CRI modes', async ({ page }) => {
