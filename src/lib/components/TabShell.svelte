@@ -17,7 +17,7 @@
     { id: 'insouts', label: 'Ins / outs' },
     { id: 'rer',     label: 'Tube Feeding' },
     { id: 'food',    label: 'Food calc' },
-    { id: 'kphos',   label: 'KPhos' },
+    { id: 'kphos',   label: 'KPhos/KCl' },
     { id: 'blood',   label: 'Blood transfusion' },
     { id: 'cpr',     label: 'CPR labels' },
   ];

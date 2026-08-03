@@ -106,11 +106,11 @@ const TAB_FILLERS: Record<string, (page: Page, panel: Locator) => Promise<void>>
     await panel.getByLabel('Interval (hours)', { exact: true }).fill('6');
     await panel.getByLabel('Custom kcal/can', { exact: true }).fill('200');
   },
-  'KPhos': async (_page, panel) => {
+  'KPhos/KCl': async (_page, panel) => {
     await panel.getByRole('button', { name: 'CRI', exact: true }).click();
     await panel.getByLabel('Fluid rate (mL/hr)', { exact: true }).fill('56.25');
-    await panel.getByLabel('Phos target (mmol/kg/hr)', { exact: true }).fill('0.01');
-    await panel.getByLabel('Added K target (mEq/L)', { exact: true }).fill('30');
+    await panel.getByLabel('Phosphate target (mmol/kg/hr)', { exact: true }).fill('0.01');
+    await panel.getByLabel('Added potassium target (mEq/L)', { exact: true }).fill('30');
     await panel.getByLabel('Bag volume (mL)', { exact: true }).fill('1000');
     await panel.getByLabel('Duration (hr)', { exact: true }).fill('12');
     await panel.getByLabel('CRI rate (mL/hr)', { exact: true }).fill('1');
@@ -413,16 +413,16 @@ test.describe('responsive layout guardrails', () => {
     expect(printState.bodyBackgroundImage).toBe('none');
   });
 
-  test('KPhos defaults to an Added K target', async ({ page }) => {
+  test('KPhos/KCl defaults to an Added potassium target', async ({ page }) => {
     await openApp(page, { width: 1280, height: 720 });
-    await selectTab(page, 'KPhos');
+    await selectTab(page, 'KPhos/KCl');
 
     const panel = activePanel(page);
     await panel.getByLabel('Bag volume (mL)', { exact: true }).fill('250');
-    await panel.getByLabel('Added K target (mEq/L)', { exact: true }).fill('30');
+    await panel.getByLabel('Added potassium target (mEq/L)', { exact: true }).fill('30');
 
     await expect(panel.getByTestId('kcl-stock-volume')).toContainText('3.8 mL');
-    await expect(panel.getByTestId('final-main-bag-k')).toContainText('8.9 mEq');
+    await expect(panel.getByTestId('final-main-bag-k')).toContainText('35.4 mEq/L');
     await expect(panel.getByTestId('total-k-delivery')).toHaveText('—');
   });
 

@@ -284,7 +284,7 @@ test.describe('KPhos workflow', () => {
   ) {
     await page.setViewportSize(viewport);
     await page.goto('/vetmedcalc/');
-    await page.getByRole('tab', { name: 'KPhos' }).click();
+    await page.getByRole('tab', { name: 'KPhos/KCl' }).click();
     return page.locator('[role="tabpanel"] > div:not([hidden])');
   }
 
@@ -292,19 +292,19 @@ test.describe('KPhos workflow', () => {
     await page.getByLabel('Weight (kg)', { exact: true }).fill('10');
     await panel.getByLabel('Bag volume (mL)', { exact: true }).fill('1000');
     await panel.getByLabel('Fluid rate (mL/hr)', { exact: true }).fill('25');
-    await panel.getByLabel('Phos target (mmol/kg/hr)', { exact: true }).fill('0.01');
-    await panel.getByLabel('Added K target (mEq/L)', { exact: true }).fill('30');
+    await panel.getByLabel('Phosphate target (mmol/kg/hr)', { exact: true }).fill('0.01');
+    await panel.getByLabel('Added potassium target (mEq/L)', { exact: true }).fill('30');
   }
 
   test('supports a KCl-only 250 mL bag with no patient data', async ({ page }) => {
     const panel = await openKPhos(page);
 
     await panel.getByLabel('Bag volume (mL)', { exact: true }).fill('250');
-    await panel.getByLabel('Added K target (mEq/L)', { exact: true }).fill('30');
+    await panel.getByLabel('Added potassium target (mEq/L)', { exact: true }).fill('30');
 
     await expect(panel.getByTestId('kcl-stock-volume')).toContainText('3.8 mL');
     await expect(panel.getByText(/ticks/i)).toHaveCount(0);
-    await expect(panel.getByTestId('final-main-bag-k')).toContainText('8.9 mEq');
+    await expect(panel.getByTestId('final-main-bag-k')).toContainText('35.4 mEq/L');
     await expect(panel.getByTestId('total-k-delivery')).toHaveText('—');
   });
 
@@ -330,8 +330,8 @@ test.describe('KPhos workflow', () => {
     await page.getByLabel('Weight (kg)', { exact: true }).fill('22');
     await panel.getByLabel('Bag volume (mL)', { exact: true }).fill('1000');
     await panel.getByLabel('Fluid rate (mL/hr)', { exact: true }).fill('86');
-    await panel.getByLabel('Phos target (mmol/kg/hr)', { exact: true }).fill('0.02');
-    await panel.getByLabel('Added K target (mEq/L)', { exact: true }).fill('30');
+    await panel.getByLabel('Phosphate target (mmol/kg/hr)', { exact: true }).fill('0.02');
+    await panel.getByLabel('Added potassium target (mEq/L)', { exact: true }).fill('30');
 
     const results = panel.getByTestId('kphos-results');
     const summary = panel.getByTestId('kphos-source-summary');
@@ -339,16 +339,16 @@ test.describe('KPhos workflow', () => {
 
     await expect(results.getByTestId('kphos-stock-volume')).toHaveText('1.7 mL KPhos');
     await expect(results.getByTestId('kcl-stock-volume')).toHaveText('11.2 mL KCl');
-    await expect(results.getByText('This delivers 0.02 mmol/kg/hr Phos and 0.14 mEq/kg/hr potassium.')).toBeVisible();
+    await expect(results.getByText('From all sources, this delivers:')).toBeVisible();
+    await expect(results.getByTestId('total-phos-delivery')).toHaveText('0.02 mmol/kg/hr phosphate');
+    await expect(results.getByTestId('total-k-delivery')).toHaveText('0.14 mEq/kg/hr potassium');
     await expect(summary.getByText('Composition breakdown')).toHaveCount(0);
     await expect(summary.getByText('How the fluid bag is built')).toHaveCount(0);
-    await expect(summary.getByTestId('starting-fluid-component')).toHaveText(/Starting bag\s+1,000 mL Norm-R\s+K\s*5 mEq\s+Phos\s*0 mmol/);
-    await expect(summary.getByTestId('kphos-component')).toHaveText(/KPhos additive\s+1.7 mL KPhos\s+K\s*\+7.5 mEq\s+Phos\s*\+5.1 mmol/);
-    await expect(summary.getByTestId('kcl-component')).toHaveText(/KCl additive\s+11.2 mL KCl\s+K\s*\+22.4 mEq\s+Phos\s*0 mmol/);
-    await expect(summary.getByTestId('final-bag-component')).toHaveText(/Final bag\s+Combined\s+K\s*34.9 mEq\s+Phos\s*5.1 mmol/);
-    await expect(summary.getByTestId('native-fluid-delivery')).toHaveText(
-      'K / Phos from maintenance fluids Norm-R at 86 mL/hr contributes 0 mmol/kg/hr Phos and 0.0195 mEq/kg/hr potassium toward the total delivery shown above.',
-    );
+    await expect(summary.getByTestId('starting-fluid-component')).toHaveText(/Starting bag\s+1,000 mL Norm-R\s+K\s*5 mEq\/L\s+Phos\s*0 mmol\/L/);
+    await expect(summary.getByTestId('kphos-component')).toHaveText(/KPhos additive\s+1.7 mL KPhos\s+K\s*\+7.48 mEq\/L\s+Phos\s*\+5.1 mmol\/L/);
+    await expect(summary.getByTestId('kcl-component')).toHaveText(/KCl additive\s+11.2 mL KCl\s+K\s*\+22.4 mEq\/L\s+Phos\s*0 mmol\/L/);
+    await expect(summary.getByTestId('final-bag-component')).toHaveText(/Final bag\s+Combined\s+K\s*34.88 mEq\/L\s+Phos\s*5.1 mmol\/L/);
+    await expect(summary.getByTestId('native-fluid-delivery')).toHaveCount(0);
     await expect(panel.getByTestId('selected-k-actual')).toHaveCount(0);
     expect(await results.getByTestId('kphos-delivery-summary').evaluate((element) =>
       Number.parseFloat(getComputedStyle(element).fontSize),
@@ -366,17 +366,17 @@ test.describe('KPhos workflow', () => {
       componentOrder: ['starting-fluid-component', 'kphos-component', 'kcl-component', 'final-bag-component'],
       operators: ['+', '+', '='],
     });
-    expect(resultText.indexOf('This delivers')).toBeLessThan(resultText.indexOf('STARTING BAG'));
+    expect(resultText.indexOf('From all sources')).toBeLessThan(resultText.indexOf('STARTING BAG'));
   });
 
-  test('supports a Phos-only CRI and shows intrinsic fluid delivery precisely', async ({ page }) => {
+  test('supports a phosphate-only CRI and shows the main-fluid source in the visual flow', async ({ page }) => {
     const panel = await openKPhos(page);
     await page.getByLabel('Weight (kg)', { exact: true }).fill('10');
     await panel.getByRole('button', { name: 'CRI', exact: true }).click();
     await panel.getByLabel('Main bag fluid', { exact: true }).selectOption('isolyte-s');
     await panel.getByLabel('Fluid rate (mL/hr)', { exact: true }).fill('100');
-    await panel.getByLabel('Phos target (mmol/kg/hr)', { exact: true }).fill('0.01');
-    await panel.getByLabel('Added K target (mEq/L)', { exact: true }).fill('0');
+    await panel.getByLabel('Phosphate target (mmol/kg/hr)', { exact: true }).fill('0.01');
+    await panel.getByLabel('Added potassium target (mEq/L)', { exact: true }).fill('0');
 
     const results = panel.getByTestId('kphos-results');
     const summary = panel.getByTestId('kphos-source-summary');
@@ -384,16 +384,17 @@ test.describe('KPhos workflow', () => {
     await expect(results.getByText(/Needed:/)).toHaveCount(0);
     await expect(results.getByText(/K already exceeds/)).toHaveCount(0);
     await expect(results.getByTestId('kcl-stock-volume')).toHaveText('No KCl requested');
-    await expect(results.getByTestId('native-fluid-delivery')).toHaveText(
-      'K / Phos from maintenance fluids Isolyte S pH 7.4 at 100 mL/hr contributes 0.005 mmol/kg/hr Phos and 0.05 mEq/kg/hr potassium toward the total delivery shown above.',
-    );
+    await expect(results.getByTestId('native-fluid-delivery')).toHaveCount(0);
     await expect(summary.getByText('How each preparation is built')).toHaveCount(0);
-    await expect(summary.getByRole('region', { name: 'KPhos CRI composition' })).toBeVisible();
-    await expect(summary.getByTestId('starting-fluid-component')).toHaveCount(0);
+    const criRegion = summary.getByRole('region', { name: 'KPhos CRI composition' });
+    await expect(criRegion).toBeVisible();
+    await expect(summary.getByTestId('starting-fluid-component')).toHaveText(
+      /Running fluid\s+Isolyte S pH 7.4 at 100 mL\/hr\s+K\s*0.05 mEq\/kg\/hr\s+Phos\s*0.005 mmol\/kg\/hr/,
+    );
     await expect(summary.getByTestId('final-bag-component')).toHaveCount(0);
     await expect(summary.getByTestId('final-cri-component')).toContainText('Prepared CRI');
 
-    const criFlowStyles = await summary.locator('.kphos-mixture-flow').evaluate((flow) => {
+    const criFlowStyles = await criRegion.locator('.kphos-mixture-flow').evaluate((flow) => {
       const cards = [...flow.querySelectorAll<HTMLElement>('.kphos-mixture-card')];
       return {
         columns: getComputedStyle(flow).gridTemplateColumns.split(' ').length,
@@ -417,8 +418,8 @@ test.describe('KPhos workflow', () => {
       words.map((word) => ({ text: word.textContent, weight: Number.parseInt(getComputedStyle(word).fontWeight, 10) })),
     );
     expect(emphasizedInputWords).toEqual(expect.arrayContaining([
-      expect.objectContaining({ text: 'Phos', weight: 900 }),
-      expect.objectContaining({ text: 'K', weight: 900 }),
+      expect.objectContaining({ text: 'Phosphate', weight: 900 }),
+      expect.objectContaining({ text: 'Potassium', weight: 900 }),
     ]));
   });
 
@@ -432,7 +433,7 @@ test.describe('KPhos workflow', () => {
     await panel.getByTestId('k-target-basis').click();
 
     await expect(panel.getByTestId('k-target-basis')).toHaveText('Total');
-    await expect(panel.getByLabel('Total K target (mEq/L)', { exact: true })).toHaveValue('30');
+    await expect(panel.getByLabel('Total potassium target (mEq/L)', { exact: true })).toHaveValue('30');
     await expect(panel.getByTestId('kcl-stock-volume')).toContainText('9.6 mL');
     const totalResultTop = await panel.getByTestId('kphos-results').evaluate((element) => element.getBoundingClientRect().top);
     expect(Math.abs(totalResultTop - resultTop)).toBeLessThanOrEqual(1);
@@ -444,8 +445,8 @@ test.describe('KPhos workflow', () => {
 
     await panel.getByRole('button', { name: 'CRI', exact: true }).click();
     await panel.getByLabel('Fluid rate (mL/hr)', { exact: true }).fill('25');
-    await panel.getByLabel('Phos target (mmol/kg/hr)', { exact: true }).fill('0.01');
-    await panel.getByLabel('Added K target (mEq/L)', { exact: true }).fill('30');
+    await panel.getByLabel('Phosphate target (mmol/kg/hr)', { exact: true }).fill('0.01');
+    await panel.getByLabel('Added potassium target (mEq/L)', { exact: true }).fill('30');
     await panel.getByLabel('Bag volume (mL)', { exact: true }).fill('1000');
     await panel.getByLabel('Duration (hr)', { exact: true }).fill('12');
     await panel.getByLabel('CRI rate (mL/hr)', { exact: true }).fill('1');
@@ -468,17 +469,17 @@ test.describe('KPhos workflow', () => {
     await expect(panel.getByTestId('cri-pump-rate')).toContainText('1 mL/hr');
     await expect(panel.getByTestId('kcl-stock-volume')).toContainText('12 mL');
     await expect(panel.getByText(/ticks/i)).toHaveCount(0);
-    await expect(panel.getByTestId('total-k-delivery')).toContainText('0.09');
+    await expect(panel.getByTestId('total-k-delivery')).toContainText('0.087');
     await expect(panel.getByTestId('total-phos-delivery')).toContainText('0.01');
-    await expect(panel.getByTestId('final-main-bag-k')).toContainText('29 mEq');
+    await expect(panel.getByTestId('final-main-bag-k')).toContainText('29 mEq/L');
 
     await panel.getByRole('button', { name: 'Bag', exact: true }).click();
 
-    await expect(panel.getByLabel('Phos target (mmol/kg/hr)', { exact: true })).toHaveValue('0.01');
-    await expect(panel.getByLabel('Added K target (mEq/L)', { exact: true })).toHaveValue('30');
+    await expect(panel.getByLabel('Phosphate target (mmol/kg/hr)', { exact: true })).toHaveValue('0.01');
+    await expect(panel.getByLabel('Added potassium target (mEq/L)', { exact: true })).toHaveValue('30');
     await expect(panel.getByTestId('kphos-stock-volume')).toContainText('1.3 mL');
     await expect(panel.getByTestId('kcl-stock-volume')).toContainText('12 mL');
-    await expect(panel.getByTestId('final-main-bag-k')).toContainText('34.7 mEq');
+    await expect(panel.getByTestId('final-main-bag-k')).toContainText('34.72 mEq/L');
   });
 
   test('keeps the result position fixed when switching Bag and CRI modes', async ({ page }) => {
@@ -510,6 +511,31 @@ test.describe('KPhos workflow', () => {
       expect(Math.abs(criGeometry.resultRight - criGeometry.inputRight)).toBeLessThanOrEqual(1);
       await expect(results).toBeVisible();
     }
+  });
+
+  test('aligns filled mobile fluid controls without overlapping the potassium target', async ({ page }) => {
+    const panel = await openKPhos(page, { width: 384, height: 854 });
+    await fillCommonPlan(page, panel);
+    const targetRow = panel.locator('.kphos-target-row');
+
+    const controls = [
+      panel.getByLabel('Bag volume (mL)', { exact: true }),
+      panel.getByLabel('Main bag fluid', { exact: true }),
+      panel.getByLabel('Fluid rate (mL/hr)', { exact: true })
+    ];
+    const leftEdges = await Promise.all(controls.map(async (control) => (await control.boundingBox())?.x ?? 0));
+    const potassiumGeometry = await panel.getByLabel('Added potassium target (mEq/L)', { exact: true }).evaluate((input) => {
+      const label = input.closest('.kphos-responsive-field')?.querySelector<HTMLElement>('.kphos-potassium-label');
+      return { inputLeft: input.getBoundingClientRect().left, labelRight: label?.getBoundingClientRect().right ?? 0 };
+    });
+
+    expect(Math.max(...leftEdges) - Math.min(...leftEdges)).toBeLessThanOrEqual(1);
+    expect(potassiumGeometry.inputLeft - potassiumGeometry.labelRight).toBeGreaterThanOrEqual(4);
+    await expect(targetRow.getByText('Targets', { exact: true })).toBeVisible();
+    await expect(targetRow).toContainText('Phosphate');
+    await expect(targetRow).toContainText('Potassium');
+    await expect(targetRow).not.toContainText('Phosphate target');
+    await expect(targetRow).not.toContainText('Potassium target');
   });
 
   test('fits fully filled Bag and CRI modes within 1440x900', async ({ page }) => {
