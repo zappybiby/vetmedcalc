@@ -244,10 +244,10 @@
 
     <div class="kphos-statements border-t border-slate-700/40" class:kphos-cri-statements={mode === 'cri'} data-testid="kphos-statements">
       {#if mode === 'bag'}
-        <div class="kphos-statement-row kphos-aligned-fields kphos-target-row">
+        <div class="kphos-statement-row kphos-aligned-fields kphos-target-row kphos-bag-target-row">
           <div class="kphos-targets-heading">Targets</div>
           <div class="kphos-responsive-field">
-            <span class="kphos-field-label"><strong class="font-black text-slate-100">Phosphate</strong></span>
+            <span class="kphos-field-label"><strong class="font-black text-slate-100">Phosphate<span class="kphos-desktop-target-suffix">{' target:'}</span></strong></span>
             <input
               id="kphos-phos-target"
               class="field-control kphos-inline-number"
@@ -274,7 +274,7 @@
               >
                 {kBasisLabel}
               </button>
-              <span class="kphos-potassium-target"><strong class="font-black text-slate-100">Potassium</strong></span>
+              <span class="kphos-potassium-target"><strong class="font-black text-slate-100">Potassium<span class="kphos-desktop-target-suffix">{' target:'}</span></strong></span>
             </span>
             <input
               id="kphos-k-target"
@@ -291,7 +291,7 @@
           </div>
         </div>
 
-        <div class="kphos-statement-row kphos-aligned-fields border-t border-slate-700/35">
+        <div class="kphos-statement-row kphos-aligned-fields kphos-bag-details-row border-t border-slate-700/35">
           <div class="kphos-responsive-field">
             <span class="kphos-field-label">Bag volume</span>
             <input
@@ -333,7 +333,7 @@
         <div class="kphos-statement-row kphos-aligned-fields kphos-target-row">
           <div class="kphos-targets-heading">Targets</div>
           <div class="kphos-responsive-field">
-            <span class="kphos-field-label"><strong class="font-black text-slate-100">Phosphate</strong></span>
+            <span class="kphos-field-label"><strong class="font-black text-slate-100">Phosphate<span class="kphos-desktop-target-suffix">{' target:'}</span></strong></span>
             <input
               id="kphos-phos-target"
               class="field-control kphos-inline-number"
@@ -422,7 +422,7 @@
               >
                 {kBasisLabel}
               </button>
-              <span class="kphos-potassium-target"><strong class="font-black text-slate-100">Potassium</strong></span>
+              <span class="kphos-potassium-target"><strong class="font-black text-slate-100">Potassium<span class="kphos-desktop-target-suffix">{' target:'}</span></strong></span>
             </span>
             <input
               id="kphos-k-target"
@@ -712,6 +712,10 @@
     text-align: center;
   }
 
+  .kphos-desktop-target-suffix {
+    display: none;
+  }
+
   .kphos-responsive-field {
     display: flex;
     min-width: 0;
@@ -929,6 +933,26 @@
       padding-right: 0.875rem;
       padding-left: 0.875rem;
       font-size: 1rem;
+    }
+
+    .kphos-targets-heading {
+      display: none;
+    }
+
+    .kphos-desktop-target-suffix {
+      display: inline;
+    }
+
+    .kphos-bag-target-row {
+      justify-content: space-between;
+    }
+
+    .kphos-bag-details-row {
+      justify-content: space-between;
+    }
+
+    .kphos-bag-target-row > .kphos-responsive-field + .kphos-responsive-field::before {
+      display: none;
     }
 
     .kphos-primary-result {

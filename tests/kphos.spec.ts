@@ -418,8 +418,8 @@ test.describe('KPhos workflow', () => {
       words.map((word) => ({ text: word.textContent, weight: Number.parseInt(getComputedStyle(word).fontWeight, 10) })),
     );
     expect(emphasizedInputWords).toEqual(expect.arrayContaining([
-      expect.objectContaining({ text: 'Phosphate', weight: 900 }),
-      expect.objectContaining({ text: 'Potassium', weight: 900 }),
+      expect.objectContaining({ text: 'Phosphate target:', weight: 900 }),
+      expect.objectContaining({ text: 'Potassium target:', weight: 900 }),
     ]));
   });
 
@@ -534,8 +534,60 @@ test.describe('KPhos workflow', () => {
     await expect(targetRow.getByText('Targets', { exact: true })).toBeVisible();
     await expect(targetRow).toContainText('Phosphate');
     await expect(targetRow).toContainText('Potassium');
-    await expect(targetRow).not.toContainText('Phosphate target');
-    await expect(targetRow).not.toContainText('Potassium target');
+    await expect(targetRow.locator('.kphos-desktop-target-suffix')).toHaveCount(2);
+    await expect(targetRow.locator('.kphos-desktop-target-suffix').first()).toBeHidden();
+  });
+
+  test('places the desktop Bag targets at opposite sides without the shared heading', async ({ page }) => {
+    const panel = await openKPhos(page, { width: 1103, height: 900 });
+    const targetRow = panel.locator('.kphos-bag-target-row');
+    const phosphateField = targetRow.locator('.kphos-responsive-field').first();
+    const potassiumField = targetRow.locator('.kphos-potassium-field');
+
+    await expect(targetRow.getByText('Targets', { exact: true })).toBeHidden();
+    await expect(phosphateField).toContainText('Phosphate target:');
+    await expect(potassiumField).toContainText('Potassium target:');
+
+    const geometry = await targetRow.evaluate((row) => {
+      const rowRect = row.getBoundingClientRect();
+      const fields = row.querySelectorAll<HTMLElement>(':scope > .kphos-responsive-field');
+      const phosphate = fields[0].getBoundingClientRect();
+      const potassium = fields[1].getBoundingClientRect();
+      return {
+        leftInset: phosphate.left - rowRect.left,
+        rightInset: rowRect.right - potassium.right,
+        spaceBetween: potassium.left - phosphate.right,
+      };
+    });
+
+    expect(geometry.leftInset).toBeLessThanOrEqual(16);
+    expect(geometry.rightInset).toBeLessThanOrEqual(16);
+    expect(geometry.spaceBetween).toBeGreaterThan(100);
+  });
+
+  test('distributes the desktop Bag details across the row', async ({ page }) => {
+    const panel = await openKPhos(page, { width: 1103, height: 900 });
+    const detailsRow = panel.locator('.kphos-bag-details-row');
+
+    const geometry = await detailsRow.evaluate((row) => {
+      const rowRect = row.getBoundingClientRect();
+      const fields = [...row.querySelectorAll<HTMLElement>(':scope > .kphos-responsive-field')].map((field) =>
+        field.getBoundingClientRect(),
+      );
+      return {
+        fieldCount: fields.length,
+        leftInset: fields[0].left - rowRect.left,
+        rightInset: rowRect.right - fields[fields.length - 1].right,
+        firstGap: fields[1].left - fields[0].right,
+        secondGap: fields[2].left - fields[1].right,
+      };
+    });
+
+    expect(geometry.fieldCount).toBe(3);
+    expect(geometry.leftInset).toBeLessThanOrEqual(16);
+    expect(geometry.rightInset).toBeLessThanOrEqual(16);
+    expect(geometry.firstGap).toBeGreaterThan(20);
+    expect(geometry.secondGap).toBeGreaterThan(20);
   });
 
   test('fits fully filled Bag and CRI modes within 1440x900', async ({ page }) => {
