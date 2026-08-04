@@ -418,8 +418,8 @@ test.describe('KPhos workflow', () => {
       words.map((word) => ({ text: word.textContent, weight: Number.parseInt(getComputedStyle(word).fontWeight, 10) })),
     );
     expect(emphasizedInputWords).toEqual(expect.arrayContaining([
-      expect.objectContaining({ text: 'Phosphate target:', weight: 900 }),
-      expect.objectContaining({ text: 'Potassium target:', weight: 900 }),
+      expect.objectContaining({ text: 'Phosphate target', weight: 900 }),
+      expect.objectContaining({ text: 'Potassium target', weight: 900 }),
     ]));
   });
 
@@ -482,7 +482,7 @@ test.describe('KPhos workflow', () => {
     await expect(panel.getByTestId('final-main-bag-k')).toContainText('34.72 mEq/L');
   });
 
-  test('keeps the result position fixed when switching Bag and CRI modes', async ({ page }) => {
+  test('keeps the input and result cards aligned when switching Bag and CRI modes', async ({ page }) => {
     for (const viewport of [{ width: 1280, height: 800 }, { width: 384, height: 854 }]) {
       const panel = await openKPhos(page, viewport);
       await fillCommonPlan(page, panel);
@@ -492,7 +492,7 @@ test.describe('KPhos workflow', () => {
       const bagGeometry = await inputCard.evaluate((element) => {
         const input = element.getBoundingClientRect();
         const result = document.querySelector<HTMLElement>('[data-testid="kphos-results"]')?.getBoundingClientRect();
-        return { inputHeight: input.height, inputLeft: input.left, inputRight: input.right, resultTop: result ? result.top + window.scrollY : 0, resultLeft: result?.left ?? 0, resultRight: result?.right ?? 0 };
+        return { inputBottom: input.bottom + window.scrollY, inputLeft: input.left, inputRight: input.right, resultTop: result ? result.top + window.scrollY : 0, resultLeft: result?.left ?? 0, resultRight: result?.right ?? 0 };
       });
 
       await panel.getByRole('button', { name: 'CRI', exact: true }).click();
@@ -502,92 +502,99 @@ test.describe('KPhos workflow', () => {
       const criGeometry = await inputCard.evaluate((element) => {
         const input = element.getBoundingClientRect();
         const result = document.querySelector<HTMLElement>('[data-testid="kphos-results"]')?.getBoundingClientRect();
-        return { inputHeight: input.height, inputLeft: input.left, inputRight: input.right, resultTop: result ? result.top + window.scrollY : 0, resultLeft: result?.left ?? 0, resultRight: result?.right ?? 0 };
+        return { inputBottom: input.bottom + window.scrollY, inputLeft: input.left, inputRight: input.right, resultTop: result ? result.top + window.scrollY : 0, resultLeft: result?.left ?? 0, resultRight: result?.right ?? 0 };
       });
 
-      expect(Math.abs(criGeometry.inputHeight - bagGeometry.inputHeight), `${viewport.width}px input height`).toBeLessThanOrEqual(1);
-      expect(Math.abs(criGeometry.resultTop - bagGeometry.resultTop), `${viewport.width}px result position`).toBeLessThanOrEqual(1);
+      expect(Math.abs(bagGeometry.resultTop - bagGeometry.inputBottom), `${viewport.width}px Bag card gap`).toBeLessThanOrEqual(9);
+      expect(Math.abs(criGeometry.resultTop - criGeometry.inputBottom), `${viewport.width}px CRI card gap`).toBeLessThanOrEqual(9);
+      expect(Math.abs(bagGeometry.resultLeft - bagGeometry.inputLeft)).toBeLessThanOrEqual(1);
+      expect(Math.abs(bagGeometry.resultRight - bagGeometry.inputRight)).toBeLessThanOrEqual(1);
       expect(Math.abs(criGeometry.resultLeft - criGeometry.inputLeft)).toBeLessThanOrEqual(1);
       expect(Math.abs(criGeometry.resultRight - criGeometry.inputRight)).toBeLessThanOrEqual(1);
       await expect(results).toBeVisible();
     }
   });
 
-  test('aligns filled mobile fluid controls without overlapping the potassium target', async ({ page }) => {
+  test('keeps the filled mobile field grids inside the input card', async ({ page }) => {
     const panel = await openKPhos(page, { width: 384, height: 854 });
     await fillCommonPlan(page, panel);
-    const targetRow = panel.locator('.kphos-target-row');
+    const inputCard = panel.getByTestId('kphos-input-card');
 
-    const controls = [
-      panel.getByLabel('Bag volume (mL)', { exact: true }),
-      panel.getByLabel('Main bag fluid', { exact: true }),
-      panel.getByLabel('Fluid rate (mL/hr)', { exact: true })
-    ];
-    const leftEdges = await Promise.all(controls.map(async (control) => (await control.boundingBox())?.x ?? 0));
-    const potassiumGeometry = await panel.getByLabel('Added potassium target (mEq/L)', { exact: true }).evaluate((input) => {
-      const label = input.closest('.kphos-responsive-field')?.querySelector<HTMLElement>('.kphos-potassium-label');
-      return { inputLeft: input.getBoundingClientRect().left, labelRight: label?.getBoundingClientRect().right ?? 0 };
-    });
-
-    expect(Math.max(...leftEdges) - Math.min(...leftEdges)).toBeLessThanOrEqual(1);
-    expect(potassiumGeometry.inputLeft - potassiumGeometry.labelRight).toBeGreaterThanOrEqual(4);
-    await expect(targetRow.getByText('Targets', { exact: true })).toBeVisible();
-    await expect(targetRow).toContainText('Phosphate');
-    await expect(targetRow).toContainText('Potassium');
-    await expect(targetRow.locator('.kphos-desktop-target-suffix')).toHaveCount(2);
-    await expect(targetRow.locator('.kphos-desktop-target-suffix').first()).toBeHidden();
-  });
-
-  test('places the desktop Bag targets at opposite sides without the shared heading', async ({ page }) => {
-    const panel = await openKPhos(page, { width: 1103, height: 900 });
-    const targetRow = panel.locator('.kphos-bag-target-row');
-    const phosphateField = targetRow.locator('.kphos-responsive-field').first();
-    const potassiumField = targetRow.locator('.kphos-potassium-field');
-
-    await expect(targetRow.getByText('Targets', { exact: true })).toBeHidden();
-    await expect(phosphateField).toContainText('Phosphate target:');
-    await expect(potassiumField).toContainText('Potassium target:');
-
-    const geometry = await targetRow.evaluate((row) => {
-      const rowRect = row.getBoundingClientRect();
-      const fields = row.querySelectorAll<HTMLElement>(':scope > .kphos-responsive-field');
-      const phosphate = fields[0].getBoundingClientRect();
-      const potassium = fields[1].getBoundingClientRect();
+    const geometry = await inputCard.evaluate((card) => {
+      const cardRect = card.getBoundingClientRect();
+      const controls = [...card.querySelectorAll<HTMLElement>('input, select')].map((control) => control.getBoundingClientRect());
+      const targetGrid = card.querySelector<HTMLElement>('.kphos-target-fields');
+      const bagGrid = card.querySelector<HTMLElement>('.kphos-bag-fields');
       return {
-        leftInset: phosphate.left - rowRect.left,
-        rightInset: rowRect.right - potassium.right,
-        spaceBetween: potassium.left - phosphate.right,
+        targetColumns: targetGrid ? getComputedStyle(targetGrid).gridTemplateColumns.split(' ').length : 0,
+        bagColumns: bagGrid ? getComputedStyle(bagGrid).gridTemplateColumns.split(' ').length : 0,
+        leftOverflow: Math.max(...controls.map((control) => cardRect.left - control.left)),
+        rightOverflow: Math.max(...controls.map((control) => control.right - cardRect.right)),
       };
     });
 
-    expect(geometry.leftInset).toBeLessThanOrEqual(16);
-    expect(geometry.rightInset).toBeLessThanOrEqual(16);
-    expect(geometry.spaceBetween).toBeGreaterThan(100);
+    expect(geometry.targetColumns).toBe(2);
+    expect(geometry.bagColumns).toBe(2);
+    expect(geometry.leftOverflow).toBeLessThanOrEqual(0);
+    expect(geometry.rightOverflow).toBeLessThanOrEqual(0);
+    await expect(inputCard.getByRole('heading', { name: 'Targets', exact: true })).toBeVisible();
+    await expect(inputCard.getByRole('heading', { name: 'Fluid bag', exact: true })).toBeVisible();
   });
 
-  test('distributes the desktop Bag details across the row', async ({ page }) => {
+  test('groups the desktop Bag targets into two balanced fields', async ({ page }) => {
     const panel = await openKPhos(page, { width: 1103, height: 900 });
-    const detailsRow = panel.locator('.kphos-bag-details-row');
+    const targetSection = panel.locator('section[aria-labelledby="kphos-targets-title"]');
 
-    const geometry = await detailsRow.evaluate((row) => {
-      const rowRect = row.getBoundingClientRect();
-      const fields = [...row.querySelectorAll<HTMLElement>(':scope > .kphos-responsive-field')].map((field) =>
+    await expect(targetSection.getByRole('heading', { name: 'Targets', exact: true })).toBeVisible();
+    await expect(targetSection).toContainText('Phosphate target');
+    await expect(targetSection).toContainText('Potassium target');
+
+    const geometry = await targetSection.locator('.kphos-target-fields').evaluate((grid) => {
+      const gridRect = grid.getBoundingClientRect();
+      const fields = [...grid.querySelectorAll<HTMLElement>(':scope > .kphos-field')].map((field) => field.getBoundingClientRect());
+      return {
+        columns: getComputedStyle(grid).gridTemplateColumns.split(' ').length,
+        fieldCount: fields.length,
+        leftInset: fields[0].left - gridRect.left,
+        rightInset: gridRect.right - fields[1].right,
+        spaceBetween: fields[1].left - fields[0].right,
+        topDifference: Math.abs(fields[1].top - fields[0].top),
+      };
+    });
+
+    expect(geometry.columns).toBe(2);
+    expect(geometry.fieldCount).toBe(2);
+    expect(geometry.leftInset).toBeLessThanOrEqual(1);
+    expect(geometry.rightInset).toBeLessThanOrEqual(1);
+    expect(geometry.spaceBetween).toBeGreaterThanOrEqual(10);
+    expect(geometry.topDifference).toBeLessThanOrEqual(1);
+  });
+
+  test('distributes the desktop Bag details across three equal columns', async ({ page }) => {
+    const panel = await openKPhos(page, { width: 1103, height: 900 });
+    const detailsGrid = panel.locator('.kphos-bag-fields');
+
+    const geometry = await detailsGrid.evaluate((grid) => {
+      const gridRect = grid.getBoundingClientRect();
+      const fields = [...grid.querySelectorAll<HTMLElement>(':scope > .kphos-field')].map((field) =>
         field.getBoundingClientRect(),
       );
       return {
+        columns: getComputedStyle(grid).gridTemplateColumns.split(' ').length,
         fieldCount: fields.length,
-        leftInset: fields[0].left - rowRect.left,
-        rightInset: rowRect.right - fields[fields.length - 1].right,
+        leftInset: fields[0].left - gridRect.left,
+        rightInset: gridRect.right - fields[fields.length - 1].right,
         firstGap: fields[1].left - fields[0].right,
         secondGap: fields[2].left - fields[1].right,
       };
     });
 
+    expect(geometry.columns).toBe(3);
     expect(geometry.fieldCount).toBe(3);
-    expect(geometry.leftInset).toBeLessThanOrEqual(16);
-    expect(geometry.rightInset).toBeLessThanOrEqual(16);
-    expect(geometry.firstGap).toBeGreaterThan(20);
-    expect(geometry.secondGap).toBeGreaterThan(20);
+    expect(geometry.leftInset).toBeLessThanOrEqual(1);
+    expect(geometry.rightInset).toBeLessThanOrEqual(1);
+    expect(geometry.firstGap).toBeGreaterThanOrEqual(10);
+    expect(geometry.secondGap).toBeGreaterThanOrEqual(10);
   });
 
   test('fits fully filled Bag and CRI modes within 1440x900', async ({ page }) => {

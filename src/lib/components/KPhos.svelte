@@ -220,12 +220,15 @@
 
 <section class="grid min-w-0 gap-2 text-slate-200" aria-label="KPhos/KCl calculator">
   <article class="ui-card min-w-0 overflow-hidden" data-testid="kphos-input-card">
-    <div class="flex min-h-11 items-center gap-2 px-3 py-1.5 sm:px-3.5">
-      <span class="whitespace-nowrap text-sm font-bold text-slate-300">Add to:</span>
-      <div class="ui-inset grid w-[11rem] min-w-0 grid-cols-2 gap-1 p-1" role="group" aria-label="Add KPhos to">
+    <header class="kphos-input-header">
+      <div>
+        <h2>Preparation</h2>
+        <p>Add KPhos to a fluid bag or prepare it as a CRI.</p>
+      </div>
+      <div class="ui-inset kphos-mode-control" role="group" aria-label="Add KPhos to">
         <button
           type="button"
-          class={`min-h-8 rounded-md border px-3 py-1 text-xs font-black uppercase tracking-wide transition-colors ${mode === 'bag' ? selectedClass : unselectedClass}`}
+          class={`rounded-md border px-4 py-1.5 text-xs font-black uppercase tracking-wide transition-colors ${mode === 'bag' ? selectedClass : unselectedClass}`}
           aria-pressed={mode === 'bag'}
           on:click={() => selectMode('bag')}
         >
@@ -233,21 +236,27 @@
         </button>
         <button
           type="button"
-          class={`min-h-8 rounded-md border px-3 py-1 text-xs font-black uppercase tracking-wide transition-colors ${mode === 'cri' ? selectedClass : unselectedClass}`}
+          class={`rounded-md border px-4 py-1.5 text-xs font-black uppercase tracking-wide transition-colors ${mode === 'cri' ? selectedClass : unselectedClass}`}
           aria-pressed={mode === 'cri'}
           on:click={() => selectMode('cri')}
         >
           CRI
         </button>
       </div>
-    </div>
+    </header>
 
-    <div class="kphos-statements border-t border-slate-700/40" class:kphos-cri-statements={mode === 'cri'} data-testid="kphos-statements">
-      {#if mode === 'bag'}
-        <div class="kphos-statement-row kphos-aligned-fields kphos-target-row kphos-bag-target-row">
-          <div class="kphos-targets-heading">Targets</div>
-          <div class="kphos-responsive-field">
-            <span class="kphos-field-label"><strong class="font-black text-slate-100">Phosphate<span class="kphos-desktop-target-suffix">{' target:'}</span></strong></span>
+    <div class="kphos-form" data-testid="kphos-statements">
+      <section class="kphos-form-section" aria-labelledby="kphos-targets-title">
+        <header class="kphos-section-heading">
+          <h3 id="kphos-targets-title">Targets</h3>
+          <p>Enter either or both</p>
+        </header>
+        <div class="kphos-field-grid kphos-target-fields">
+          <div class="kphos-field">
+            <div class="kphos-field-heading">
+              <label for="kphos-phos-target"><strong>Phosphate target</strong></label>
+            </div>
+            <div class="kphos-control-row">
             <input
               id="kphos-phos-target"
               class="field-control kphos-inline-number"
@@ -260,9 +269,11 @@
               bind:value={phosTargetMmolKgHr}
             />
             <span class="kphos-field-unit">mmol/kg/hr</span>
+            </div>
           </div>
-          <div class="kphos-responsive-field kphos-potassium-field">
-            <span class="kphos-field-label kphos-potassium-label">
+          <div class="kphos-field kphos-potassium-field">
+            <div class="kphos-field-heading">
+              <label for="kphos-k-target"><strong>Potassium target</strong></label>
               <button
                 type="button"
                 role="switch"
@@ -274,8 +285,8 @@
               >
                 {kBasisLabel}
               </button>
-              <span class="kphos-potassium-target"><strong class="font-black text-slate-100">Potassium<span class="kphos-desktop-target-suffix">{' target:'}</span></strong></span>
-            </span>
+            </div>
+            <div class="kphos-control-row">
             <input
               id="kphos-k-target"
               class="field-control kphos-inline-number"
@@ -288,12 +299,21 @@
               bind:value={kTargetMeqPerL}
             />
             <span class="kphos-field-unit">mEq/L</span>
+            </div>
           </div>
         </div>
+      </section>
 
-        <div class="kphos-statement-row kphos-aligned-fields kphos-bag-details-row border-t border-slate-700/35">
-          <div class="kphos-responsive-field">
-            <span class="kphos-field-label">Bag volume</span>
+      <section class="kphos-form-section" aria-labelledby="kphos-setup-title">
+        <header class="kphos-section-heading">
+          <h3 id="kphos-setup-title">{mode === 'bag' ? 'Fluid bag' : 'CRI setup'}</h3>
+          <p>{mode === 'bag' ? 'Bag and delivery details' : 'Preparation and main fluid'}</p>
+        </header>
+        {#if mode === 'bag'}
+          <div class="kphos-field-grid kphos-bag-fields">
+            <div class="kphos-field">
+              <div class="kphos-field-heading"><label for="kphos-main-bag-volume">Bag volume</label></div>
+              <div class="kphos-control-row">
             <input
               id="kphos-main-bag-volume"
               class="field-control kphos-inline-number"
@@ -305,17 +325,19 @@
               bind:value={mainBagVolumeMl}
             />
             <span class="kphos-field-unit">mL</span>
+              </div>
           </div>
-          <div class="kphos-responsive-field">
-            <span class="kphos-field-label">Fluid</span>
+            <div class="kphos-field">
+              <div class="kphos-field-heading"><label for="kphos-main-fluid">Main fluid</label></div>
             <select id="kphos-main-fluid" class="field-select kphos-inline-select" aria-label="Main bag fluid" bind:value={mainFluidId}>
               {#each KPHOS_BASE_FLUIDS as fluid}
                 <option value={fluid.id}>{fluid.label}</option>
               {/each}
             </select>
           </div>
-          <div class="kphos-responsive-field">
-            <span class="kphos-field-label">Rate</span>
+            <div class="kphos-field">
+              <div class="kphos-field-heading"><label for="kphos-main-fluid-rate">Fluid rate</label></div>
+              <div class="kphos-control-row">
             <input
               id="kphos-main-fluid-rate"
               class="field-control kphos-inline-number"
@@ -327,28 +349,14 @@
               bind:value={mainFluidRateMlHr}
             />
             <span class="kphos-field-unit">mL/hr</span>
+              </div>
           </div>
         </div>
-      {:else}
-        <div class="kphos-statement-row kphos-aligned-fields kphos-target-row">
-          <div class="kphos-targets-heading">Targets</div>
-          <div class="kphos-responsive-field">
-            <span class="kphos-field-label"><strong class="font-black text-slate-100">Phosphate<span class="kphos-desktop-target-suffix">{' target:'}</span></strong></span>
-            <input
-              id="kphos-phos-target"
-              class="field-control kphos-inline-number"
-              type="number"
-              min="0"
-              step="0.001"
-              inputmode="decimal"
-              placeholder="optional"
-              aria-label="Phosphate target (mmol/kg/hr)"
-              bind:value={phosTargetMmolKgHr}
-            />
-            <span class="kphos-field-unit">mmol/kg/hr</span>
-          </div>
-          <div class="kphos-responsive-field">
-            <span class="kphos-field-label">Duration</span>
+        {:else}
+          <div class="kphos-field-grid kphos-cri-fields">
+            <div class="kphos-field">
+              <div class="kphos-field-heading"><label for="kphos-cri-duration">Duration</label></div>
+              <div class="kphos-control-row">
             <input
               id="kphos-cri-duration"
               class="field-control kphos-inline-number"
@@ -360,9 +368,11 @@
               bind:value={criDurationHr}
             />
             <span class="kphos-field-unit">hr</span>
+              </div>
           </div>
-          <div class="kphos-responsive-field">
-            <span class="kphos-field-label">CRI rate</span>
+            <div class="kphos-field">
+              <div class="kphos-field-heading"><label for="kphos-cri-rate">CRI rate</label></div>
+              <div class="kphos-control-row">
             <input
               id="kphos-cri-rate"
               class="field-control kphos-inline-number"
@@ -375,28 +385,27 @@
               bind:value={criRateMlHr}
             />
             <span class="kphos-field-unit">mL/hr</span>
+              </div>
           </div>
-          <div class="kphos-responsive-field">
-            <span class="kphos-field-label">Diluent</span>
+            <div class="kphos-field">
+              <div class="kphos-field-heading"><label for="kphos-cri-diluent">Diluent</label></div>
             <select id="kphos-cri-diluent" class="field-select kphos-inline-select" aria-label="CRI diluent" bind:value={criDiluentFluidId}>
               {#each KPHOS_BASE_FLUIDS as fluid}
                 <option value={fluid.id}>{fluid.label}</option>
               {/each}
             </select>
           </div>
-        </div>
-
-        <div class="kphos-statement-row kphos-aligned-fields border-t border-slate-700/35">
-          <div class="kphos-responsive-field">
-            <span class="kphos-field-label">Main fluid</span>
+            <div class="kphos-field">
+              <div class="kphos-field-heading"><label for="kphos-main-fluid">Main fluid</label></div>
             <select id="kphos-main-fluid" class="field-select kphos-inline-select" aria-label="Main bag fluid" bind:value={mainFluidId}>
               {#each KPHOS_BASE_FLUIDS as fluid}
                 <option value={fluid.id}>{fluid.label}</option>
               {/each}
             </select>
           </div>
-          <div class="kphos-responsive-field">
-            <span class="kphos-field-label">Rate</span>
+            <div class="kphos-field">
+              <div class="kphos-field-heading"><label for="kphos-main-fluid-rate">Fluid rate</label></div>
+              <div class="kphos-control-row">
             <input
               id="kphos-main-fluid-rate"
               class="field-control kphos-inline-number"
@@ -408,38 +417,12 @@
               bind:value={mainFluidRateMlHr}
             />
             <span class="kphos-field-unit">mL/hr</span>
-          </div>
-          <div class="kphos-responsive-field kphos-potassium-field">
-            <span class="kphos-field-label kphos-potassium-label">
-              <button
-                type="button"
-                role="switch"
-                aria-checked={kTargetBasis === 'total'}
-                aria-label={kBasisSwitchLabel}
-                class="kphos-basis-button"
-                data-testid="k-target-basis"
-                on:click={toggleKTargetBasis}
-              >
-                {kBasisLabel}
-              </button>
-              <span class="kphos-potassium-target"><strong class="font-black text-slate-100">Potassium<span class="kphos-desktop-target-suffix">{' target:'}</span></strong></span>
-            </span>
-            <input
-              id="kphos-k-target"
-              class="field-control kphos-inline-number"
-              type="number"
-              min="0"
-              step="1"
-              inputmode="decimal"
-              placeholder="optional"
-              aria-label={`${kBasisLabel} potassium target (mEq/L)`}
-              bind:value={kTargetMeqPerL}
-            />
-            <span class="kphos-field-unit">mEq/L</span>
+              </div>
           </div>
           {#if plan.hasKTarget}
-            <div class="kphos-responsive-field">
-              <span class="kphos-field-label">Bag volume</span>
+              <div class="kphos-field">
+                <div class="kphos-field-heading"><label for="kphos-main-bag-volume">Bag volume</label></div>
+                <div class="kphos-control-row">
               <input
                 id="kphos-main-bag-volume"
                 class="field-control kphos-inline-number"
@@ -451,10 +434,12 @@
                 bind:value={mainBagVolumeMl}
               />
               <span class="kphos-field-unit">mL</span>
+                </div>
             </div>
           {/if}
         </div>
       {/if}
+      </section>
     </div>
   </article>
 
@@ -674,86 +659,132 @@
 </section>
 
 <style>
-  .kphos-statements {
+  .kphos-input-header {
+    display: flex;
+    min-height: 3.75rem;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    border-bottom: 1px solid var(--ui-divider);
+    padding: 0.65rem 0.875rem;
+  }
+
+  .kphos-input-header h2,
+  .kphos-section-heading h3 {
+    color: var(--ui-text-100);
+    font-size: 0.8125rem;
+    font-weight: 900;
+    letter-spacing: 0.055em;
+    line-height: 1.2;
+    text-transform: uppercase;
+  }
+
+  .kphos-input-header p,
+  .kphos-section-heading p {
+    margin-top: 0.15rem;
+    color: var(--ui-text-400);
+    font-size: 0.75rem;
+    line-height: 1.25;
+  }
+
+  .kphos-mode-control {
     display: grid;
-    grid-template-rows: repeat(2, minmax(0, 1fr));
-    height: 19rem;
+    width: 11rem;
+    flex: 0 0 11rem;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.25rem;
+    padding: 0.25rem;
   }
 
-  .kphos-statement-row {
+  .kphos-form {
+    display: grid;
+  }
+
+  .kphos-form-section {
+    display: grid;
+    min-width: 0;
+    grid-template-columns: 8.5rem minmax(0, 1fr);
+    gap: 1rem;
+    padding: 0.875rem;
+  }
+
+  .kphos-form-section + .kphos-form-section {
+    border-top: 1px solid var(--ui-divider);
+  }
+
+  .kphos-section-heading {
+    align-self: center;
+  }
+
+  .kphos-field-grid {
+    display: grid;
+    min-width: 0;
+    gap: 0.75rem;
+  }
+
+  .kphos-target-fields {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .kphos-bag-fields {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .kphos-cri-fields {
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+  }
+
+  .kphos-field {
     display: flex;
     min-width: 0;
-    flex-wrap: wrap;
-    align-content: center;
+    flex-direction: column;
+    gap: 0.4rem;
+  }
+
+  .kphos-field-heading {
+    display: flex;
+    min-height: 1.25rem;
+    min-width: 0;
     align-items: center;
-    column-gap: 0.375rem;
-    row-gap: 0.375rem;
-    padding: 0.5rem 0.75rem;
-    font-size: 0.9375rem;
-    line-height: 1.35;
+    justify-content: space-between;
+    gap: 0.5rem;
     color: var(--ui-text-300);
+    font-size: 0.75rem;
+    font-weight: 700;
+    line-height: 1.2;
   }
 
-  .kphos-target-row {
-    position: relative;
-    justify-content: center;
-  }
-
-  .kphos-targets-heading {
-    position: absolute;
-    top: 0.45rem;
-    right: 0;
-    left: 0;
-    color: var(--ui-text-400);
-    font-size: 0.6875rem;
-    font-weight: 800;
-    letter-spacing: 0.06em;
-    line-height: 1;
-    text-align: center;
-  }
-
-  .kphos-desktop-target-suffix {
-    display: none;
-  }
-
-  .kphos-responsive-field {
-    display: flex;
-    min-width: 0;
-    align-items: center;
-    gap: 0.375rem;
-  }
-
-  .kphos-responsive-field + .kphos-responsive-field::before {
-    flex: 0 0 auto;
-    color: var(--ui-text-400);
-    content: '·';
+  .kphos-field-heading strong {
+    color: var(--ui-text-100);
     font-weight: 900;
   }
 
-  .kphos-field-label,
+  .kphos-control-row {
+    display: flex;
+    min-width: 0;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
   .kphos-field-unit {
+    flex: 0 0 auto;
+    color: var(--ui-text-300);
+    font-size: 0.75rem;
+    font-weight: 600;
     white-space: nowrap;
   }
 
-  .kphos-potassium-label {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.375rem;
-  }
-
   .kphos-inline-number {
-    width: 5.4rem;
-    height: 2rem;
-    flex: 0 0 5.4rem;
-    padding: 0.2rem 0.4rem;
-    text-align: center;
-    font-weight: 800;
+    height: 2.25rem;
+    flex: 1 1 auto;
+    padding-top: 0.3rem;
+    padding-bottom: 0.3rem;
+    font-weight: 700;
     line-height: 1;
     font-variant-numeric: tabular-nums;
   }
 
   .kphos-inline-number:placeholder-shown {
-    text-align: start;
     font-weight: 400;
   }
 
@@ -890,32 +921,26 @@
   }
 
   .kphos-inline-select {
-    width: 9.5rem;
-    height: 2rem;
-    flex: 0 0 9.5rem;
-    padding-top: 0.2rem;
-    padding-bottom: 0.2rem;
+    height: 2.25rem;
+    padding-top: 0.3rem;
+    padding-bottom: 0.3rem;
     font-weight: 700;
     line-height: 1;
   }
 
   .kphos-basis-button {
     display: inline-flex;
-    width: 4.7rem;
-    height: 2rem;
-    flex: 0 0 4.7rem;
+    height: 1.5rem;
+    flex: 0 0 auto;
     align-items: center;
     justify-content: center;
-    border-radius: 0.375rem;
+    border-radius: 9999px;
     border: 1px solid var(--ui-accent-border);
     background: var(--ui-accent-surface);
-    padding: 0 0.5rem;
+    padding: 0 0.55rem;
     color: var(--ui-link);
-    font-size: 0.8125rem;
+    font-size: 0.6875rem;
     font-weight: 800;
-    text-decoration-line: underline;
-    text-decoration-style: dotted;
-    text-underline-offset: 0.22rem;
     transition: background-color 150ms, border-color 150ms;
   }
 
@@ -925,101 +950,66 @@
   }
 
   @media (min-width: 640px) {
-    .kphos-statements {
-      height: 12rem;
-    }
-
-    .kphos-statement-row {
-      padding-right: 0.875rem;
-      padding-left: 0.875rem;
-      font-size: 1rem;
-    }
-
-    .kphos-targets-heading {
-      display: none;
-    }
-
-    .kphos-desktop-target-suffix {
-      display: inline;
-    }
-
-    .kphos-bag-target-row {
-      justify-content: space-between;
-    }
-
-    .kphos-bag-details-row {
-      justify-content: space-between;
-    }
-
-    .kphos-bag-target-row > .kphos-responsive-field + .kphos-responsive-field::before {
-      display: none;
-    }
-
     .kphos-primary-result {
       font-size: 1.0625rem;
     }
   }
 
+  @media (max-width: 1365px) {
+    .kphos-cri-fields {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+  }
+
   @media (max-width: 639px) {
-    .kphos-statements {
-      grid-template-rows: 10rem 11rem;
-      height: 21rem;
+    .kphos-input-header {
+      align-items: flex-start;
+      padding: 0.75rem;
     }
 
-    .kphos-statements.kphos-cri-statements {
-      grid-template-rows: 11rem 10rem;
+    .kphos-input-header p {
+      max-width: 10rem;
     }
 
-    .kphos-statement-row.kphos-aligned-fields {
+    .kphos-mode-control {
+      width: 9.5rem;
+      flex-basis: 9.5rem;
+    }
+
+    .kphos-form-section {
+      grid-template-columns: minmax(0, 1fr);
+      gap: 0.65rem;
+      padding: 0.75rem;
+    }
+
+    .kphos-section-heading {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 0.75rem;
+    }
+
+    .kphos-section-heading p {
+      margin-top: 0;
+      text-align: right;
+    }
+
+    .kphos-target-fields,
+    .kphos-bag-fields,
+    .kphos-cri-fields {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .kphos-control-row {
       display: grid;
-      align-content: center;
-      gap: 0.55rem;
-    }
-
-    .kphos-statement-row.kphos-target-row {
+      align-items: start;
       gap: 0.25rem;
-      padding-top: 1.05rem;
-      padding-bottom: 0.125rem;
     }
 
-    .kphos-responsive-field {
-      display: grid;
-      width: 100%;
-      grid-template-columns: minmax(0, 1fr) 5.25rem 5.5rem;
-      gap: 0.35rem;
-    }
-
-    .kphos-responsive-field + .kphos-responsive-field::before {
-      display: none;
-    }
-
-    .kphos-potassium-field {
-      grid-template-columns: minmax(0, 1fr) 5.25rem 3.5rem;
-    }
-
-    .kphos-field-label {
-      min-width: 0;
-      white-space: normal;
-    }
-
-    .kphos-inline-select {
-      width: 100%;
-      grid-column: 2 / 4;
-    }
-
-    .kphos-potassium-label {
-      display: grid;
-      grid-template-columns: 4.4rem minmax(0, 1fr);
-      gap: 0.3rem;
-      line-height: 1.05;
-    }
-
-    .kphos-potassium-label .kphos-basis-button {
-      width: 4.4rem;
-    }
-
-    .kphos-potassium-target {
-      min-width: 0;
+    .kphos-field-unit {
+      min-height: 0.9rem;
+      color: var(--ui-text-400);
+      font-size: 0.6875rem;
     }
   }
 
@@ -1037,10 +1027,6 @@
   }
 
   @media (min-width: 1024px) {
-    .kphos-statements {
-      height: 7.25rem;
-    }
-
     .kphos-cri-groups {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(24rem, 1fr));
