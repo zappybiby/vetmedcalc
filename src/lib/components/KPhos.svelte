@@ -221,36 +221,32 @@
 <section class="grid min-w-0 gap-2 text-slate-200" aria-label="KPhos/KCl calculator">
   <article class="ui-card min-w-0 overflow-hidden" data-testid="kphos-input-card">
     <header class="kphos-input-header">
-      <div>
-        <h2>Preparation</h2>
-        <p>Add KPhos to a fluid bag or prepare it as a CRI.</p>
-      </div>
-      <div class="ui-inset kphos-mode-control" role="group" aria-label="Add KPhos to">
-        <button
-          type="button"
-          class={`rounded-md border px-4 py-1.5 text-xs font-black uppercase tracking-wide transition-colors ${mode === 'bag' ? selectedClass : unselectedClass}`}
-          aria-pressed={mode === 'bag'}
-          on:click={() => selectMode('bag')}
-        >
-          Bag
-        </button>
-        <button
-          type="button"
-          class={`rounded-md border px-4 py-1.5 text-xs font-black uppercase tracking-wide transition-colors ${mode === 'cri' ? selectedClass : unselectedClass}`}
-          aria-pressed={mode === 'cri'}
-          on:click={() => selectMode('cri')}
-        >
-          CRI
-        </button>
+      <h2>Preparation</h2>
+      <div class="kphos-mode-picker">
+        <span>Mode:</span>
+        <div class="ui-inset kphos-mode-control" role="group" aria-label="Add KPhos to">
+          <button
+            type="button"
+            class={`rounded-md border px-4 py-1.5 text-xs font-black uppercase tracking-wide transition-colors ${mode === 'bag' ? selectedClass : unselectedClass}`}
+            aria-pressed={mode === 'bag'}
+            on:click={() => selectMode('bag')}
+          >
+            Bag
+          </button>
+          <button
+            type="button"
+            class={`rounded-md border px-4 py-1.5 text-xs font-black uppercase tracking-wide transition-colors ${mode === 'cri' ? selectedClass : unselectedClass}`}
+            aria-pressed={mode === 'cri'}
+            on:click={() => selectMode('cri')}
+          >
+            CRI
+          </button>
+        </div>
       </div>
     </header>
 
     <div class="kphos-form" data-testid="kphos-statements">
-      <section class="kphos-form-section" aria-labelledby="kphos-targets-title">
-        <header class="kphos-section-heading">
-          <h3 id="kphos-targets-title">Targets</h3>
-          <p>Enter either or both</p>
-        </header>
+      <section class="kphos-form-section kphos-target-section" aria-label="Medication targets">
         <div class="kphos-field-grid kphos-target-fields">
           <div class="kphos-field">
             <div class="kphos-field-heading">
@@ -307,7 +303,6 @@
       <section class="kphos-form-section" aria-labelledby="kphos-setup-title">
         <header class="kphos-section-heading">
           <h3 id="kphos-setup-title">{mode === 'bag' ? 'Fluid bag' : 'CRI setup'}</h3>
-          <p>{mode === 'bag' ? 'Bag and delivery details' : 'Preparation and main fluid'}</p>
         </header>
         {#if mode === 'bag'}
           <div class="kphos-field-grid kphos-bag-fields">
@@ -328,8 +323,8 @@
               </div>
           </div>
             <div class="kphos-field">
-              <div class="kphos-field-heading"><label for="kphos-main-fluid">Main fluid</label></div>
-            <select id="kphos-main-fluid" class="field-select kphos-inline-select" aria-label="Main bag fluid" bind:value={mainFluidId}>
+              <div class="kphos-field-heading"><label for="kphos-main-fluid">Fluid Type</label></div>
+            <select id="kphos-main-fluid" class="field-select kphos-inline-select" aria-label="Fluid Type" bind:value={mainFluidId}>
               {#each KPHOS_BASE_FLUIDS as fluid}
                 <option value={fluid.id}>{fluid.label}</option>
               {/each}
@@ -396,8 +391,8 @@
             </select>
           </div>
             <div class="kphos-field">
-              <div class="kphos-field-heading"><label for="kphos-main-fluid">Main fluid</label></div>
-            <select id="kphos-main-fluid" class="field-select kphos-inline-select" aria-label="Main bag fluid" bind:value={mainFluidId}>
+              <div class="kphos-field-heading"><label for="kphos-main-fluid">Fluid Type</label></div>
+            <select id="kphos-main-fluid" class="field-select kphos-inline-select" aria-label="Fluid Type" bind:value={mainFluidId}>
               {#each KPHOS_BASE_FLUIDS as fluid}
                 <option value={fluid.id}>{fluid.label}</option>
               {/each}
@@ -443,10 +438,9 @@
     </div>
   </article>
 
-  <article class="ui-card min-w-0 overflow-hidden" data-testid="kphos-results">
-    {#if !hasAnyTarget}
-      <div class="px-3 py-3 text-sm text-slate-400">Enter a phosphate or potassium target.</div>
-    {:else if issues.length}
+  {#if hasAnyTarget}
+    <article class="ui-card min-w-0 overflow-hidden" data-testid="kphos-results">
+    {#if issues.length}
       <div class="bg-amber-950/40 px-3 py-2.5 text-sm text-amber-100">
         <span class="font-black">Needed:</span> {issues.join(' ')}
       </div>
@@ -647,7 +641,8 @@
         </div>
       </section>
     {/if}
-  </article>
+    </article>
+  {/if}
 
   <div class="sr-only" aria-live="polite" aria-atomic="true">
     {#if issues.length}
@@ -679,12 +674,16 @@
     text-transform: uppercase;
   }
 
-  .kphos-input-header p,
-  .kphos-section-heading p {
-    margin-top: 0.15rem;
-    color: var(--ui-text-400);
-    font-size: 0.75rem;
-    line-height: 1.25;
+  .kphos-mode-picker {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .kphos-mode-picker > span {
+    color: var(--ui-text-300);
+    font-size: 0.8125rem;
+    font-weight: 800;
   }
 
   .kphos-mode-control {
@@ -712,6 +711,10 @@
     border-top: 1px solid var(--ui-divider);
   }
 
+  .kphos-target-section {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
   .kphos-section-heading {
     align-self: center;
   }
@@ -724,6 +727,7 @@
 
   .kphos-target-fields {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1.25rem;
   }
 
   .kphos-bag-fields {
@@ -967,10 +971,6 @@
       padding: 0.75rem;
     }
 
-    .kphos-input-header p {
-      max-width: 10rem;
-    }
-
     .kphos-mode-control {
       width: 9.5rem;
       flex-basis: 9.5rem;
@@ -987,11 +987,6 @@
       align-items: baseline;
       justify-content: space-between;
       gap: 0.75rem;
-    }
-
-    .kphos-section-heading p {
-      margin-top: 0;
-      text-align: right;
     }
 
     .kphos-target-fields,

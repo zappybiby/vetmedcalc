@@ -296,6 +296,29 @@ test.describe('KPhos workflow', () => {
     await panel.getByLabel('Added potassium target (mEq/L)', { exact: true }).fill('30');
   }
 
+  test('keeps the empty form free of explainer copy', async ({ page }) => {
+    const panel = await openKPhos(page);
+    const inputCard = panel.getByTestId('kphos-input-card');
+
+    for (const text of [
+      'Add KPhos to a fluid bag or prepare it as a CRI.',
+      'Enter either or both',
+      'Bag and delivery details',
+      'Enter a phosphate or potassium target.',
+    ]) {
+      await expect(panel.getByText(text, { exact: true })).toHaveCount(0);
+    }
+
+    await expect(inputCard.getByText('Mode:', { exact: true })).toBeVisible();
+    await expect(inputCard.getByRole('heading', { name: 'Targets', exact: true })).toHaveCount(0);
+    await expect(inputCard.getByLabel('Fluid Type', { exact: true })).toBeVisible();
+    await expect(panel.getByTestId('kphos-results')).toHaveCount(0);
+
+    await inputCard.getByRole('button', { name: 'CRI', exact: true }).click();
+    await expect(inputCard.getByText('Preparation and main fluid', { exact: true })).toHaveCount(0);
+    await expect(inputCard.getByLabel('Fluid Type', { exact: true })).toBeVisible();
+  });
+
   test('supports a KCl-only 250 mL bag with no patient data', async ({ page }) => {
     const panel = await openKPhos(page);
 
@@ -373,7 +396,7 @@ test.describe('KPhos workflow', () => {
     const panel = await openKPhos(page);
     await page.getByLabel('Weight (kg)', { exact: true }).fill('10');
     await panel.getByRole('button', { name: 'CRI', exact: true }).click();
-    await panel.getByLabel('Main bag fluid', { exact: true }).selectOption('isolyte-s');
+    await panel.getByLabel('Fluid Type', { exact: true }).selectOption('isolyte-s');
     await panel.getByLabel('Fluid rate (mL/hr)', { exact: true }).fill('100');
     await panel.getByLabel('Phosphate target (mmol/kg/hr)', { exact: true }).fill('0.01');
     await panel.getByLabel('Added potassium target (mEq/L)', { exact: true }).fill('0');
@@ -537,15 +560,15 @@ test.describe('KPhos workflow', () => {
     expect(geometry.bagColumns).toBe(2);
     expect(geometry.leftOverflow).toBeLessThanOrEqual(0);
     expect(geometry.rightOverflow).toBeLessThanOrEqual(0);
-    await expect(inputCard.getByRole('heading', { name: 'Targets', exact: true })).toBeVisible();
+    await expect(inputCard.getByRole('heading', { name: 'Targets', exact: true })).toHaveCount(0);
     await expect(inputCard.getByRole('heading', { name: 'Fluid bag', exact: true })).toBeVisible();
   });
 
-  test('groups the desktop Bag targets into two balanced fields', async ({ page }) => {
+  test('groups the desktop Bag targets into two balanced fields without a header gutter', async ({ page }) => {
     const panel = await openKPhos(page, { width: 1103, height: 900 });
-    const targetSection = panel.locator('section[aria-labelledby="kphos-targets-title"]');
+    const targetSection = panel.locator('.kphos-target-section');
 
-    await expect(targetSection.getByRole('heading', { name: 'Targets', exact: true })).toBeVisible();
+    await expect(targetSection.getByRole('heading')).toHaveCount(0);
     await expect(targetSection).toContainText('Phosphate target');
     await expect(targetSection).toContainText('Potassium target');
 
@@ -566,7 +589,7 @@ test.describe('KPhos workflow', () => {
     expect(geometry.fieldCount).toBe(2);
     expect(geometry.leftInset).toBeLessThanOrEqual(1);
     expect(geometry.rightInset).toBeLessThanOrEqual(1);
-    expect(geometry.spaceBetween).toBeGreaterThanOrEqual(10);
+    expect(geometry.spaceBetween).toBeGreaterThanOrEqual(16);
     expect(geometry.topDifference).toBeLessThanOrEqual(1);
   });
 
