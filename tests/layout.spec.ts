@@ -485,6 +485,7 @@ test.describe('responsive layout guardrails', () => {
           await page.screenshot({ path, fullPage: true, animations: 'disabled', caret: 'hide' });
           await testInfo.attach(name, { path, contentType: 'image/png' });
           await expectThemeToggleIconMatchesTheme(page, name);
+          await expectVisibleCardShellsMatch(page, `${name} populated card borders`);
           const documentWidth = await page.evaluate(() =>
             Math.max(document.documentElement.scrollWidth, document.body.scrollWidth),
           );
@@ -494,6 +495,35 @@ test.describe('responsive layout guardrails', () => {
         for (const tabName of await getToolTabNames(page)) {
           await fillTabData(page, tabName);
           await capture(tabName);
+
+          if (['CRI calculator', 'Drug in bag', 'Tube Feeding'].includes(tabName)) {
+            const formulaSizes = await activePanel(page).locator('.ui-formula').evaluateAll(
+              (elements) => elements.map((element) => Number.parseFloat(getComputedStyle(element).fontSize)),
+            );
+            expect(formulaSizes.length).toBeGreaterThan(0);
+            expect.soft(Math.min(...formulaSizes), `${tabName} readable formula text`).toBeGreaterThanOrEqual(12);
+          }
+
+          if (tabName === 'CRI calculator') {
+            const panel = activePanel(page);
+            const headings = [
+              panel.locator('label[for="cri-med"]'),
+              panel.getByText('Instruction', { exact: true }),
+              panel.getByText('Delivers', { exact: true }),
+              panel.locator('summary .ui-section-title'),
+            ];
+            const bounds = await Promise.all(headings.map((heading) => heading.boundingBox()));
+            for (const box of bounds) {
+              expect(box).not.toBeNull();
+              expect.soft(Math.abs(box!.x - bounds[0]!.x), 'CRI heading gutter alignment').toBeLessThanOrEqual(1);
+            }
+          }
+
+          if (tabName === 'Blood transfusion' && viewport.name === 'desktop') {
+            const rows = activePanel(page).locator('#blood-transfusion-summary > div').first().locator(':scope > div');
+            const [left, right] = await Promise.all([rows.nth(0).boundingBox(), rows.nth(1).boundingBox()]);
+            expect.soft(right!.x - left!.x - left!.width, 'Separate adjacent summary columns').toBeGreaterThanOrEqual(16);
+          }
 
           if (tabName === 'Drug in bag' || tabName === 'KPhos/KCl') {
             const selectors = tabName === 'Drug in bag'
@@ -557,6 +587,19 @@ test.describe('responsive layout guardrails', () => {
         await expect(batch.locator('[data-row="2"][data-field="0"]')).toHaveValue('');
         await capture('CPR batch');
         await expectAxeColorContrast(page, `${theme} ${viewport.name} CPR batch`);
+
+        await fillTabData(page, 'CRI calculator');
+        await page.locator('#cri-med').selectOption({ label: 'Custom' });
+        await page.locator('#cri-custom-name').fill('Custom infusion');
+        await page.locator('#cri-custom-concentration').fill('5');
+        await expandActivePanel(page);
+        await capture('CRI custom');
+        const [nameField, concentrationField] = await Promise.all([
+          page.locator('#cri-custom-name').boundingBox(),
+          page.locator('#cri-custom-concentration').boundingBox(),
+        ]);
+        expect.soft(Math.abs(nameField!.y - concentrationField!.y), 'Custom CRI inputs align when labels wrap').toBeLessThanOrEqual(1);
+        await expectAxeColorContrast(page, `${theme} ${viewport.name} Custom CRI`);
       });
     }
   }

@@ -156,7 +156,12 @@
   }
 
   .ui-result-value {
-    @apply text-[1.12rem] font-black leading-tight tracking-tight tabular-nums sm:text-[1.6rem] sm:leading-none;
+    @apply text-[18px] font-black leading-tight tracking-tight tabular-nums sm:text-[26px] sm:leading-none;
+    color: var(--ui-text-100);
+  }
+
+  .ui-formula {
+    @apply min-w-0 font-mono text-xs leading-snug tracking-tight;
     color: var(--ui-text-100);
   }
 
@@ -501,7 +506,7 @@
   }
 
   .ui-statement-value {
-    @apply text-[1.15rem] font-black leading-tight tracking-tight tabular-nums sm:text-[1.35rem];
+    @apply text-[18px] font-black leading-tight tracking-tight tabular-nums sm:text-[22px];
     color: var(--ui-text-100);
   }
 

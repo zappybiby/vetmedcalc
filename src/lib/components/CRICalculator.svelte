@@ -227,7 +227,7 @@
 
 <section class="ui-tool-stack text-slate-200" aria-label="CRI calculator">
   <article class="ui-card ui-card-padding grid gap-2 sm:gap-3">
-    <div class="grid min-w-0 grid-cols-2 gap-2 sm:gap-2.5 xl:grid-cols-[minmax(220px,1.45fr)_minmax(220px,1.25fr)_minmax(104px,0.55fr)_minmax(120px,0.65fr)]">
+    <div class="grid min-w-0 grid-cols-2 items-end gap-2 sm:gap-2.5 xl:grid-cols-[minmax(220px,1.45fr)_minmax(220px,1.25fr)_minmax(104px,0.55fr)_minmax(120px,0.65fr)]">
       <div class="col-span-2 flex min-w-0 flex-col gap-1.5 xl:col-span-1">
         <label class="ui-label" for="cri-med">Medication</label>
         <select id="cri-med" bind:value={medId} class="field-select">
@@ -338,7 +338,7 @@
     {/if}
 
     <article class="ui-card overflow-hidden">
-      <section class="px-3 py-3 sm:px-3.5 sm:py-3.5 lg:px-4 lg:py-4">
+      <section class="ui-card-padding">
         <div class="grid min-w-0 gap-3 md:grid-cols-[minmax(0,1fr)_auto] md:items-center">
           <div class="min-w-0">
             <div class="ui-label-strong">Instruction</div>
@@ -373,7 +373,7 @@
 
       <div class="grid gap-y-0 border-t ui-rule md:grid-cols-3">
         {#each summaryCards as card, index}
-          <section class={`grid min-w-0 grid-cols-[minmax(0,0.72fr)_minmax(0,1fr)] items-baseline gap-2 px-3 py-2.5 sm:block sm:px-4 sm:py-3 ${index > 0 ? 'border-t ui-rule md:border-t-0 md:border-l' : ''}`}>
+          <section class={`ui-card-padding grid min-w-0 grid-cols-[minmax(0,0.72fr)_minmax(0,1fr)] items-baseline gap-2 sm:block ${index > 0 ? 'border-t ui-rule md:border-t-0 md:border-l' : ''}`}>
             <div class="ui-label-strong">{card.label}</div>
             <div class="ui-result-value text-right sm:mt-1.5 sm:text-left">{card.value}</div>
             {#if card.secondary}
@@ -385,7 +385,7 @@
     </article>
 
     <details class="group ui-card overflow-hidden">
-      <summary class="ui-summary flex cursor-pointer items-center justify-between gap-3 px-3 py-2.5 sm:px-3.5 sm:py-3 lg:px-4">
+      <summary class="ui-summary ui-card-padding flex cursor-pointer items-center justify-between gap-3">
         <div class="ui-section-title">Step-By-Step calculations</div>
         <svg class="h-5 w-5 flex-none text-slate-400 transition group-open:rotate-180" viewBox="0 0 20 20" aria-hidden="true">
           <path
@@ -397,13 +397,13 @@
         </svg>
       </summary>
 
-      <div class="border-t ui-rule px-2 py-2 sm:px-3 lg:px-3.5">
+      <div class="border-t ui-rule ui-card-padding">
         <div class="grid gap-2">
           {#each vm.stepByStep.rows as row}
             <div class="ui-inset grid gap-1.5 px-2.5 py-2 sm:px-3 lg:grid-cols-[168px_minmax(0,1fr)] lg:items-center lg:gap-3 lg:py-1.5">
               <div class="text-[12px] font-semibold leading-snug text-slate-200">{row.label}</div>
 
-              <div class="min-w-0 font-mono text-[11px] leading-snug tracking-tight text-slate-100 sm:text-[11.5px]">
+              <div class="ui-formula">
                 <span class="whitespace-pre-wrap break-words">
                   {#each tokenizeMath(row.math) as t}
                     <span class={t.kind === 'num'

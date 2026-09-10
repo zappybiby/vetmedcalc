@@ -172,7 +172,7 @@
         </h2>
         <div id="blood-transfusion-summary" class={summaryOpen ? 'mt-2' : 'mt-2 hidden'}>
           {#if plan}
-            <div class="grid gap-2 text-sm md:grid-cols-2">
+            <div class="grid gap-2 text-sm md:grid-cols-2 md:gap-x-6">
               <div class="grid grid-cols-[minmax(0,1fr)_auto] items-baseline gap-2">
                 <span class="text-slate-300">Ideal final rate</span>
                 <span class="font-black tabular-nums text-slate-100">{fmt(plan.summary.idealFinalRateMlHr, 2)} mL/hr</span>

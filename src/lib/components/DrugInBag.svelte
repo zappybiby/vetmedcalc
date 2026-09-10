@@ -404,7 +404,7 @@
       </div>
 
       <details class="group ui-card overflow-hidden">
-        <summary class="ui-summary flex cursor-pointer items-center justify-between gap-3 px-3 py-2.5 sm:px-3.5 sm:py-3 lg:px-4">
+        <summary class="ui-summary ui-card-padding flex cursor-pointer items-center justify-between gap-3">
           <div class="ui-section-title">Step-By-Step calculations</div>
           <svg class="h-5 w-5 flex-none text-slate-400 transition group-open:rotate-180" viewBox="0 0 20 20" aria-hidden="true">
             <path
@@ -416,13 +416,13 @@
           </svg>
         </summary>
 
-        <div class="border-t ui-rule px-2 py-2 sm:px-3 lg:px-3.5">
+        <div class="border-t ui-rule ui-card-padding">
           <div class="grid gap-2">
             {#each calculationRows as row}
               <div class="ui-inset grid gap-1.5 px-2.5 py-2 sm:px-3 lg:grid-cols-[168px_minmax(0,1fr)] lg:items-center lg:gap-3 lg:py-1.5">
                 <div class="text-[12px] font-semibold leading-snug text-slate-200">{row.label}</div>
 
-                <div class="min-w-0 font-mono text-[11px] leading-snug tracking-tight text-slate-100 sm:text-[11.5px]">
+                <div class="ui-formula">
                   <span class="whitespace-pre-wrap break-words">
                     {#each tokenizeMath(row.math) as t}
                       <span class={t.kind === 'num'

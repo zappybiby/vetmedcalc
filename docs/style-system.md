@@ -37,8 +37,9 @@ Use the classes in [app.css](../src/app.css) before inventing a local visual sty
 | Field label | `ui-label` | 12px, semibold, uppercase, restrained tracking. |
 | Strong label / section heading | `ui-label-strong`, `ui-section-title` | 12px, heavy weight, uppercase. |
 | Instruction prose | `ui-instruction` | 14px, 15px from `sm`, relaxed leading. |
-| Inline instruction value | `ui-statement-value` | CRI's prominent values within a sentence. |
-| Primary result | `ui-result-value` | CRI summary scale: 1.12rem, 1.6rem from `sm`; heavy, tightly tracked, tabular numbers. |
+| Inline instruction value | `ui-statement-value` | 18px, 22px from `sm`; prominent values within a sentence. |
+| Primary result | `ui-result-value` | 18px, 26px from `sm`; heavy, tightly tracked, tabular numbers. |
+| Formula | `ui-formula` | 12px monospace at all widths, with wrapping and compact line height. |
 | Comparison-row result | `ui-row-value` | Compact 14px bold value; avoid enlarging every table/list result. |
 | Supporting text | `ui-meta`, `ui-meta-compact` | 12px; relaxed or compact line height according to density. |
 | Unit suffix | `ui-unit` | 12px semibold, normal case and tracking. |
@@ -69,10 +70,11 @@ uppercase caption; do not turn `mL`, `mg/mL`, `mEq/L`, `hr`, or `kg` into capita
 ## Validation
 
 The original production UI and the revised UI were both reviewed across all
-eight tabs. The revised browser review covers 48 full-page screenshots: light
+eight tabs. The revised browser review covers 52 full-page screenshots: light
 and dark themes at 1440px desktop and 384px mobile, with populated results and
 expanded calculation disclosures. Alternate states include Cat foods, KPhos Bag
-mode, a phosphate warning, and two CPR batch patients plus the trailing blank row.
+mode, a phosphate warning, two CPR batch patients plus the trailing blank row,
+and CRI's custom-drug fields with wrapped concentration labels.
 Long food names, numeric units, warning emphasis and the batch controls remain
 readable. Each tool retains its own useful layout.
 
@@ -80,6 +82,29 @@ Visual review found and corrected uneven Drug in bag input alignment, KPhos
 target input alignment, and crowded desktop KPhos composition groups. Focused
 geometry assertions now cover these cases. Theme tests use the actual toggle,
 keeping the page and its icon in sync during screenshot capture.
+
+### Closer CRI typography and spacing audit
+
+The reference tab also needs a deliberate hierarchy. Labels and supporting text
+remain 12px; ordinary inputs remain 13px on mobile and 14px from `sm`; instruction
+prose remains 14/15px. Prominent inline and standalone values now use whole-pixel
+18/22px and 18/26px scales, replacing near-duplicate fractional sizes. The shared
+patient-weight field retains its separate emphasis.
+
+The substantive readability fix is formula text: formerly 11/11.5px, now 12px in
+CRI, Drug in bag and Tube Feeding. CRI's input, instruction, result-cell and
+calculation-disclosure padding now use the shared 10/12px inset, aligning their
+outer heading gutters. Equivalent calculation disclosures use the same inset;
+nested formula rows retain their compact local spacing.
+
+Card borders were already consistently 1px with 8px radii. Inputs and inset cards
+have distinct shared border/surface roles, so those differences remain. Ordinary
+CRI label-to-input gaps remain 6px. The custom-drug grid now aligns controls when
+labels wrap. The blood-transfusion summary also gets a wider desktop column gap
+so one value does not read as part of the next label.
+
+Screenshot checks cover heading alignment, readable formula sizes, populated
+card-shell consistency, custom-input alignment and summary-column separation.
 
 The `Calculator quality checks` GitHub Actions workflow runs Svelte/TypeScript
 checks, the production build and the complete Chromium Playwright suite. The
