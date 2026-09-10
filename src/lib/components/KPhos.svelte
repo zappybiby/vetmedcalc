@@ -510,7 +510,7 @@
                   {#if plan.hasPhosTarget}
                     <article class="ui-inset kphos-mixture-card" data-operator="+" data-testid="kphos-component">
                       <span class="ui-label kphos-component-kind">KPhos additive</span>
-                      <strong>{fmtStock(plan.kPhosStockMl)}&nbsp;mL KPhos</strong>
+                      <strong>{fmtStock(plan.kPhosStockMl)} mL KPhos</strong>
                       <dl class="kphos-component-values">
                         <div><dt>K</dt><dd>{fmtConcentrationContribution(kPhosAddedKMeqPerL)} mEq/L</dd></div>
                         <div><dt>Phos</dt><dd>{fmtConcentrationContribution(kPhosAddedPhosMmolPerL)} mmol/L</dd></div>
@@ -521,7 +521,7 @@
                   {#if plan.hasKTarget}
                     <article class="ui-inset kphos-mixture-card" data-operator="+" data-testid="kcl-component">
                       <span class="ui-label kphos-component-kind">KCl additive</span>
-                      <strong>{fmtStock(plan.kClStockMl)}&nbsp;mL KCl</strong>
+                      <strong>{fmtStock(plan.kClStockMl)} mL KCl</strong>
                       <dl class="kphos-component-values">
                         <div><dt>K</dt><dd>{fmtConcentrationContribution(plan.kClAddedMeqPerL ?? 0)} mEq/L</dd></div>
                         <div><dt>Phos</dt><dd>0 mmol/L</dd></div>
@@ -554,7 +554,7 @@
                           </dl>
                         {:else}
                           <span class="ui-label kphos-component-kind">Running fluid</span>
-                          <strong>{mainFluid.label} at {fmtCompact(mainRateValue)}&nbsp;mL/hr</strong>
+                          <strong>{mainFluid.label} at {fmtCompact(mainRateValue)} mL/hr</strong>
                           <dl class="kphos-component-values">
                             <div><dt>K</dt><dd>{fmtDose(plan.mainNativeKDeliveryMeqKgHr)} mEq/kg/hr</dd></div>
                             <div><dt>Phos</dt><dd>{fmtDose(plan.mainNativePhosDeliveryMmolKgHr)} mmol/kg/hr</dd></div>
@@ -564,7 +564,7 @@
                       {#if plan.hasKTarget}
                         <article class="ui-inset kphos-mixture-card" data-operator="+" data-testid="kcl-component">
                           <span class="ui-label kphos-component-kind">KCl additive</span>
-                          <strong>{fmtStock(plan.kClStockMl)}&nbsp;mL KCl</strong>
+                          <strong>{fmtStock(plan.kClStockMl)} mL KCl</strong>
                           <dl class="kphos-component-values">
                             <div><dt>K</dt><dd>{fmtConcentrationContribution(plan.kClAddedMeqPerL ?? 0)} mEq/L</dd></div>
                             <div><dt>Phos</dt><dd>0 mmol/L</dd></div>
@@ -588,7 +588,7 @@
                     <div class="kphos-mixture-flow kphos-flow-three">
                       <article class="ui-inset kphos-mixture-card" data-testid="kphos-component">
                         <span class="ui-label kphos-component-kind">Stock</span>
-                        <strong>{fmtStock(plan.kPhosStockMl)}&nbsp;mL KPhos</strong>
+                        <strong>{fmtStock(plan.kPhosStockMl)} mL KPhos</strong>
                         <dl class="kphos-component-values">
                           <div><dt>K</dt><dd>{fmt(kPhosAddedKMeq, 1)} mEq</dd></div>
                           <div><dt>Phos</dt><dd>{fmt(kPhosAddedPhosMmol, 1)} mmol</dd></div>
@@ -596,7 +596,7 @@
                       </article>
                       <article class="ui-inset kphos-mixture-card" data-operator="+" data-testid="cri-diluent-component">
                         <span class="ui-label kphos-component-kind">Diluent</span>
-                        <strong>{fmtStock(plan.criDiluentVolumeMl)}&nbsp;mL {criDiluentFluid.label}</strong>
+                        <strong>{fmtStock(plan.criDiluentVolumeMl)} mL {criDiluentFluid.label}</strong>
                         <dl class="kphos-component-values">
                           <div><dt>K</dt><dd>{fmtContribution(criDiluentKMeq, 2)} mEq</dd></div>
                           <div><dt>Phos</dt><dd>{fmtContribution(criDiluentPhosMmol, 2)} mmol</dd></div>
