@@ -561,12 +561,29 @@ test.describe('responsive layout guardrails', () => {
           }
         }
 
+        await selectTab(page, 'Ins / outs');
+        await activePanel(page).getByRole('radio', { name: 'Rate', exact: true }).check();
+        await page.locator('#ins-rate').fill('60');
+        await capture('Ins outs rate');
+        await expectAxeColorContrast(page, `${theme} ${viewport.name} Ins outs rate`);
+
         await selectTab(page, 'Food calc');
         let panel = activePanel(page);
         await panel.getByRole('button', { name: 'Cat', exact: true }).click();
         await expect(panel.getByRole('button', { name: 'Cat', exact: true })).toHaveAttribute('aria-pressed', 'true');
         await capture('Food calc Cat');
         await expectAxeColorContrast(page, `${theme} ${viewport.name} Cat foods`);
+
+        await page.evaluate(() => {
+          Object.defineProperty(navigator, 'clipboard', {
+            configurable: true,
+            value: { writeText: async () => { throw new DOMException('Clipboard denied', 'NotAllowedError'); } },
+          });
+        });
+        await panel.getByRole('button', { name: 'Copy note for custom food', exact: true }).click();
+        await expect(panel.getByRole('textbox', { name: 'Feeding note', exact: true })).toBeVisible();
+        await capture('Food note');
+        await expectAxeColorContrast(page, `${theme} ${viewport.name} Food note`);
 
         await selectTab(page, 'KPhos/KCl');
         panel = activePanel(page);

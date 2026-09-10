@@ -14,11 +14,11 @@ from local weight, size, tracking, capitalization, padding, and emphasis choices
 | --- | --- | --- |
 | CRI calculator | Instruction sentence, emphasized volumes/rate, three summary metrics, calculation disclosure | Extract its active styles into shared roles so later tabs can reuse them. Keep its composition and numeric precision. |
 | Drug in bag | Separate draw volume/mass, bag reference, delivered dose, rounding explanation | One primary-result scale; compact reference values; consistent label gaps; normal-case units and concentration chip. |
-| Ins / outs | Three input/output/balance groups, aligned dense rows, signed balance, rate/total choice | Shared headings and choice controls; preserve case-sensitive units independently of uppercase labels. |
-| Tube Feeding | Interval target, calorie and daily references, continuous rate, formulas | Shared headings and primary value; CRI card padding/gaps; neutral continuous-rate divider; consistent supporting text. |
-| Food calc | Dense comparison grid, food names/can sizes, practical portions plus exact values, species and custom input | Remove blue boxes around ordinary results; use shared choice/button styles; readable compact metadata; theme-aware row separators. |
-| KPhos/KCl | Bag/CRI modes, optional targets, added/total switch, separate fluid sources, additive composition with +/= and highlighted total | Shared labels, headings and normal-weight controls; CRI instruction typography; shared inset cards and warning treatment; remove duplicated local theme rules. |
-| Blood transfusion | Interval schedule table, aligned numeric columns, cumulative volume, expandable summary | Shared headings/labels/meta, case-sensitive units, theme-aware table rules. |
+| Ins / outs | Shared period, rate/total choice, signed net balance and a compact fluid-in/urine-out comparison table | Shared headings and choice controls; preserve case-sensitive units independently of uppercase labels. |
+| Tube Feeding | Interval target, calorie and daily references, continuous rate, formulas | Remove redundant Inputs/Administration target headings and the outer result card; keep the actual target/reference cards with shared padding. |
+| Food calc | Compact full-width table, food names/can sizes, practical portions plus exact values, species/custom input, copyable feeding notes | Use compact rows and shared type/borders; keep per-food note actions easy to find without adding a button row on mobile. |
+| KPhos/KCl | Bag/CRI modes, optional targets, added/total switch, separate fluid sources, additive composition with +/= and highlighted total | Remove redundant setup headings and their column; center Mode controls, enlarge Added/Total, use restrained bold instruction values and readable component values, and put all-source delivery below the composition diagram. |
+| Blood transfusion | Interval schedule table, aligned numeric columns, cumulative volume, expandable summary | Remove the redundant Inputs heading; use shared labels/meta, case-sensitive units and theme-aware table rules. |
 | CPR labels | Species choices, drug concentration/dose/volume relationships, ET estimate/range; batch entry and keyboard flow | Shared choice controls, headings and notes; consistent card padding and gaps; ordinary button casing. |
 
 The largest drift was in KPhos/KCl, Food calc, and Tube Feeding. Ins / outs was
@@ -34,7 +34,7 @@ Use the classes in [app.css](../src/app.css) before inventing a local visual sty
 | Tool spacing | `ui-tool-stack` | Grid container with 8px gaps, 12px from `sm`; define columns locally. |
 | Card padding | `ui-card-padding` | 10px, 12px from `sm`; does not set layout or surface. |
 | Card / inset | `ui-card`, `ui-inset` | Shared theme-aware surface, border, 8px corners and shadow. |
-| Field label | `ui-label` | 12px, semibold, uppercase, restrained tracking. |
+| Field label | `ui-label` | 12px, heavy weight matching CRI result labels, uppercase, restrained tracking. |
 | Strong label / section heading | `ui-label-strong`, `ui-section-title` | 12px, heavy weight, uppercase. |
 | Instruction prose | `ui-instruction` | 14px, 15px from `sm`, relaxed leading. |
 | Inline instruction value | `ui-statement-value` | 18px, 22px from `sm`; prominent values within a sentence. |
@@ -70,11 +70,12 @@ uppercase caption; do not turn `mL`, `mg/mL`, `mEq/L`, `hr`, or `kg` into capita
 ## Validation
 
 The original production UI and the revised UI were both reviewed across all
-eight tabs. The revised browser review covers 52 full-page screenshots: light
+eight tabs. The revised browser review covers 60 full-page screenshots: light
 and dark themes at 1440px desktop and 384px mobile, with populated results and
 expanded calculation disclosures. Alternate states include Cat foods, KPhos Bag
 mode, a phosphate warning, two CPR batch patients plus the trailing blank row,
-and CRI's custom-drug fields with wrapped concentration labels.
+CRI's custom-drug fields with wrapped concentration labels, Ins/Outs rate entry,
+and Food Calc's selectable note fallback.
 Long food names, numeric units, warning emphasis and the batch controls remain
 readable. Each tool retains its own useful layout.
 
@@ -119,4 +120,25 @@ test report are retained in its `vetmedcalc-quality-review` artifact for 14 days
 
 Run `npm run check:commit` for later changes. Reinspect screenshot artifacts when
 styles change; the screenshots are human-review evidence, not pixel baselines.
-Clinical calculations and dedicated print renderers are unchanged by this pass.
+Calculation formulas, rounding and dedicated print renderers are unchanged. Food
+Calc adds only note formatting and clipboard/fallback interaction to its existing
+calculation workflow.
+
+
+## Requested workflow refinements
+
+The follow-up is split into nine feature commits, matching the requested changes:
+
+1. Tube Feeding: remove Inputs and Administration target headings and the extra result wrapper.
+2. Food Calc: replace the card grid with a compact table and per-food Copy note actions. Notes include patient context, food/can energy, interval, practical portion, calories and the calculated amount before rounding. Clipboard denial reveals selectable text; edits clear stale copy feedback.
+3. KPhos: remove Preparation, Fluid bag and CRI setup headings plus the unused heading gutter.
+4. KPhos readability: separate mixing/running instructions, use 16/18px bold key values and 13px component values, and enlarge Added/Total to 36px high with 14px text.
+5. KPhos delivery: show phosphate and potassium per-kg hourly rates below all composition groups, explicitly labeled as totals from all sources. They are not mislabeled as CRI-only delivery.
+6. KPhos mode: center Bag/CRI and use a larger, bold Mode caption.
+7. Blood Transfusion: remove Inputs and its extra heading gap.
+8. Shared field labels: match CRI's Delivers/Lasts emphasis through the common ui-label role.
+9. Ins/Outs: one shared-period entry area and one net-balance comparison table, retaining every original total, rate, weight rate and signed balance.
+
+Workflow tests cover copied note contents, clipboard fallback, positive/negative/zero
+fluid balances, mode changes, centered mode controls and all-source electrolyte
+semantics. The PR links the current quality run and screenshot artifacts.
