@@ -481,22 +481,6 @@
           {/if}
         {/if}
 
-        <div class="mt-2 ui-instruction" data-testid="kphos-delivery-summary">
-          {#if plan.totalKDeliveryMeqKgHr != null && plan.totalPhosDeliveryMmolKgHr != null}
-            <p>From all sources, this delivers:</p>
-            <div class="mt-0.5 grid gap-0.5">
-              <strong class="font-black tabular-nums text-slate-100" data-testid="total-phos-delivery">{fmtDose(plan.totalPhosDeliveryMmolKgHr)} mmol/kg/hr phosphate</strong>
-              <strong class="font-black tabular-nums text-slate-100" data-testid="total-k-delivery">{fmtDose(plan.totalKDeliveryMeqKgHr)} mEq/kg/hr potassium</strong>
-            </div>
-          {:else}
-            <p class="text-slate-400">
-              Enter patient weight and fluid rate to see delivery.
-              <span class="sr-only" data-testid="total-phos-delivery">—</span>
-              <span class="sr-only" data-testid="total-k-delivery">—</span>
-            </p>
-          {/if}
-        </div>
-
         <div class="mt-3 border-t ui-rule pt-2.5">
           {#if alerts.length}
             <div class="ui-alert mb-2 border-amber-300/30 bg-amber-950/40 text-amber-100">
@@ -633,6 +617,27 @@
               </div>
             {/if}
 
+            <section class="kphos-delivery-summary ui-instruction" aria-label="Total delivery from all sources" data-testid="kphos-delivery-summary">
+              <h4 class="ui-section-title">Total delivery · all sources</h4>
+              {#if plan.totalKDeliveryMeqKgHr != null && plan.totalPhosDeliveryMmolKgHr != null}
+                <dl class="kphos-delivery-values">
+                  <div>
+                    <dt class="ui-label">Phosphate</dt>
+                    <dd data-testid="total-phos-delivery"><strong class="kphos-instruction-value">{fmtDose(plan.totalPhosDeliveryMmolKgHr)}</strong> <span class="ui-unit">mmol/kg/hr</span></dd>
+                  </div>
+                  <div>
+                    <dt class="ui-label">Potassium</dt>
+                    <dd data-testid="total-k-delivery"><strong class="kphos-instruction-value">{fmtDose(plan.totalKDeliveryMeqKgHr)}</strong> <span class="ui-unit">mEq/kg/hr</span></dd>
+                  </div>
+                </dl>
+              {:else}
+                <p class="mt-2 ui-meta">
+                  Enter patient weight and fluid rate to see delivery.
+                  <span class="sr-only" data-testid="total-phos-delivery">—</span>
+                  <span class="sr-only" data-testid="total-k-delivery">—</span>
+                </p>
+              {/if}
+            </section>
           </div>
         </div>
       </section>
@@ -763,6 +768,23 @@
 
   .kphos-mixture-group {
     padding: 0;
+  }
+
+  .kphos-delivery-summary {
+    margin-top: 0.75rem;
+    border-top: 1px solid var(--ui-divider);
+    padding-top: 0.75rem;
+  }
+
+  .kphos-delivery-values {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.75rem;
+    margin-top: 0.5rem;
+  }
+
+  .kphos-delivery-values dd {
+    margin-top: 0.25rem;
   }
 
   .kphos-mixture-group + .kphos-mixture-group {

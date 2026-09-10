@@ -365,9 +365,9 @@ test.describe('KPhos workflow', () => {
 
     await expect(results.getByTestId('kphos-stock-volume')).toHaveText('1.7 mL KPhos');
     await expect(results.getByTestId('kcl-stock-volume')).toHaveText('11.2 mL KCl');
-    await expect(results.getByText('From all sources, this delivers:')).toBeVisible();
-    await expect(results.getByTestId('total-phos-delivery')).toHaveText('0.02 mmol/kg/hr phosphate');
-    await expect(results.getByTestId('total-k-delivery')).toHaveText('0.14 mEq/kg/hr potassium');
+    await expect(summary.getByRole('region', { name: 'Total delivery from all sources' })).toBeVisible();
+    await expect(summary.getByTestId('total-phos-delivery')).toHaveText('0.02 mmol/kg/hr');
+    await expect(summary.getByTestId('total-k-delivery')).toHaveText('0.14 mEq/kg/hr');
     await expect(summary.getByText('Composition breakdown')).toHaveCount(0);
     await expect(summary.getByText('How the fluid bag is built')).toHaveCount(0);
     await expect(summary.getByTestId('starting-fluid-component')).toHaveText(/Starting bag\s+1,000 mL Norm-R\s+K\s*5 mEq\/L\s+Phos\s*0 mmol\/L/);
@@ -392,7 +392,7 @@ test.describe('KPhos workflow', () => {
       componentOrder: ['starting-fluid-component', 'kphos-component', 'kcl-component', 'final-bag-component'],
       operators: ['+', '+', '='],
     });
-    expect(resultText.indexOf('From all sources')).toBeLessThan(resultText.indexOf('STARTING BAG'));
+    expect(resultText.indexOf('TOTAL DELIVERY')).toBeGreaterThan(resultText.indexOf('FINAL BAG'));
   });
 
   test('supports a phosphate-only CRI and shows the main-fluid source in the visual flow', async ({ page }) => {
@@ -419,6 +419,9 @@ test.describe('KPhos workflow', () => {
     );
     await expect(summary.getByTestId('final-bag-component')).toHaveCount(0);
     await expect(summary.getByTestId('final-cri-component')).toContainText('Prepared CRI');
+    const combinedDelivery = summary.getByRole('region', { name: 'Total delivery from all sources' });
+    await expect(combinedDelivery.getByTestId('total-phos-delivery')).toHaveText('0.01 mmol/kg/hr');
+    await expect(criRegion.getByTestId('total-phos-delivery')).toHaveCount(0);
 
     const criFlowStyles = await criRegion.locator('.kphos-mixture-flow').evaluate((flow) => {
       const cards = [...flow.querySelectorAll<HTMLElement>('.kphos-mixture-card')];
