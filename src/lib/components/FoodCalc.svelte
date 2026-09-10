@@ -283,7 +283,7 @@
         <thead class="bg-surface-sunken">
           <tr>
             <th scope="col" class="ui-label">Food</th>
-            <th scope="col" class="ui-label">Per feeding</th>
+            <th scope="col" class="food-portion-cell ui-label">Per feeding</th>
             <th scope="col" class="ui-label hidden md:table-cell">Exact <span class="normal-case">(cans)</span></th>
             <th scope="col" class="ui-label hidden md:table-cell"><span class="normal-case">kcal/feed</span></th>
             <th scope="col" class="food-copy-cell ui-label"><span class="md:sr-only">Note</span></th>
@@ -298,7 +298,7 @@
                   {#if plan.food.canSize}{plan.food.canSize} · {/if}{fmtWhole(plan.food.kcalPerCan)} kcal/can
                 </div>
               </th>
-              <td>
+              <td class="food-portion-cell">
                 <div class="ui-row-value leading-snug">{formatCanPortion(plan.roundedCansPerInterval)}</div>
                 <div class="mt-1 ui-meta-compact tabular-nums md:hidden">{fmt(plan.exactCansPerInterval, 2)} exact</div>
                 <div class="mt-1 ui-meta-compact tabular-nums md:hidden">{fmtWhole(plan.roundedKcalPerInterval)} kcal/feed</div>
@@ -354,6 +354,11 @@
     width: 3rem;
   }
 
+  .food-table .food-portion-cell {
+    padding-right: 0.25rem;
+    padding-left: 0.25rem;
+  }
+
   .food-table .food-copy-cell {
     padding-right: 0.375rem;
     padding-left: 0.375rem;
@@ -368,6 +373,17 @@
       vertical-align: middle;
     }
 
+    .food-table tbody th,
+    .food-table tbody td {
+      padding-top: 0.375rem;
+      padding-bottom: 0.375rem;
+    }
+
+    .food-table .food-portion-cell {
+      padding-right: 0.75rem;
+      padding-left: 0.75rem;
+    }
+
     .food-name-column {
       width: 43%;
     }
@@ -377,7 +393,7 @@
     }
 
     .food-copy-column {
-      width: 7rem;
+      width: 8rem;
     }
 
     .food-table .food-copy-cell {
