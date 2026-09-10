@@ -66,20 +66,29 @@ uppercase caption; do not turn `mL`, `mg/mL`, `mEq/L`, `hr`, or `kg` into capita
 - Keep the dedicated CRI/CPR print renderers and label geometry separate from
   screen styling.
 
-## Validation and remaining review
+## Validation
 
-The existing production website was inspected in the browser across all eight
-tabs, including populated results and CPR batch mode, with light-theme spot
-checks. Responsive rules were reviewed in source. Svelte diagnostics, TypeScript
-configuration checks, and the production build passed for the patch. The diff
-also received an independent source review.
+The original production UI and the revised UI were both reviewed across all
+eight tabs. The revised browser review covers 48 full-page screenshots: light
+and dark themes at 1440px desktop and 384px mobile, with populated results and
+expanded calculation disclosures. Alternate states include Cat foods, KPhos Bag
+mode, a phosphate warning, and two CPR batch patients plus the trailing blank row.
+Long food names, numeric units, warning emphasis and the batch controls remain
+readable. Each tool retains its own useful layout.
 
-The local preview service was unavailable, so the revised UI has **not** received
-browser verification, and the Playwright suite has **not** been run. Two existing
-KPhos style assertions were updated to reflect the shared instruction and label
-roles rather than its former 17px prose and heavy target labels.
+Visual review found and corrected uneven Drug in bag input alignment, KPhos
+target input alignment, and crowded desktop KPhos composition groups. Focused
+geometry assertions now cover these cases. Theme tests use the actual toggle,
+keeping the page and its icon in sync during screenshot capture.
 
-Before merging, run the existing `check:commit` gate and visually review the
-populated tabs in both themes at desktop and narrow mobile widths. Pay particular
-attention to long food names, KPhos target labels and composition cards, and batch
-CPR rows. This branch is a reviewable style pass, not a production deployment.
+The `Calculator quality checks` GitHub Actions workflow runs Svelte/TypeScript
+checks, the production build and the complete Chromium Playwright suite. The
+suite covers calculations, workflows, responsive layouts from 384px to 1920px,
+text contrast in both themes, and CRI/CPR print-label fitting. An initial full run
+passed 46 tests; the optional `LABEL_FIT_OPTIMIZER` test was intentionally skipped.
+The PR links the final run for the reviewed revision. Screenshots and the HTML
+test report are retained in its `vetmedcalc-quality-review` artifact for 14 days.
+
+Run `npm run check:commit` for later changes. Reinspect screenshot artifacts when
+styles change; the screenshots are human-review evidence, not pixel baselines.
+Clinical calculations and dedicated print renderers are unchanged by this pass.

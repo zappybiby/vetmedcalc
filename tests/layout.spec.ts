@@ -31,10 +31,9 @@ async function openApp(page: Page, viewport: { width: number; height: number }) 
 }
 
 async function setTheme(page: Page, theme: Theme) {
-  await page.evaluate((value) => {
-    localStorage.setItem('vetmedcalc.theme', value);
-    document.documentElement.dataset.theme = value;
-  }, theme);
+  if (await page.locator('html').getAttribute('data-theme') !== theme) {
+    await page.getByRole('button', { name: `Switch to ${theme} mode`, exact: true }).click();
+  }
   await expect(page.locator('html')).toHaveAttribute('data-theme', theme);
 }
 
@@ -485,6 +484,7 @@ test.describe('responsive layout guardrails', () => {
           const path = testInfo.outputPath(`${name}.png`);
           await page.screenshot({ path, fullPage: true, animations: 'disabled', caret: 'hide' });
           await testInfo.attach(name, { path, contentType: 'image/png' });
+          await expectThemeToggleIconMatchesTheme(page, name);
           const documentWidth = await page.evaluate(() =>
             Math.max(document.documentElement.scrollWidth, document.body.scrollWidth),
           );
@@ -494,6 +494,30 @@ test.describe('responsive layout guardrails', () => {
         for (const tabName of await getToolTabNames(page)) {
           await fillTabData(page, tabName);
           await capture(tabName);
+
+          if (tabName === 'Drug in bag' || tabName === 'KPhos/KCl') {
+            const selectors = tabName === 'Drug in bag'
+              ? ['#drugbag-bag', '#drugbag-rate']
+              : ['#kphos-phos-target', '#kphos-k-target'];
+            const [left, right] = await Promise.all(selectors.map((selector) => page.locator(selector).boundingBox()));
+            expect(left).not.toBeNull();
+            expect(right).not.toBeNull();
+            expect.soft(Math.abs(left!.y - right!.y), `${tabName} paired input alignment`).toBeLessThanOrEqual(1);
+          }
+
+          if (tabName === 'KPhos/KCl' && viewport.name === 'desktop') {
+            const groups = activePanel(page).locator('.kphos-cri-groups > section');
+            const [leftTitle, rightTitle, leftCard, rightGroup, rightCard] = await Promise.all([
+              groups.nth(0).locator('h4').boundingBox(),
+              groups.nth(1).locator('h4').boundingBox(),
+              groups.nth(0).locator('.kphos-mixture-card').last().boundingBox(),
+              groups.nth(1).boundingBox(),
+              groups.nth(1).locator('.kphos-mixture-card').first().boundingBox(),
+            ]);
+            expect.soft(Math.abs(leftTitle!.y - rightTitle!.y), 'Composition heading alignment').toBeLessThanOrEqual(1);
+            expect.soft(rightGroup!.x - leftCard!.x - leftCard!.width, 'Space before the divider').toBeGreaterThanOrEqual(8);
+            expect.soft(rightCard!.x - rightGroup!.x, 'Space after the divider').toBeGreaterThanOrEqual(8);
+          }
         }
 
         await selectTab(page, 'Food calc');

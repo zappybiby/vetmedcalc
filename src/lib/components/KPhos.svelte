@@ -729,7 +729,7 @@
 
   .kphos-field-heading {
     display: flex;
-    min-height: 1.25rem;
+    min-height: 1.5rem;
     min-width: 0;
     align-items: center;
     justify-content: space-between;
@@ -955,11 +955,15 @@
     .kphos-cri-groups {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(24rem, 1fr));
+      column-gap: 0.75rem;
     }
 
     .kphos-cri-groups > .kphos-mixture-group + .kphos-mixture-group {
       border-top: 0;
       border-left: 1px solid var(--ui-divider);
+      margin-top: 0;
+      padding-top: 0;
+      padding-left: 0.75rem;
     }
   }
 </style>

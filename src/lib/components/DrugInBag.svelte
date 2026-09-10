@@ -252,7 +252,7 @@
 
 <section class="ui-tool-stack text-slate-200" aria-label="Drug in bag calculator">
   <article class="ui-card grid min-w-0 gap-2 p-2.5 sm:gap-3 sm:p-3">
-    <div class="grid min-w-0 gap-2 min-[380px]:grid-cols-2 sm:gap-3 md:grid-cols-2">
+    <div class="grid min-w-0 items-end gap-2 min-[380px]:grid-cols-2 sm:gap-3 md:grid-cols-2">
       <div class="flex min-w-0 flex-col gap-1.5 min-[380px]:col-span-2 md:col-span-1">
         <label class="ui-label" for="drugbag-drug">Drug</label>
         <select id="drugbag-drug" class="field-select" bind:value={selectedDrugId}>
