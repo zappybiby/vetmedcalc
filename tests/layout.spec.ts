@@ -525,14 +525,17 @@ test.describe('responsive layout guardrails', () => {
             expect.soft(right!.x - left!.x - left!.width, 'Separate adjacent summary columns').toBeGreaterThanOrEqual(16);
           }
 
-          if (tabName === 'Drug in bag' || tabName === 'KPhos/KCl') {
-            const selectors = tabName === 'Drug in bag'
-              ? ['#drugbag-bag', '#drugbag-rate']
-              : ['#kphos-phos-target', '#kphos-k-target'];
-            const [left, right] = await Promise.all(selectors.map((selector) => page.locator(selector).boundingBox()));
+          if (['Drug in bag', 'KPhos/KCl', 'Tube Feeding'].includes(tabName)) {
+            const fields = tabName === 'Tube Feeding'
+              ? [activePanel(page).getByLabel('Diet density (kcal/mL)', { exact: true }), activePanel(page).getByLabel('RER factor', { exact: true })]
+              : (tabName === 'Drug in bag'
+                ? ['#drugbag-bag', '#drugbag-rate']
+                : ['#kphos-phos-target', '#kphos-k-target']).map((selector) => page.locator(selector));
+            const [left, right] = await Promise.all(fields.map((field) => field.boundingBox()));
             expect(left).not.toBeNull();
             expect(right).not.toBeNull();
             expect.soft(Math.abs(left!.y - right!.y), `${tabName} paired input alignment`).toBeLessThanOrEqual(1);
+            expect.soft(Math.abs(left!.height - right!.height), `${tabName} paired input heights`).toBeLessThanOrEqual(1);
           }
 
           if (tabName === 'KPhos/KCl' && viewport.name === 'desktop') {
@@ -599,6 +602,8 @@ test.describe('responsive layout guardrails', () => {
           page.locator('#cri-custom-concentration').boundingBox(),
         ]);
         expect.soft(Math.abs(nameField!.y - concentrationField!.y), 'Custom CRI inputs align when labels wrap').toBeLessThanOrEqual(1);
+        const doseField = await page.locator('#cri-dose').boundingBox();
+        expect.soft(doseField!.width, 'Custom CRI dose has room for its value and number controls').toBeGreaterThanOrEqual(80);
         await expectAxeColorContrast(page, `${theme} ${viewport.name} Custom CRI`);
       });
     }

@@ -252,7 +252,7 @@
           />
         </div>
 
-        <div class="flex min-w-0 flex-col gap-1.5">
+        <div class="flex min-w-0 flex-col gap-1.5 xl:col-span-2">
           <label class="ui-label" for="cri-custom-concentration">Stock concentration <span class="normal-case">(mg/mL)</span></label>
           <input
             id="cri-custom-concentration"
@@ -266,7 +266,7 @@
         </div>
       {/if}
 
-      <div class="col-span-2 flex min-w-0 flex-col gap-1.5 xl:col-span-1">
+      <div class={`col-span-2 flex min-w-0 flex-col gap-1.5 ${isCustomDrug ? '' : 'xl:col-span-1'}`}>
         <label class="ui-label" for="cri-dose">Dose</label>
         <div class="grid min-w-0 grid-cols-[minmax(0,1fr)_auto] items-center gap-2">
           <input

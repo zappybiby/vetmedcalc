@@ -100,11 +100,14 @@ nested formula rows retain their compact local spacing.
 Card borders were already consistently 1px with 8px radii. Inputs and inset cards
 have distinct shared border/surface roles, so those differences remain. Ordinary
 CRI label-to-input gaps remain 6px. The custom-drug grid now aligns controls when
-labels wrap. The blood-transfusion summary also gets a wider desktop column gap
+labels wrap and gives the dose field enough desktop columns to display its value.
+Tube Feeding also aligns its controls when the diet-density label wraps, avoiding
+uneven input heights caused by stretched grid fields.
+The blood-transfusion summary also gets a wider desktop column gap
 so one value does not read as part of the next label.
 
 Screenshot checks cover heading alignment, readable formula sizes, populated
-card-shell consistency, custom-input alignment and summary-column separation.
+card-shell consistency, custom-input alignment/width and summary-column separation.
 
 The `Calculator quality checks` GitHub Actions workflow runs Svelte/TypeScript
 checks, the production build and the complete Chromium Playwright suite. The

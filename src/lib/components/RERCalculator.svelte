@@ -138,7 +138,7 @@
     <div class="ui-card min-w-0 ui-card-padding">
       <h2 class="ui-section-title">Inputs</h2>
 
-      <div class="mt-2 grid gap-2 min-[360px]:grid-cols-2 sm:mt-3 sm:gap-3 md:grid-cols-2 xl:grid-cols-3">
+      <div class="mt-2 grid items-end gap-2 min-[360px]:grid-cols-2 sm:mt-3 sm:gap-3 md:grid-cols-2 xl:grid-cols-3">
         <label class="grid gap-1.5">
           <span class="ui-label">Diet density <span class="normal-case">(kcal/mL)</span></span>
           <input
