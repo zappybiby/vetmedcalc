@@ -322,6 +322,17 @@ test.describe('KPhos workflow', () => {
     await expect(inputCard.getByLabel('Fluid Type', { exact: true })).toBeVisible();
   });
 
+  test('centers the mode selector on desktop and mobile', async ({ page }) => {
+    for (const viewport of [{ width: 1440, height: 900 }, { width: 384, height: 854 }]) {
+      const panel = await openKPhos(page, viewport);
+      const card = await panel.getByTestId('kphos-input-card').boundingBox();
+      const control = await panel.getByRole('group', { name: 'Add KPhos to' }).boundingBox();
+      expect(Math.abs(control!.x + control!.width / 2 - card!.x - card!.width / 2)).toBeLessThanOrEqual(1);
+      const modeSize = await panel.getByText('Mode:', { exact: true }).evaluate((label) => Number.parseFloat(getComputedStyle(label).fontSize));
+      expect(modeSize).toBeGreaterThanOrEqual(14);
+    }
+  });
+
   test('supports a KCl-only 250 mL bag with no patient data', async ({ page }) => {
     const panel = await openKPhos(page);
 

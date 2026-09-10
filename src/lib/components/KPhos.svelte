@@ -220,7 +220,7 @@
   <article class="ui-card min-w-0 overflow-hidden" data-testid="kphos-input-card">
     <header class="kphos-input-header">
       <div class="kphos-mode-picker">
-        <span class="ui-label">Mode:</span>
+        <span class="ui-label kphos-mode-label">Mode:</span>
         <div class="ui-inset kphos-mode-control" role="group" aria-label="Add KPhos to">
           <button
             type="button"
@@ -659,16 +659,22 @@
     display: flex;
     min-height: 3.75rem;
     align-items: center;
-    justify-content: space-between;
+    justify-content: center;
     gap: 1rem;
     border-bottom: 1px solid var(--ui-divider);
     padding: 0.625rem 0.75rem;
   }
 
   .kphos-mode-picker {
-    display: flex;
+    display: grid;
     align-items: center;
-    gap: 0.5rem;
+    justify-items: center;
+    gap: 0.375rem;
+  }
+
+  .kphos-mode-label {
+    font-size: 0.875rem;
+    font-weight: 900;
   }
 
   .kphos-mode-control {
