@@ -73,8 +73,7 @@
 <section class="ui-tool-stack text-slate-200" aria-label="Blood transfusion planner">
   <div class="grid min-w-0 gap-2 sm:gap-3">
     <div class="ui-card min-w-0 ui-card-padding">
-      <h2 class="ui-section-title">Inputs</h2>
-      <div class="mt-2 grid gap-2 min-[360px]:grid-cols-2 sm:mt-3 sm:gap-3">
+      <div class="grid gap-2 min-[360px]:grid-cols-2 sm:gap-3">
         <label class="grid gap-1.5">
           <span class="ui-label">Total volume <span class="normal-case">(mL)</span></span>
           <input
