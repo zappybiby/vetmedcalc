@@ -435,7 +435,7 @@ test.describe('KPhos workflow', () => {
 
     const primaryTextSizes = await results.getByRole('region', { name: 'Preparation and delivery' }).locator('p.ui-instruction').first().evaluate((row) => ({
       row: Number.parseFloat(getComputedStyle(row).fontSize),
-      value: Number.parseFloat(getComputedStyle(row.querySelector('.ui-statement-value') as Element).fontSize),
+      value: Number.parseFloat(getComputedStyle(row.querySelector('.kphos-instruction-value') as Element).fontSize),
     }));
     expect(primaryTextSizes.row).toBeGreaterThanOrEqual(14);
     expect(primaryTextSizes.value).toBeGreaterThan(primaryTextSizes.row);
@@ -464,6 +464,12 @@ test.describe('KPhos workflow', () => {
     await panel.getByTestId('k-target-basis').click();
 
     await expect(panel.getByTestId('k-target-basis')).toHaveText('Total');
+    const basisStyle = await panel.getByTestId('k-target-basis').evaluate((button) => ({
+      height: button.getBoundingClientRect().height,
+      fontSize: Number.parseFloat(getComputedStyle(button).fontSize),
+    }));
+    expect(basisStyle.height).toBeGreaterThanOrEqual(32);
+    expect(basisStyle.fontSize).toBeGreaterThanOrEqual(14);
     await expect(panel.getByLabel('Total potassium target (mEq/L)', { exact: true })).toHaveValue('30');
     await expect(panel.getByTestId('kcl-stock-volume')).toContainText('9.6 mL');
     const totalResultTop = await panel.getByTestId('kphos-results').evaluate((element) => element.getBoundingClientRect().top);
