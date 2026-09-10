@@ -130,7 +130,7 @@ calculation workflow.
 The follow-up is split into nine feature commits, matching the requested changes:
 
 1. Tube Feeding: remove Inputs and Administration target headings and the extra result wrapper.
-2. Food Calc: replace the card grid with a compact table and per-food Copy note actions. Notes include patient context, food/can energy, interval, practical portion, calories and the calculated amount before rounding. Clipboard denial reveals selectable text; edits clear stale copy feedback.
+2. Food Calc: replace the card grid with a compact table and per-food Copy note actions. Copied notes contain only the food name, calculated decimal cans, interval and calories for that decimal portion (for example, `Hill's a/d: 1.19 cans every 6 hours (218 kcal/feed).`). Clipboard denial reveals selectable text; edits clear stale copy feedback.
 3. KPhos: remove Preparation, Fluid bag and CRI setup headings plus the unused heading gutter.
 4. KPhos readability: separate mixing/running instructions, use 16/18px bold key values and 13px component values, and enlarge Added/Total to 36px high with 14px text.
 5. KPhos delivery: show phosphate and potassium per-kg hourly rates below all composition groups, explicitly labeled as totals from all sources. They are not mislabeled as CRI-only delivery.

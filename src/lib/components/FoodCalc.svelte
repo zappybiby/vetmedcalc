@@ -65,16 +65,15 @@
   }
 
   function feedingNote(plan: FoodFeedingPlan): string {
-    const species = selectedSpecies === 'cat' ? 'Cat' : 'Dog';
-    const patientDescription = [p.name.trim(), species, `${plan.weightKg} kg`].filter(Boolean).join(', ');
-    const foodDescription = plan.food.id === 'custom' ? 'Custom food' : plan.food.name;
-    const canDescription = [plan.food.canSize, `${plan.food.kcalPerCan} kcal/can`].filter(Boolean).join('; ');
+    const foodName = plan.food.id === 'custom' ? 'Custom food'
+      : plan.food.id === 'hills-ad-urgent-care' ? "Hill's a/d" : plan.food.name;
+    // Keep tiny positive portions from becoming zero in the copied note.
+    const decimalCans = Number(plan.exactCansPerInterval.toFixed(2))
+      || Number(plan.exactCansPerInterval.toPrecision(2));
+    const calories = Math.round(decimalCans * plan.food.kcalPerCan);
 
-    return `Nutrition: ${patientDescription}. ${foodDescription} (${canDescription}): ` +
-      `${formatCanPortion(plan.roundedCansPerInterval)} every ${plan.intervalHours} hr ` +
-      `(~${fmtWhole(plan.roundedKcalPerInterval)} kcal/feed). ` +
-      `RER factor ${plan.rerFactor}; target ${fmtWhole(plan.targetKcalPerDay)} kcal/day. ` +
-      `Calculated amount: ${fmt(plan.exactCansPerInterval, 2)} cans/feed before portion rounding.`;
+    return `${foodName}: ${decimalCans} ${decimalCans === 1 ? 'can' : 'cans'} ` +
+      `every ${plan.intervalHours} ${plan.intervalHours === 1 ? 'hour' : 'hours'} (${calories} kcal/feed).`;
   }
 
   async function copyNote(plan: FoodFeedingPlan): Promise<void> {

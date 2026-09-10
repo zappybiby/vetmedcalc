@@ -27,9 +27,9 @@ async function clipboardWrites(page: Page) {
   return page.evaluate(() => (window as unknown as { foodClipboardWrites: string[] }).foodClipboardWrites);
 }
 
-test('copies a complete preset feeding note with practical and calculated amounts distinguished', async ({ page }) => {
+test('copies only the food name, decimal portion, interval and matching calories', async ({ page }) => {
   const panel = await openFood(page);
-  // Names entered in CPR are shared patient context and must survive tab changes.
+  // Shared patient details must not add extra text to the copied feeding line.
   await page.getByRole('tab', { name: 'CPR labels', exact: true }).click();
   await page.locator('#cpr-patient-name').fill('Bailey');
   await page.getByRole('tab', { name: 'Food calc', exact: true }).click();
@@ -40,9 +40,7 @@ test('copies a complete preset feeding note with practical and calculated amount
   await panel.getByRole('button', { name: "Copy note for Hill's a/d Urgent Care", exact: true }).click();
 
   await expect.poll(() => clipboardWrites(page)).toEqual([
-    "Nutrition: Bailey, Dog, 10 kg. Hill's a/d Urgent Care (5.5 oz; 183 kcal/can): " +
-    '5/8 can every 6 hr (~114 kcal/feed). RER factor 1.2; target 472 kcal/day. ' +
-    'Calculated amount: 0.65 cans/feed before portion rounding.',
+    "Hill's a/d: 0.65 cans every 6 hours (119 kcal/feed).",
   ]);
   await expect(panel.getByRole('status')).toHaveText("Copied Hill's a/d Urgent Care feeding note.");
 });
@@ -61,8 +59,7 @@ test('mobile custom notes follow species, weight, interval and calorie changes',
   const copy = panel.getByRole('button', { name: 'Copy note for custom food', exact: true });
   await copy.click();
   await expect.poll(() => clipboardWrites(page)).toEqual([
-    'Nutrition: Cat, 4 kg. Custom food (200 kcal/can): 1/3 can every 8 hr (~67 kcal/feed). ' +
-    'RER factor 1; target 198 kcal/day. Calculated amount: 0.33 cans/feed before portion rounding.',
+    'Custom food: 0.33 cans every 8 hours (66 kcal/feed).',
   ]);
 
   await panel.getByLabel('Custom kcal/can', { exact: true }).fill('400');
@@ -70,8 +67,7 @@ test('mobile custom notes follow species, weight, interval and calorie changes',
   await expect(copy).toHaveText('Copy note');
   await copy.click();
   await expect.poll(async () => (await clipboardWrites(page))[1]).toBe(
-    'Nutrition: Cat, 4 kg. Custom food (400 kcal/can): 1/8 can every 8 hr (~50 kcal/feed). ' +
-    'RER factor 1; target 198 kcal/day. Calculated amount: 0.16 cans/feed before portion rounding.',
+    'Custom food: 0.16 cans every 8 hours (64 kcal/feed).',
   );
 
   await panel.getByLabel('Custom kcal/can', { exact: true }).fill('0');
@@ -88,9 +84,7 @@ for (const mode of ['denied', 'unavailable'] as const) {
     await expect(panel.getByRole('status')).toHaveText('Clipboard unavailable. Select and copy the note below.');
     const note = panel.getByRole('textbox', { name: 'Feeding note', exact: true });
     await expect(note).toHaveValue(
-      "Nutrition: Dog, 10 kg. Hill's a/d Urgent Care (5.5 oz; 183 kcal/can): " +
-      '1/2 can every 6 hr (~92 kcal/feed). RER factor 1; target 394 kcal/day. ' +
-      'Calculated amount: 0.54 cans/feed before portion rounding.',
+      "Hill's a/d: 0.54 cans every 6 hours (99 kcal/feed).",
     );
     await note.focus();
     await expect.poll(() => note.evaluate((element: HTMLTextAreaElement) =>
