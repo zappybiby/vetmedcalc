@@ -478,8 +478,8 @@
   }
 
   .ui-label {
-    @apply text-xs font-semibold uppercase leading-none tracking-wide;
-    color: var(--ui-text-300);
+    @apply text-xs font-black uppercase leading-none tracking-wide;
+    color: var(--ui-text-200);
     letter-spacing: 0.025em;
   }
 

@@ -506,6 +506,14 @@ test.describe('responsive layout guardrails', () => {
 
           if (tabName === 'CRI calculator') {
             const panel = activePanel(page);
+            const labelStyle = (element: Element) => {
+              const style = getComputedStyle(element);
+              return { size: style.fontSize, weight: style.fontWeight, color: style.color };
+            };
+            const resultLabelStyle = await panel.getByText('Delivers', { exact: true }).evaluate(labelStyle);
+            for (const field of ['cri-med', 'cri-dose', 'cri-duration', 'cri-rate']) {
+              expect(await panel.locator(`label[for="${field}"]`).evaluate(labelStyle), `${field} uses the strong result-label style`).toEqual(resultLabelStyle);
+            }
             const headings = [
               panel.locator('label[for="cri-med"]'),
               panel.getByText('Instruction', { exact: true }),
