@@ -219,7 +219,6 @@
 <section class="ui-tool-stack text-slate-200" aria-label="KPhos/KCl calculator">
   <article class="ui-card min-w-0 overflow-hidden" data-testid="kphos-input-card">
     <header class="kphos-input-header">
-      <h2 class="ui-section-title">Preparation</h2>
       <div class="kphos-mode-picker">
         <span class="ui-label">Mode:</span>
         <div class="ui-inset kphos-mode-control" role="group" aria-label="Add KPhos to">
@@ -298,10 +297,7 @@
         </div>
       </section>
 
-      <section class="kphos-form-section" aria-labelledby="kphos-setup-title">
-        <header class="kphos-section-heading">
-          <h3 class="ui-section-title" id="kphos-setup-title">{mode === 'bag' ? 'Fluid bag' : 'CRI setup'}</h3>
-        </header>
+      <section class="kphos-form-section" aria-label={mode === 'bag' ? 'Fluid bag settings' : 'CRI settings'}>
         {#if mode === 'bag'}
           <div class="kphos-field-grid kphos-bag-fields">
             <div class="kphos-field">
@@ -684,21 +680,13 @@
   .kphos-form-section {
     display: grid;
     min-width: 0;
-    grid-template-columns: 8.5rem minmax(0, 1fr);
+    grid-template-columns: minmax(0, 1fr);
     gap: 1rem;
     padding: 0.75rem;
   }
 
   .kphos-form-section + .kphos-form-section {
     border-top: 1px solid var(--ui-divider);
-  }
-
-  .kphos-target-section {
-    grid-template-columns: minmax(0, 1fr);
-  }
-
-  .kphos-section-heading {
-    align-self: center;
   }
 
   .kphos-field-grid {
@@ -910,13 +898,6 @@
       grid-template-columns: minmax(0, 1fr);
       gap: 0.65rem;
       padding: 0.75rem;
-    }
-
-    .kphos-section-heading {
-      display: flex;
-      align-items: baseline;
-      justify-content: space-between;
-      gap: 0.75rem;
     }
 
     .kphos-target-fields,

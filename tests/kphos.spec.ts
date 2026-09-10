@@ -305,6 +305,9 @@ test.describe('KPhos workflow', () => {
       'Enter either or both',
       'Bag and delivery details',
       'Enter a phosphate or potassium target.',
+      'Preparation',
+      'Fluid bag',
+      'CRI setup',
     ]) {
       await expect(panel.getByText(text, { exact: true })).toHaveCount(0);
     }
@@ -569,7 +572,7 @@ test.describe('KPhos workflow', () => {
     expect(geometry.leftOverflow).toBeLessThanOrEqual(0);
     expect(geometry.rightOverflow).toBeLessThanOrEqual(0);
     await expect(inputCard.getByRole('heading', { name: 'Targets', exact: true })).toHaveCount(0);
-    await expect(inputCard.getByRole('heading', { name: 'Fluid bag', exact: true })).toBeVisible();
+    await expect(inputCard.getByRole('heading', { name: 'Fluid bag', exact: true })).toHaveCount(0);
   });
 
   test('groups the desktop Bag targets into two balanced fields without a header gutter', async ({ page }) => {
@@ -626,6 +629,10 @@ test.describe('KPhos workflow', () => {
     expect(geometry.rightInset).toBeLessThanOrEqual(1);
     expect(geometry.firstGap).toBeGreaterThanOrEqual(10);
     expect(geometry.secondGap).toBeGreaterThanOrEqual(10);
+    const targets = await panel.locator('.kphos-target-fields').boundingBox();
+    const details = await detailsGrid.boundingBox();
+    expect(Math.abs(targets!.x - details!.x), 'No setup-heading gutter').toBeLessThanOrEqual(1);
+    expect(Math.abs(targets!.width - details!.width), 'Settings use the full target width').toBeLessThanOrEqual(1);
   });
 
   test('fits fully filled Bag and CRI modes within 1440x900', async ({ page }) => {
