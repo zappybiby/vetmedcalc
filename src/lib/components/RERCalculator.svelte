@@ -133,14 +133,12 @@
     : [];
 </script>
 
-<section class="grid min-w-0 gap-2 text-slate-200 sm:gap-3" aria-label="Tube Feeding">
-  <div class="grid min-w-0 gap-2 sm:gap-4">
-    <div class="ui-card min-w-0 p-2.5 sm:p-4">
-      <h2 class="text-[13px] font-black uppercase tracking-wide text-slate-200 sm:text-sm">Inputs</h2>
-
-      <div class="mt-2 grid gap-2 min-[360px]:grid-cols-2 sm:mt-3 sm:gap-3 md:grid-cols-2 xl:grid-cols-3">
-        <label class="grid gap-1.5 sm:gap-2">
-          <span class="text-xs font-semibold uppercase tracking-wide text-slate-300">Diet density (kcal/mL)</span>
+<section class="ui-tool-stack text-slate-200" aria-label="Tube Feeding">
+  <div class="ui-tool-stack">
+    <div class="ui-card min-w-0 ui-card-padding">
+      <div class="grid items-end gap-2 min-[360px]:grid-cols-2 sm:gap-3 md:grid-cols-2 xl:grid-cols-3">
+        <label class="grid gap-1.5">
+          <span class="ui-label">Diet density <span class="normal-case">(kcal/mL)</span></span>
           <input
             class="field-control"
             type="number"
@@ -152,8 +150,8 @@
           />
         </label>
 
-        <label class="grid gap-1.5 sm:gap-2">
-          <span class="text-xs font-semibold uppercase tracking-wide text-slate-300">RER factor</span>
+        <label class="grid gap-1.5">
+          <span class="ui-label">RER factor</span>
           <input
             class="field-control"
             type="number"
@@ -165,8 +163,8 @@
           />
         </label>
 
-        <label class="grid gap-1.5 min-[360px]:col-span-2 sm:gap-2 xl:col-span-1">
-          <span class="text-xs font-semibold uppercase tracking-wide text-slate-300">Interval (hours)</span>
+        <label class="grid gap-1.5 min-[360px]:col-span-2 xl:col-span-1">
+          <span class="ui-label">Interval (hours)</span>
           <input
             class="field-control"
             type="number"
@@ -179,12 +177,12 @@
         </label>
       </div>
 
-      <div class="mt-2 text-[11px] leading-relaxed text-slate-400 sm:mt-3 sm:text-xs">
+      <div class="mt-2 ui-meta sm:mt-3">
         RER = 70 x kg^0.75, then target kcal/day = RER x factor.
       </div>
 
       {#if issues.length}
-        <div class="mt-2 rounded-lg border border-amber-300/30 bg-amber-950/40 px-3 py-2 text-sm font-semibold text-amber-100 sm:mt-3">
+        <div class="mt-2 ui-alert border-amber-300/30 bg-amber-950/40 text-amber-100 sm:mt-3">
           {#each issues as issue}
             <div>{issue}</div>
           {/each}
@@ -193,20 +191,17 @@
     </div>
 
     {#if plan}
-      <div class="ui-card min-w-0 p-2.5 sm:p-4">
-        <h2 class="text-[13px] font-black uppercase tracking-wide text-slate-200 sm:text-sm">Administration target</h2>
-
-        <div class="mt-2 ui-inset p-3 sm:mt-3 sm:p-4">
-          <div class="text-xs font-semibold uppercase tracking-wide text-slate-400">Give every {fmtCompact(plan.intervalHours)} hr</div>
-          <div class="mt-1.5 text-2xl font-black tabular-nums text-slate-100 sm:mt-2 sm:text-3xl">{fmtWhole(plan.mlPerInterval)} mL</div>
+      <div class="ui-tool-stack">
+        <div class="ui-card ui-card-padding">
+          <div class="ui-label-strong">Give every {fmtCompact(plan.intervalHours)} <span class="normal-case">hr</span></div>
+          <div class="ui-result-value mt-1.5">{fmtWhole(plan.mlPerInterval)} mL</div>
           <div class="mt-1.5 text-sm text-slate-300 sm:mt-2">
             Delivers about {fmtWhole(plan.kcalPerInterval)} kcal q{fmtCompact(plan.intervalHours)}h
           </div>
         </div>
 
-        <div class="mt-2 sm:mt-3">
-          <div class="ui-inset p-3 sm:p-4">
-            <header class="text-xs font-semibold uppercase tracking-wide text-slate-300">Quick reference</header>
+          <div class="ui-card ui-card-padding">
+            <header class="ui-label-strong">Quick reference</header>
             <div class="mt-2 grid gap-2 text-sm sm:mt-3 sm:gap-3">
               <div class="grid gap-2 sm:gap-3">
                 <div class="grid grid-cols-[minmax(0,1fr)_auto] items-baseline gap-2">
@@ -223,17 +218,16 @@
                 </div>
               </div>
 
-              <div class="mt-1 grid grid-cols-[minmax(0,1fr)_auto] items-baseline gap-3 border-t border-sky-400/50 pt-3 text-base sm:mt-2 sm:text-lg">
+              <div class="mt-1 grid grid-cols-[minmax(0,1fr)_auto] items-baseline gap-3 border-t ui-rule pt-3 text-sm sm:mt-2">
                 <span class="text-slate-200">Continuous rate</span>
                 <span class="font-black tabular-nums text-slate-100">{fmt(plan.mlPerHour, 2)} mL/hr</span>
               </div>
             </div>
           </div>
-        </div>
       </div>
 
       <details class="group ui-card overflow-hidden">
-        <summary class="ui-summary flex cursor-pointer items-center justify-between gap-3 px-3 py-2.5 sm:px-3.5 sm:py-3 lg:px-4">
+        <summary class="ui-summary ui-card-padding flex cursor-pointer items-center justify-between gap-3">
           <div class="ui-section-title">Calculation summary</div>
           <svg class="h-5 w-5 flex-none text-slate-400 transition group-open:rotate-180" viewBox="0 0 20 20" aria-hidden="true">
             <path
@@ -245,13 +239,13 @@
           </svg>
         </summary>
 
-        <div class="border-t border-slate-700/40 px-2 py-2 sm:px-3 lg:px-3.5">
+        <div class="border-t ui-rule ui-card-padding">
           <div class="grid gap-2">
             {#each calculationRows as row}
               <div class="ui-inset grid gap-1.5 px-2.5 py-2 sm:px-3 lg:grid-cols-[168px_minmax(0,1fr)] lg:items-center lg:gap-3 lg:py-1.5">
                 <div class="text-[12px] font-semibold leading-snug text-slate-200">{row.label}</div>
 
-                <div class="min-w-0 font-mono text-[11px] leading-snug tracking-tight text-slate-100 sm:text-[11.5px]">
+                <div class="ui-formula">
                   <span class="whitespace-pre-wrap break-words">
                     {#each tokenizeMath(row.math) as t}
                       <span class={t.kind === 'num'

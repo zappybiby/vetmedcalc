@@ -27,3 +27,4 @@ dist-ssr
 AGENTS.md
 .codex
 test-results/
+playwright-report/

@@ -1,0 +1,41 @@
+name: Calculator quality checks
+
+on:
+  pull_request:
+    branches: [main, master]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: quality-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  quality:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v4
+        with:
+          node-version: lts/*
+          cache: npm
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - run: npm run check
+      - run: npm run build
+      - name: Test calculations, layouts, contrast, workflows and print labels
+        run: npx playwright test --workers=2 --reporter=list,html
+        env:
+          CI: true
+      - name: Save screenshots, traces and test report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: vetmedcalc-quality-review
+          path: |
+            playwright-report/
+            test-results/
+          retention-days: 14

@@ -31,10 +31,9 @@ async function openApp(page: Page, viewport: { width: number; height: number }) 
 }
 
 async function setTheme(page: Page, theme: Theme) {
-  await page.evaluate((value) => {
-    localStorage.setItem('vetmedcalc.theme', value);
-    document.documentElement.dataset.theme = value;
-  }, theme);
+  if (await page.locator('html').getAttribute('data-theme') !== theme) {
+    await page.getByRole('button', { name: `Switch to ${theme} mode`, exact: true }).click();
+  }
   await expect(page.locator('html')).toHaveAttribute('data-theme', theme);
 }
 
@@ -466,4 +465,172 @@ test.describe('responsive layout guardrails', () => {
       }
     }
   });
+
+  // Human-review evidence for style changes, plus alternate states that the
+  // primary tab checks do not exercise. Screenshots are artifacts, not baselines.
+  for (const theme of ['dark', 'light'] as const) {
+    for (const viewport of [
+      { name: 'desktop', width: 1440, height: 900 },
+      { name: 'mobile', width: 384, height: 854 },
+    ]) {
+      test(`visual review: ${theme} ${viewport.name}`, async ({ page }, testInfo) => {
+        test.setTimeout(120_000);
+        await openApp(page, viewport);
+        await setTheme(page, theme);
+
+        const capture = async (state: string) => {
+          const name = `${theme}-${viewport.name}-${state.replace(/[^a-z0-9]+/gi, '-').toLowerCase()}`;
+          await page.evaluate(() => window.scrollTo(0, 0));
+          const path = testInfo.outputPath(`${name}.png`);
+          await page.screenshot({ path, fullPage: true, animations: 'disabled', caret: 'hide' });
+          await testInfo.attach(name, { path, contentType: 'image/png' });
+          await expectThemeToggleIconMatchesTheme(page, name);
+          await expectVisibleCardShellsMatch(page, `${name} populated card borders`);
+          const documentWidth = await page.evaluate(() =>
+            Math.max(document.documentElement.scrollWidth, document.body.scrollWidth),
+          );
+          expect.soft(documentWidth, `${name} horizontal overflow`).toBeLessThanOrEqual(viewport.width + 1);
+        };
+
+        for (const tabName of await getToolTabNames(page)) {
+          await fillTabData(page, tabName);
+          await capture(tabName);
+
+          if (['CRI calculator', 'Drug in bag', 'Tube Feeding'].includes(tabName)) {
+            const formulaSizes = await activePanel(page).locator('.ui-formula').evaluateAll(
+              (elements) => elements.map((element) => Number.parseFloat(getComputedStyle(element).fontSize)),
+            );
+            expect(formulaSizes.length).toBeGreaterThan(0);
+            expect.soft(Math.min(...formulaSizes), `${tabName} readable formula text`).toBeGreaterThanOrEqual(12);
+          }
+
+          if (tabName === 'CRI calculator') {
+            const panel = activePanel(page);
+            const labelStyle = (element: Element) => {
+              const style = getComputedStyle(element);
+              return { size: style.fontSize, weight: style.fontWeight, color: style.color };
+            };
+            const resultLabelStyle = await panel.getByText('Delivers', { exact: true }).evaluate(labelStyle);
+            for (const field of ['cri-med', 'cri-dose', 'cri-duration', 'cri-rate']) {
+              expect(await panel.locator(`label[for="${field}"]`).evaluate(labelStyle), `${field} uses the strong result-label style`).toEqual(resultLabelStyle);
+            }
+            const headings = [
+              panel.locator('label[for="cri-med"]'),
+              panel.getByText('Instruction', { exact: true }),
+              panel.getByText('Delivers', { exact: true }),
+              panel.locator('summary .ui-section-title'),
+            ];
+            const bounds = await Promise.all(headings.map((heading) => heading.boundingBox()));
+            for (const box of bounds) {
+              expect(box).not.toBeNull();
+              expect.soft(Math.abs(box!.x - bounds[0]!.x), 'CRI heading gutter alignment').toBeLessThanOrEqual(1);
+            }
+          }
+
+          if (tabName === 'Blood transfusion' && viewport.name === 'desktop') {
+            const rows = activePanel(page).locator('#blood-transfusion-summary > div').first().locator(':scope > div');
+            const [left, right] = await Promise.all([rows.nth(0).boundingBox(), rows.nth(1).boundingBox()]);
+            expect.soft(right!.x - left!.x - left!.width, 'Separate adjacent summary columns').toBeGreaterThanOrEqual(16);
+          }
+
+          if (['Drug in bag', 'KPhos/KCl', 'Tube Feeding'].includes(tabName)) {
+            const fields = tabName === 'Tube Feeding'
+              ? [activePanel(page).getByLabel('Diet density (kcal/mL)', { exact: true }), activePanel(page).getByLabel('RER factor', { exact: true })]
+              : (tabName === 'Drug in bag'
+                ? ['#drugbag-bag', '#drugbag-rate']
+                : ['#kphos-phos-target', '#kphos-k-target']).map((selector) => page.locator(selector));
+            const [left, right] = await Promise.all(fields.map((field) => field.boundingBox()));
+            expect(left).not.toBeNull();
+            expect(right).not.toBeNull();
+            expect.soft(Math.abs(left!.y - right!.y), `${tabName} paired input alignment`).toBeLessThanOrEqual(1);
+            expect.soft(Math.abs(left!.height - right!.height), `${tabName} paired input heights`).toBeLessThanOrEqual(1);
+          }
+
+          if (tabName === 'KPhos/KCl' && viewport.name === 'desktop') {
+            const groups = activePanel(page).locator('.kphos-cri-groups > section');
+            const [leftTitle, rightTitle, leftCard, rightGroup, rightCard] = await Promise.all([
+              groups.nth(0).locator('h4').boundingBox(),
+              groups.nth(1).locator('h4').boundingBox(),
+              groups.nth(0).locator('.kphos-mixture-card').last().boundingBox(),
+              groups.nth(1).boundingBox(),
+              groups.nth(1).locator('.kphos-mixture-card').first().boundingBox(),
+            ]);
+            expect.soft(Math.abs(leftTitle!.y - rightTitle!.y), 'Composition heading alignment').toBeLessThanOrEqual(1);
+            expect.soft(rightGroup!.x - leftCard!.x - leftCard!.width, 'Space before the divider').toBeGreaterThanOrEqual(8);
+            expect.soft(rightCard!.x - rightGroup!.x, 'Space after the divider').toBeGreaterThanOrEqual(8);
+          }
+        }
+
+        await selectTab(page, 'Ins / outs');
+        await activePanel(page).getByRole('radio', { name: 'Rate', exact: true }).check();
+        await page.locator('#ins-rate').fill('60');
+        await capture('Ins outs rate');
+        await expectAxeColorContrast(page, `${theme} ${viewport.name} Ins outs rate`);
+
+        await selectTab(page, 'Food calc');
+        let panel = activePanel(page);
+        await panel.getByRole('button', { name: 'Cat', exact: true }).click();
+        await expect(panel.getByRole('button', { name: 'Cat', exact: true })).toHaveAttribute('aria-pressed', 'true');
+        await capture('Food calc Cat');
+        await expectAxeColorContrast(page, `${theme} ${viewport.name} Cat foods`);
+
+        await page.evaluate(() => {
+          Object.defineProperty(navigator, 'clipboard', {
+            configurable: true,
+            value: { writeText: async () => { throw new DOMException('Clipboard denied', 'NotAllowedError'); } },
+          });
+        });
+        await panel.getByRole('button', { name: 'Copy note for custom food', exact: true }).click();
+        await expect(panel.getByRole('textbox', { name: 'Feeding note', exact: true })).toBeVisible();
+        await capture('Food note');
+        await expectAxeColorContrast(page, `${theme} ${viewport.name} Food note`);
+
+        await selectTab(page, 'KPhos/KCl');
+        panel = activePanel(page);
+        await panel.getByRole('button', { name: 'Bag', exact: true }).click();
+        await capture('KPhos Bag');
+        await expectAxeColorContrast(page, `${theme} ${viewport.name} KPhos Bag`);
+
+        await page.getByLabel('Weight (kg)', { exact: true }).fill('10');
+        await panel.getByLabel('Fluid Type', { exact: true }).selectOption({ label: 'Isolyte S pH 7.4' });
+        await panel.getByLabel('Fluid rate (mL/hr)', { exact: true }).fill('100');
+        await panel.getByLabel('Phosphate target (mmol/kg/hr)', { exact: true }).fill('0.001');
+        await expect(panel.locator('.ui-alert')).toBeVisible();
+        await capture('KPhos warning');
+        await expectAxeColorContrast(page, `${theme} ${viewport.name} KPhos warning`);
+
+        await selectTab(page, 'CPR labels');
+        panel = activePanel(page);
+        await panel.getByRole('checkbox', { name: 'Batch mode', exact: true }).check();
+        const batch = panel.getByRole('region', { name: 'Batch CPR Labels', exact: true });
+        for (const [index, patient] of [
+          { name: 'Alexandria Long Patient Name', species: 'Dog', weight: '22.5' },
+          { name: 'Mochi', species: 'Cat', weight: '4.2' },
+        ].entries()) {
+          await batch.locator(`[data-row="${index}"][data-field="0"]`).fill(patient.name);
+          await batch.locator(`[data-row="${index}"][data-field="1"]`).selectOption({ label: patient.species });
+          await batch.locator(`[data-row="${index}"][data-field="2"]`).fill(patient.weight);
+        }
+        await expect(batch.getByRole('button', { name: 'Print all labels (2)', exact: true })).toBeEnabled();
+        await expect(batch.locator('[data-row="2"][data-field="0"]')).toHaveValue('');
+        await capture('CPR batch');
+        await expectAxeColorContrast(page, `${theme} ${viewport.name} CPR batch`);
+
+        await fillTabData(page, 'CRI calculator');
+        await page.locator('#cri-med').selectOption({ label: 'Custom' });
+        await page.locator('#cri-custom-name').fill('Custom infusion');
+        await page.locator('#cri-custom-concentration').fill('5');
+        await expandActivePanel(page);
+        await capture('CRI custom');
+        const [nameField, concentrationField] = await Promise.all([
+          page.locator('#cri-custom-name').boundingBox(),
+          page.locator('#cri-custom-concentration').boundingBox(),
+        ]);
+        expect.soft(Math.abs(nameField!.y - concentrationField!.y), 'Custom CRI inputs align when labels wrap').toBeLessThanOrEqual(1);
+        const doseField = await page.locator('#cri-dose').boundingBox();
+        expect.soft(doseField!.width, 'Custom CRI dose has room for its value and number controls').toBeGreaterThanOrEqual(80);
+        await expectAxeColorContrast(page, `${theme} ${viewport.name} Custom CRI`);
+      });
+    }
+  }
 });

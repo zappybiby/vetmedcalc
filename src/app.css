@@ -45,6 +45,7 @@
     --ui-select-option-active-text: #020617;
     --ui-select-arrow: url('data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="%23cbd5f5"%3E%3Cpath fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.173l3.71-3.94a.75.75 0 011.08 1.04l-4.24 4.5a.75.75 0 01-1.08 0l-4.24-4.5a.75.75 0 01.02-1.06z" clip-rule="evenodd" /%3E%3C/svg%3E');
     --ui-divider: rgba(148, 163, 184, 0.28);
+    --ui-result-divider: rgba(51, 65, 85, 0.4);
     --ui-hover-surface: rgba(148, 163, 184, 0.16);
     --ui-accent-surface: rgba(14, 165, 233, 0.24);
     --ui-accent-border: #38bdf8;
@@ -96,6 +97,7 @@
     --ui-select-option-active-text: #0c4a6e;
     --ui-select-arrow: url('data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="%23334155"%3E%3Cpath fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.173l3.71-3.94a.75.75 0 011.08 1.04l-4.24 4.5a.75.75 0 01-1.08 0l-4.24-4.5a.75.75 0 01.02-1.06z" clip-rule="evenodd" /%3E%3C/svg%3E');
     --ui-divider: rgba(51, 65, 85, 0.32);
+    --ui-result-divider: rgba(100, 116, 139, 0.48);
     --ui-hover-surface: rgba(14, 165, 233, 0.12);
     --ui-accent-surface: rgba(14, 165, 233, 0.2);
     --ui-accent-border: #0369a1;
@@ -139,6 +141,79 @@
 }
 
 @layer components {
+  /* CRI's visual roles. Keep tool-specific grids and result density local. */
+  .ui-tool-stack {
+    @apply grid min-w-0 gap-2 sm:gap-3;
+  }
+
+  .ui-card-padding {
+    @apply p-2.5 sm:p-3;
+  }
+
+  .ui-instruction {
+    @apply text-[14px] leading-relaxed sm:text-[15px];
+    color: var(--ui-text-300);
+  }
+
+  .ui-result-value {
+    @apply text-[18px] font-black leading-tight tracking-tight tabular-nums sm:text-[26px] sm:leading-none;
+    color: var(--ui-text-100);
+  }
+
+  .ui-formula {
+    @apply min-w-0 font-mono text-xs leading-snug tracking-tight;
+    color: var(--ui-text-100);
+  }
+
+  .ui-row-value {
+    @apply text-sm font-black tabular-nums;
+    color: var(--ui-text-100);
+  }
+
+  .ui-unit {
+    @apply text-xs font-semibold normal-case tracking-normal;
+    color: var(--ui-text-300);
+  }
+
+  .ui-meta-compact {
+    @apply text-xs leading-tight;
+    color: var(--ui-text-400);
+  }
+
+  .ui-rule {
+    border-color: var(--ui-result-divider);
+  }
+
+  .ui-table-rows > tr + tr {
+    border-top: 1px solid var(--ui-result-divider);
+  }
+
+  .ui-alert {
+    @apply rounded-lg border px-3 py-2 text-sm font-semibold;
+  }
+
+  .ui-choice {
+    @apply inline-flex min-w-0 cursor-pointer items-center justify-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-semibold transition-colors;
+    min-height: 2.5rem;
+    color: var(--ui-text-200);
+    border: 1px solid var(--ui-field-border);
+    background-color: var(--ui-field-bg);
+    box-shadow: 0 1px 0 rgba(255, 255, 255, 0.03) inset;
+  }
+
+  .ui-choice:hover {
+    border-color: var(--ui-field-border-strong);
+    background-color: var(--ui-field-bg-hover);
+  }
+
+  .ui-choice[aria-pressed='true'],
+  .ui-choice.is-selected {
+    color: var(--ui-text-100);
+    border-color: var(--ui-accent-border);
+    background-color: color-mix(in srgb, var(--ui-accent-surface) 18%, var(--ui-surface-2));
+    box-shadow: inset 0 2px 0 color-mix(in srgb, var(--ui-accent-border) 82%, transparent);
+  }
+
   .field-control,
   .field-select {
     color-scheme: var(--ui-input-scheme);
@@ -403,8 +478,8 @@
   }
 
   .ui-label {
-    @apply text-xs font-semibold uppercase leading-none tracking-wide;
-    color: var(--ui-text-300);
+    @apply text-xs font-black uppercase leading-none tracking-wide;
+    color: var(--ui-text-200);
     letter-spacing: 0.025em;
   }
 
@@ -431,7 +506,7 @@
   }
 
   .ui-statement-value {
-    @apply text-[1.15rem] font-black leading-tight tracking-tight tabular-nums sm:text-[1.35rem];
+    @apply text-[18px] font-black leading-tight tracking-tight tabular-nums sm:text-[22px];
     color: var(--ui-text-100);
   }
 

@@ -250,10 +250,10 @@
   $: ready = !!(p.weightKg && dose !== '' && bagVolumeMl !== '' && maintRateMlHr !== '');
 </script>
 
-<section class="grid min-w-0 gap-2 text-slate-200 sm:gap-3" aria-label="Drug in bag calculator">
+<section class="ui-tool-stack text-slate-200" aria-label="Drug in bag calculator">
   <article class="ui-card grid min-w-0 gap-2 p-2.5 sm:gap-3 sm:p-3">
-    <div class="grid min-w-0 gap-2 min-[380px]:grid-cols-2 sm:gap-3 md:grid-cols-2">
-      <div class="flex min-w-0 flex-col gap-1.5 min-[380px]:col-span-2 sm:gap-2 md:col-span-1">
+    <div class="grid min-w-0 items-end gap-2 min-[380px]:grid-cols-2 sm:gap-3 md:grid-cols-2">
+      <div class="flex min-w-0 flex-col gap-1.5 min-[380px]:col-span-2 md:col-span-1">
         <label class="ui-label" for="drugbag-drug">Drug</label>
         <select id="drugbag-drug" class="field-select" bind:value={selectedDrugId}>
           {#each MEDICATIONS as option}
@@ -266,7 +266,7 @@
       </div>
 
       {#if isCustomDrug}
-        <div class="flex min-w-0 flex-col gap-1.5 sm:gap-2">
+        <div class="flex min-w-0 flex-col gap-1.5">
           <label class="ui-label" for="drugbag-custom-name">Drug name</label>
           <input
             id="drugbag-custom-name"
@@ -277,8 +277,8 @@
           />
         </div>
 
-        <div class="flex min-w-0 flex-col gap-1.5 sm:gap-2">
-          <label class="ui-label" for="drugbag-custom-concentration">Stock concentration (mg/mL)</label>
+        <div class="flex min-w-0 flex-col gap-1.5">
+          <label class="ui-label" for="drugbag-custom-concentration">Stock concentration <span class="normal-case">(mg/mL)</span></label>
           <input
             id="drugbag-custom-concentration"
             class="field-control"
@@ -291,7 +291,7 @@
         </div>
       {/if}
 
-      <div class="flex min-w-0 flex-col gap-1.5 min-[380px]:col-span-2 sm:gap-2 md:col-span-1">
+      <div class="flex min-w-0 flex-col gap-1.5 min-[380px]:col-span-2 md:col-span-1">
         <label class="ui-label" for="drugbag-dose">Dose</label>
         <div class="grid min-w-0 grid-cols-[minmax(0,1fr)_auto] items-center gap-2">
           <input
@@ -314,8 +314,8 @@
         </div>
       </div>
 
-      <div class="flex min-w-0 flex-col gap-1.5 sm:gap-2">
-        <label class="ui-label" for="drugbag-bag">Fluid bag volume (mL)</label>
+      <div class="flex min-w-0 flex-col gap-1.5">
+        <label class="ui-label" for="drugbag-bag">Fluid bag volume <span class="normal-case">(mL)</span></label>
         <input
           id="drugbag-bag"
           class="field-control"
@@ -328,8 +328,8 @@
         />
       </div>
 
-      <div class="flex min-w-0 flex-col gap-1.5 sm:gap-2">
-        <label class="ui-label" for="drugbag-rate">Maint. rate (mL/hr)</label>
+      <div class="flex min-w-0 flex-col gap-1.5">
+        <label class="ui-label" for="drugbag-rate">Maint. rate <span class="normal-case">(mL/hr)</span></label>
         <input
           id="drugbag-rate"
           class="field-control"
@@ -351,16 +351,16 @@
           <div class="ui-label-strong">Draw up</div>
 
           <div class="mt-2 grid gap-2 min-[380px]:grid-cols-2">
-            <div class="ui-inset p-2.5 sm:p-3">
-              <div class="text-xs font-semibold uppercase tracking-wide text-slate-400">Add to bag</div>
-              <div class="mt-1 text-xl font-black tabular-nums text-slate-100 sm:text-2xl">
-                {fmt(snappedMlToAdd, volumeDigits)} <span class="text-base font-semibold text-slate-300">mL</span>
+            <div class="ui-inset ui-card-padding">
+              <div class="ui-label-strong">Add to bag</div>
+              <div class="ui-result-value mt-1">
+                {fmt(snappedMlToAdd, volumeDigits)} mL
               </div>
             </div>
-            <div class="ui-inset p-2.5 sm:p-3">
-              <div class="text-xs font-semibold uppercase tracking-wide text-slate-400">Drug drawn</div>
-              <div class="mt-1 text-xl font-black tabular-nums text-slate-100 sm:text-2xl">
-                {fmt(snappedMgToAdd, 2)} <span class="text-base font-semibold text-slate-300">mg</span>
+            <div class="ui-inset ui-card-padding">
+              <div class="ui-label-strong">Drug drawn</div>
+              <div class="ui-result-value mt-1">
+                {fmt(snappedMgToAdd, 2)} mg
               </div>
             </div>
           </div>
@@ -369,42 +369,42 @@
             <div class="text-slate-300">Drug</div>
             <div class="flex min-w-0 items-center justify-end gap-1.5 text-right text-slate-100">
               <span class="min-w-0 truncate">{med?.name ?? '—'}</span>
-              <span class="ui-chip shrink-0">{formatConcDisplay(med)}</span>
+              <span class="ui-chip shrink-0 normal-case">{formatConcDisplay(med)}</span>
             </div>
           </div>
         </div>
 
         <div class="ui-card p-3">
-          <div class="ui-label-strong md:text-sm">Bag + rate</div>
+          <div class="ui-label-strong">Bag + rate</div>
 
-          <div class="mt-2 grid gap-x-3 gap-y-1.5 text-sm md:text-base [grid-template-columns:minmax(0,1fr)_auto]">
+          <div class="mt-2 grid gap-x-3 gap-y-1.5 text-sm [grid-template-columns:minmax(0,1fr)_auto]">
             <div class="text-slate-300">Bag volume</div>
-            <div class="text-right font-black tabular-nums text-slate-100 md:text-xl">{bagVolumeMl || 0} <span class="ml-1 text-xs font-semibold uppercase tracking-wide text-slate-400 md:text-sm">mL</span></div>
+            <div class="ui-row-value text-right">{bagVolumeMl || 0} <span class="ml-1 ui-unit">mL</span></div>
 
             <div class="text-slate-300">Rate</div>
-            <div class="text-right font-black tabular-nums text-slate-100 md:text-xl">{maintRateMlHr || 0} <span class="ml-1 text-xs font-semibold uppercase tracking-wide text-slate-400 md:text-sm">mL/hr</span></div>
+            <div class="ui-row-value text-right">{maintRateMlHr || 0} <span class="ml-1 ui-unit">mL/hr</span></div>
 
             <div class="text-slate-300">Runtime</div>
-            <div class="text-right font-black tabular-nums text-slate-100 md:text-xl">{fmt(bagHours, 2)} <span class="ml-1 text-xs font-semibold uppercase tracking-wide text-slate-400 md:text-sm">hr</span></div>
+            <div class="ui-row-value text-right">{fmt(bagHours, 2)} <span class="ml-1 ui-unit">hr</span></div>
 
             <div class="text-slate-300">Bag concentration</div>
-            <div class="text-right font-black tabular-nums text-slate-100 md:text-xl">
-              {fmt(finalConcMgPerMl, 4)} <span class="ml-1 text-xs font-semibold uppercase tracking-wide text-slate-400 md:text-sm">mg/mL</span>
+            <div class="ui-row-value text-right">
+              {fmt(finalConcMgPerMl, 4)} <span class="ml-1 ui-unit">mg/mL</span>
             </div>
           </div>
         </div>
 
         <div class="ui-card p-3 text-center md:col-span-2">
           <div class="ui-label-strong">Delivered dose at rate</div>
-          <div class="mt-1.5 text-2xl font-black tabular-nums text-slate-100">{formatDeliveredDose(deliveredDoseMgPerKgHr, doseUnit)}</div>
+          <div class="ui-result-value mt-1.5">{formatDeliveredDose(deliveredDoseMgPerKgHr, doseUnit)}</div>
           {#if deliveredDoseMgPerKgHr != null}
-            <div class="mt-1 text-xs text-slate-400">= {formatDeliveredDose(deliveredDoseMgPerKgHr, 'mg/kg/hr')}</div>
+            <div class="mt-1 ui-meta">= {formatDeliveredDose(deliveredDoseMgPerKgHr, 'mg/kg/hr')}</div>
           {/if}
         </div>
       </div>
 
       <details class="group ui-card overflow-hidden">
-        <summary class="ui-summary flex cursor-pointer items-center justify-between gap-3 px-3 py-2.5 sm:px-3.5 sm:py-3 lg:px-4">
+        <summary class="ui-summary ui-card-padding flex cursor-pointer items-center justify-between gap-3">
           <div class="ui-section-title">Step-By-Step calculations</div>
           <svg class="h-5 w-5 flex-none text-slate-400 transition group-open:rotate-180" viewBox="0 0 20 20" aria-hidden="true">
             <path
@@ -416,13 +416,13 @@
           </svg>
         </summary>
 
-        <div class="border-t border-slate-700/40 px-2 py-2 sm:px-3 lg:px-3.5">
+        <div class="border-t ui-rule ui-card-padding">
           <div class="grid gap-2">
             {#each calculationRows as row}
               <div class="ui-inset grid gap-1.5 px-2.5 py-2 sm:px-3 lg:grid-cols-[168px_minmax(0,1fr)] lg:items-center lg:gap-3 lg:py-1.5">
                 <div class="text-[12px] font-semibold leading-snug text-slate-200">{row.label}</div>
 
-                <div class="min-w-0 font-mono text-[11px] leading-snug tracking-tight text-slate-100 sm:text-[11.5px]">
+                <div class="ui-formula">
                   <span class="whitespace-pre-wrap break-words">
                     {#each tokenizeMath(row.math) as t}
                       <span class={t.kind === 'num'

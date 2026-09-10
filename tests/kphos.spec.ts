@@ -305,6 +305,9 @@ test.describe('KPhos workflow', () => {
       'Enter either or both',
       'Bag and delivery details',
       'Enter a phosphate or potassium target.',
+      'Preparation',
+      'Fluid bag',
+      'CRI setup',
     ]) {
       await expect(panel.getByText(text, { exact: true })).toHaveCount(0);
     }
@@ -317,6 +320,17 @@ test.describe('KPhos workflow', () => {
     await inputCard.getByRole('button', { name: 'CRI', exact: true }).click();
     await expect(inputCard.getByText('Preparation and main fluid', { exact: true })).toHaveCount(0);
     await expect(inputCard.getByLabel('Fluid Type', { exact: true })).toBeVisible();
+  });
+
+  test('centers the mode selector on desktop and mobile', async ({ page }) => {
+    for (const viewport of [{ width: 1440, height: 900 }, { width: 384, height: 854 }]) {
+      const panel = await openKPhos(page, viewport);
+      const card = await panel.getByTestId('kphos-input-card').boundingBox();
+      const control = await panel.getByRole('group', { name: 'Add KPhos to' }).boundingBox();
+      expect(Math.abs(control!.x + control!.width / 2 - card!.x - card!.width / 2)).toBeLessThanOrEqual(1);
+      const modeSize = await panel.getByText('Mode:', { exact: true }).evaluate((label) => Number.parseFloat(getComputedStyle(label).fontSize));
+      expect(modeSize).toBeGreaterThanOrEqual(14);
+    }
   });
 
   test('supports a KCl-only 250 mL bag with no patient data', async ({ page }) => {
@@ -362,9 +376,9 @@ test.describe('KPhos workflow', () => {
 
     await expect(results.getByTestId('kphos-stock-volume')).toHaveText('1.7 mL KPhos');
     await expect(results.getByTestId('kcl-stock-volume')).toHaveText('11.2 mL KCl');
-    await expect(results.getByText('From all sources, this delivers:')).toBeVisible();
-    await expect(results.getByTestId('total-phos-delivery')).toHaveText('0.02 mmol/kg/hr phosphate');
-    await expect(results.getByTestId('total-k-delivery')).toHaveText('0.14 mEq/kg/hr potassium');
+    await expect(summary.getByRole('region', { name: 'Total delivery from all sources' })).toBeVisible();
+    await expect(summary.getByTestId('total-phos-delivery')).toHaveText('0.02 mmol/kg/hr');
+    await expect(summary.getByTestId('total-k-delivery')).toHaveText('0.14 mEq/kg/hr');
     await expect(summary.getByText('Composition breakdown')).toHaveCount(0);
     await expect(summary.getByText('How the fluid bag is built')).toHaveCount(0);
     await expect(summary.getByTestId('starting-fluid-component')).toHaveText(/Starting bag\s+1,000 mL Norm-R\s+K\s*5 mEq\/L\s+Phos\s*0 mmol\/L/);
@@ -389,7 +403,7 @@ test.describe('KPhos workflow', () => {
       componentOrder: ['starting-fluid-component', 'kphos-component', 'kcl-component', 'final-bag-component'],
       operators: ['+', '+', '='],
     });
-    expect(resultText.indexOf('From all sources')).toBeLessThan(resultText.indexOf('STARTING BAG'));
+    expect(resultText.indexOf('TOTAL DELIVERY')).toBeGreaterThan(resultText.indexOf('FINAL BAG'));
   });
 
   test('supports a phosphate-only CRI and shows the main-fluid source in the visual flow', async ({ page }) => {
@@ -416,6 +430,9 @@ test.describe('KPhos workflow', () => {
     );
     await expect(summary.getByTestId('final-bag-component')).toHaveCount(0);
     await expect(summary.getByTestId('final-cri-component')).toContainText('Prepared CRI');
+    const combinedDelivery = summary.getByRole('region', { name: 'Total delivery from all sources' });
+    await expect(combinedDelivery.getByTestId('total-phos-delivery')).toHaveText('0.01 mmol/kg/hr');
+    await expect(criRegion.getByTestId('total-phos-delivery')).toHaveCount(0);
 
     const criFlowStyles = await criRegion.locator('.kphos-mixture-flow').evaluate((flow) => {
       const cards = [...flow.querySelectorAll<HTMLElement>('.kphos-mixture-card')];
@@ -430,20 +447,25 @@ test.describe('KPhos workflow', () => {
     expect(criFlowStyles.cardCount).toBe(3);
     expect(criFlowStyles.totalBorder).not.toBe(criFlowStyles.sourceBorder);
 
-    const primaryTextSizes = await results.locator('.kphos-primary-result').evaluate((row) => ({
+    const primaryTextSizes = await results.getByRole('region', { name: 'Preparation and delivery' }).locator('p.ui-instruction').first().evaluate((row) => ({
       row: Number.parseFloat(getComputedStyle(row).fontSize),
-      value: Number.parseFloat(getComputedStyle(row.querySelector('.ui-statement-value') as Element).fontSize),
+      value: Number.parseFloat(getComputedStyle(row.querySelector('.kphos-instruction-value') as Element).fontSize),
     }));
-    expect(primaryTextSizes.row).toBeGreaterThanOrEqual(17);
+    expect(primaryTextSizes.row).toBeGreaterThanOrEqual(14);
     expect(primaryTextSizes.value).toBeGreaterThan(primaryTextSizes.row);
 
-    const emphasizedInputWords = await panel.locator('[data-testid="kphos-statements"] strong').evaluateAll((words) =>
-      words.map((word) => ({ text: word.textContent, weight: Number.parseInt(getComputedStyle(word).fontWeight, 10) })),
-    );
-    expect(emphasizedInputWords).toEqual(expect.arrayContaining([
-      expect.objectContaining({ text: 'Phosphate target', weight: 900 }),
-      expect.objectContaining({ text: 'Potassium target', weight: 900 }),
-    ]));
+    // Target labels use the same visual role as the reference CRI field label.
+    const referenceLabelStyle = await page.locator('label[for="cri-med"]').evaluate((label) => {
+      const style = getComputedStyle(label);
+      return { size: style.fontSize, weight: style.fontWeight, tracking: style.letterSpacing };
+    });
+    for (const text of ['Phosphate target', 'Potassium target']) {
+      const targetLabelStyle = await panel.getByText(text, { exact: true }).evaluate((label) => {
+        const style = getComputedStyle(label);
+        return { size: style.fontSize, weight: style.fontWeight, tracking: style.letterSpacing };
+      });
+      expect(targetLabelStyle).toEqual(referenceLabelStyle);
+    }
   });
 
   test('switches the potassium target between Added and Total without moving results', async ({ page }) => {
@@ -456,6 +478,12 @@ test.describe('KPhos workflow', () => {
     await panel.getByTestId('k-target-basis').click();
 
     await expect(panel.getByTestId('k-target-basis')).toHaveText('Total');
+    const basisStyle = await panel.getByTestId('k-target-basis').evaluate((button) => ({
+      height: button.getBoundingClientRect().height,
+      fontSize: Number.parseFloat(getComputedStyle(button).fontSize),
+    }));
+    expect(basisStyle.height).toBeGreaterThanOrEqual(32);
+    expect(basisStyle.fontSize).toBeGreaterThanOrEqual(14);
     await expect(panel.getByLabel('Total potassium target (mEq/L)', { exact: true })).toHaveValue('30');
     await expect(panel.getByTestId('kcl-stock-volume')).toContainText('9.6 mL');
     const totalResultTop = await panel.getByTestId('kphos-results').evaluate((element) => element.getBoundingClientRect().top);
@@ -528,8 +556,11 @@ test.describe('KPhos workflow', () => {
         return { inputBottom: input.bottom + window.scrollY, inputLeft: input.left, inputRight: input.right, resultTop: result ? result.top + window.scrollY : 0, resultLeft: result?.left ?? 0, resultRight: result?.right ?? 0 };
       });
 
-      expect(Math.abs(bagGeometry.resultTop - bagGeometry.inputBottom), `${viewport.width}px Bag card gap`).toBeLessThanOrEqual(9);
-      expect(Math.abs(criGeometry.resultTop - criGeometry.inputBottom), `${viewport.width}px CRI card gap`).toBeLessThanOrEqual(9);
+      const referenceGap = await page.getByRole('region', { name: 'CRI calculator', includeHidden: true }).evaluate(
+        (element) => Number.parseFloat(getComputedStyle(element).rowGap),
+      );
+      expect(Math.abs(bagGeometry.resultTop - bagGeometry.inputBottom - referenceGap), `${viewport.width}px Bag card gap matches CRI`).toBeLessThanOrEqual(1);
+      expect(Math.abs(criGeometry.resultTop - criGeometry.inputBottom - referenceGap), `${viewport.width}px CRI card gap matches CRI`).toBeLessThanOrEqual(1);
       expect(Math.abs(bagGeometry.resultLeft - bagGeometry.inputLeft)).toBeLessThanOrEqual(1);
       expect(Math.abs(bagGeometry.resultRight - bagGeometry.inputRight)).toBeLessThanOrEqual(1);
       expect(Math.abs(criGeometry.resultLeft - criGeometry.inputLeft)).toBeLessThanOrEqual(1);
@@ -561,7 +592,7 @@ test.describe('KPhos workflow', () => {
     expect(geometry.leftOverflow).toBeLessThanOrEqual(0);
     expect(geometry.rightOverflow).toBeLessThanOrEqual(0);
     await expect(inputCard.getByRole('heading', { name: 'Targets', exact: true })).toHaveCount(0);
-    await expect(inputCard.getByRole('heading', { name: 'Fluid bag', exact: true })).toBeVisible();
+    await expect(inputCard.getByRole('heading', { name: 'Fluid bag', exact: true })).toHaveCount(0);
   });
 
   test('groups the desktop Bag targets into two balanced fields without a header gutter', async ({ page }) => {
@@ -618,6 +649,10 @@ test.describe('KPhos workflow', () => {
     expect(geometry.rightInset).toBeLessThanOrEqual(1);
     expect(geometry.firstGap).toBeGreaterThanOrEqual(10);
     expect(geometry.secondGap).toBeGreaterThanOrEqual(10);
+    const targets = await panel.locator('.kphos-target-fields').boundingBox();
+    const details = await detailsGrid.boundingBox();
+    expect(Math.abs(targets!.x - details!.x), 'No setup-heading gutter').toBeLessThanOrEqual(1);
+    expect(Math.abs(targets!.width - details!.width), 'Settings use the full target width').toBeLessThanOrEqual(1);
   });
 
   test('fits fully filled Bag and CRI modes within 1440x900', async ({ page }) => {

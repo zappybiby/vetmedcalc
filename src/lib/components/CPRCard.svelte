@@ -76,8 +76,8 @@
   }
 </script>
 
-<section class="grid gap-2 sm:gap-3" aria-label="CPR Card">
-  <div class="ui-card grid gap-2 p-2.5 sm:p-4">
+<section class="ui-tool-stack" aria-label="CPR Card">
+  <div class="ui-card grid gap-2 ui-card-padding">
     <div class="cpr-control-grid print:hidden">
       <label class="ui-inset cpr-batch-toggle inline-flex items-center gap-2 px-2.5 py-2 text-sm font-semibold text-slate-200 sm:px-3" for="cpr-batch-toggle">
         <input
@@ -113,7 +113,7 @@
             <button
               type="button"
               class:is-selected={p.species === option.value}
-              class="cpr-species-button"
+              class="ui-choice cpr-species-button"
               aria-pressed={p.species === option.value}
               on:click={() => selectSpecies(option.value)}
             >
@@ -124,50 +124,50 @@
       </div>
     </div>
 
-    <article class="ui-inset p-2.5 sm:p-3">
+    <article class="ui-inset ui-card-padding">
       <div class="flex items-start justify-between gap-3">
         <div class="min-w-0">
-          <div class="text-xs font-black uppercase tracking-wide text-slate-300">Epinephrine</div>
+          <div class="ui-label-strong">Epinephrine</div>
           <div class="mt-1 text-sm font-semibold text-slate-100">
             {label.epiMed?.concentration.value ?? '—'} {label.epiMed?.concentration.units ?? ''}
           </div>
-          <div class="mt-1 text-xs text-slate-400">{label.epiDose?.mgPerKg ?? '—'} mg/kg</div>
+          <div class="mt-1 ui-meta">{label.epiDose?.mgPerKg ?? '—'} mg/kg</div>
         </div>
         <div class="text-right">
-          <div class="text-xs font-semibold uppercase tracking-wide text-slate-400">Volume</div>
+          <div class="ui-label">Volume</div>
           <div class="mt-1 text-lg font-black tabular-nums text-slate-100">{fmtVolume(label.epiVolume)} mL</div>
         </div>
       </div>
     </article>
 
-    <article class="ui-inset p-2.5 sm:p-3">
+    <article class="ui-inset ui-card-padding">
       <div class="flex items-start justify-between gap-3">
         <div class="min-w-0">
-          <div class="text-xs font-black uppercase tracking-wide text-slate-300">Atropine</div>
+          <div class="ui-label-strong">Atropine</div>
           <div class="mt-1 text-sm font-semibold text-slate-100">
             {label.atropineMed?.concentration.value ?? '—'} {label.atropineMed?.concentration.units ?? ''}
           </div>
-          <div class="mt-1 text-xs text-slate-400">{label.atropineDose?.mgPerKg ?? '—'} mg/kg</div>
+          <div class="mt-1 ui-meta">{label.atropineDose?.mgPerKg ?? '—'} mg/kg</div>
         </div>
         <div class="text-right">
-          <div class="text-xs font-semibold uppercase tracking-wide text-slate-400">Volume</div>
+          <div class="ui-label">Volume</div>
           <div class="mt-1 text-lg font-black tabular-nums text-slate-100">{fmtVolume(label.atropineVolume)} mL</div>
         </div>
       </div>
     </article>
 
-    <article class="ui-inset p-2.5 sm:p-3">
+    <article class="ui-inset ui-card-padding">
       <div class="flex items-start justify-between gap-3">
         <div class="min-w-0">
-          <div class="text-xs font-black uppercase tracking-wide text-slate-300">ET Tube</div>
+          <div class="ui-label-strong">ET Tube</div>
         </div>
         <div class="text-right">
-          <div class="text-xs font-semibold uppercase tracking-wide text-slate-400">Estimated ET Tube Size</div>
+          <div class="ui-label">Estimated ET Tube Size</div>
           <div class="mt-1 text-lg font-black tabular-nums text-slate-100">
             {#if label.etEstimate}{label.etEstimate.estimateMm.toFixed(1)} mm{:else}—{/if}
           </div>
           {#if label.etEstimate}
-            <div class="mt-1 text-xs text-slate-400">
+            <div class="mt-1 ui-meta">
               Range {label.etEstimate.lowMm.toFixed(1)}–{label.etEstimate.highMm.toFixed(1)} mm
             </div>
           {/if}
@@ -176,7 +176,7 @@
     </article>
   </div>
 
-  <p class="m-0 text-[11px] leading-relaxed text-slate-400 sm:text-xs">
+  <p class="m-0 ui-meta">
     ET Tube sizing for dogs is calculated from the formula <code>3.85 * (kg)^(1/3)</code> derived from a
     <a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC6625165/" target="_blank" rel="noreferrer">2019 study</a>
     published in the Canadian Veterinary Journal.
@@ -216,38 +216,7 @@
   }
 
   .cpr-species-button {
-    display: inline-flex;
-    min-height: 2.35rem;
     min-width: 0;
-    align-items: center;
-    justify-content: center;
-    border: 1px solid var(--ui-field-border);
-    border-radius: 0.5rem;
-    background-color: var(--ui-field-bg);
-    color: var(--ui-text-200);
-    font-size: 0.9rem;
-    font-weight: 800;
-    line-height: 1;
-    transition:
-      background-color 140ms ease,
-      border-color 140ms ease,
-      color 140ms ease,
-      box-shadow 140ms ease;
-  }
-
-  .cpr-species-button:hover {
-    border-color: var(--ui-field-border-strong);
-    background-color: var(--ui-field-bg-hover);
-    color: var(--ui-text-100);
-  }
-
-  .cpr-species-button.is-selected {
-    border-color: var(--ui-accent-border);
-    background-color: color-mix(in srgb, var(--ui-accent-surface) 66%, var(--ui-surface-2));
-    color: var(--ui-text-100);
-    box-shadow:
-      inset 0 2px 0 rgba(127, 192, 229, 0.6),
-      0 0 0 1px color-mix(in srgb, var(--ui-accent-border) 54%, transparent);
   }
 
   @media (min-width: 520px) {
