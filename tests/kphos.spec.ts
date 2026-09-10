@@ -533,8 +533,11 @@ test.describe('KPhos workflow', () => {
         return { inputBottom: input.bottom + window.scrollY, inputLeft: input.left, inputRight: input.right, resultTop: result ? result.top + window.scrollY : 0, resultLeft: result?.left ?? 0, resultRight: result?.right ?? 0 };
       });
 
-      expect(Math.abs(bagGeometry.resultTop - bagGeometry.inputBottom), `${viewport.width}px Bag card gap`).toBeLessThanOrEqual(9);
-      expect(Math.abs(criGeometry.resultTop - criGeometry.inputBottom), `${viewport.width}px CRI card gap`).toBeLessThanOrEqual(9);
+      const referenceGap = await page.getByRole('region', { name: 'CRI calculator', includeHidden: true }).evaluate(
+        (element) => Number.parseFloat(getComputedStyle(element).rowGap),
+      );
+      expect(Math.abs(bagGeometry.resultTop - bagGeometry.inputBottom - referenceGap), `${viewport.width}px Bag card gap matches CRI`).toBeLessThanOrEqual(1);
+      expect(Math.abs(criGeometry.resultTop - criGeometry.inputBottom - referenceGap), `${viewport.width}px CRI card gap matches CRI`).toBeLessThanOrEqual(1);
       expect(Math.abs(bagGeometry.resultLeft - bagGeometry.inputLeft)).toBeLessThanOrEqual(1);
       expect(Math.abs(bagGeometry.resultRight - bagGeometry.inputRight)).toBeLessThanOrEqual(1);
       expect(Math.abs(criGeometry.resultLeft - criGeometry.inputLeft)).toBeLessThanOrEqual(1);

@@ -466,4 +466,74 @@ test.describe('responsive layout guardrails', () => {
       }
     }
   });
+
+  // Human-review evidence for style changes, plus alternate states that the
+  // primary tab checks do not exercise. Screenshots are artifacts, not baselines.
+  for (const theme of ['dark', 'light'] as const) {
+    for (const viewport of [
+      { name: 'desktop', width: 1440, height: 900 },
+      { name: 'mobile', width: 384, height: 854 },
+    ]) {
+      test(`visual review: ${theme} ${viewport.name}`, async ({ page }, testInfo) => {
+        test.setTimeout(120_000);
+        await openApp(page, viewport);
+        await setTheme(page, theme);
+
+        const capture = async (state: string) => {
+          const name = `${theme}-${viewport.name}-${state.replace(/[^a-z0-9]+/gi, '-').toLowerCase()}`;
+          await page.evaluate(() => window.scrollTo(0, 0));
+          const path = testInfo.outputPath(`${name}.png`);
+          await page.screenshot({ path, fullPage: true, animations: 'disabled', caret: 'hide' });
+          await testInfo.attach(name, { path, contentType: 'image/png' });
+          const documentWidth = await page.evaluate(() =>
+            Math.max(document.documentElement.scrollWidth, document.body.scrollWidth),
+          );
+          expect.soft(documentWidth, `${name} horizontal overflow`).toBeLessThanOrEqual(viewport.width + 1);
+        };
+
+        for (const tabName of await getToolTabNames(page)) {
+          await fillTabData(page, tabName);
+          await capture(tabName);
+        }
+
+        await selectTab(page, 'Food calc');
+        let panel = activePanel(page);
+        await panel.getByRole('button', { name: 'Cat', exact: true }).click();
+        await expect(panel.getByRole('button', { name: 'Cat', exact: true })).toHaveAttribute('aria-pressed', 'true');
+        await capture('Food calc Cat');
+        await expectAxeColorContrast(page, `${theme} ${viewport.name} Cat foods`);
+
+        await selectTab(page, 'KPhos/KCl');
+        panel = activePanel(page);
+        await panel.getByRole('button', { name: 'Bag', exact: true }).click();
+        await capture('KPhos Bag');
+        await expectAxeColorContrast(page, `${theme} ${viewport.name} KPhos Bag`);
+
+        await page.getByLabel('Weight (kg)', { exact: true }).fill('10');
+        await panel.getByLabel('Fluid Type', { exact: true }).selectOption({ label: 'Isolyte S pH 7.4' });
+        await panel.getByLabel('Fluid rate (mL/hr)', { exact: true }).fill('100');
+        await panel.getByLabel('Phosphate target (mmol/kg/hr)', { exact: true }).fill('0.001');
+        await expect(panel.locator('.ui-alert')).toBeVisible();
+        await capture('KPhos warning');
+        await expectAxeColorContrast(page, `${theme} ${viewport.name} KPhos warning`);
+
+        await selectTab(page, 'CPR labels');
+        panel = activePanel(page);
+        await panel.getByRole('checkbox', { name: 'Batch mode', exact: true }).check();
+        const batch = panel.getByRole('region', { name: 'Batch CPR Labels', exact: true });
+        for (const [index, patient] of [
+          { name: 'Alexandria Long Patient Name', species: 'Dog', weight: '22.5' },
+          { name: 'Mochi', species: 'Cat', weight: '4.2' },
+        ].entries()) {
+          await batch.locator(`[data-row="${index}"][data-field="0"]`).fill(patient.name);
+          await batch.locator(`[data-row="${index}"][data-field="1"]`).selectOption({ label: patient.species });
+          await batch.locator(`[data-row="${index}"][data-field="2"]`).fill(patient.weight);
+        }
+        await expect(batch.getByRole('button', { name: 'Print all labels (2)', exact: true })).toBeEnabled();
+        await expect(batch.locator('[data-row="2"][data-field="0"]')).toHaveValue('');
+        await capture('CPR batch');
+        await expectAxeColorContrast(page, `${theme} ${viewport.name} CPR batch`);
+      });
+    }
+  }
 });
