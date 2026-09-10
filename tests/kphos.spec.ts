@@ -430,20 +430,25 @@ test.describe('KPhos workflow', () => {
     expect(criFlowStyles.cardCount).toBe(3);
     expect(criFlowStyles.totalBorder).not.toBe(criFlowStyles.sourceBorder);
 
-    const primaryTextSizes = await results.locator('.kphos-primary-result').evaluate((row) => ({
+    const primaryTextSizes = await results.getByRole('region', { name: 'Preparation and delivery' }).locator('p.ui-instruction').first().evaluate((row) => ({
       row: Number.parseFloat(getComputedStyle(row).fontSize),
       value: Number.parseFloat(getComputedStyle(row.querySelector('.ui-statement-value') as Element).fontSize),
     }));
-    expect(primaryTextSizes.row).toBeGreaterThanOrEqual(17);
+    expect(primaryTextSizes.row).toBeGreaterThanOrEqual(14);
     expect(primaryTextSizes.value).toBeGreaterThan(primaryTextSizes.row);
 
-    const emphasizedInputWords = await panel.locator('[data-testid="kphos-statements"] strong').evaluateAll((words) =>
-      words.map((word) => ({ text: word.textContent, weight: Number.parseInt(getComputedStyle(word).fontWeight, 10) })),
-    );
-    expect(emphasizedInputWords).toEqual(expect.arrayContaining([
-      expect.objectContaining({ text: 'Phosphate target', weight: 900 }),
-      expect.objectContaining({ text: 'Potassium target', weight: 900 }),
-    ]));
+    // Target labels use the same visual role as the reference CRI field label.
+    const referenceLabelStyle = await page.locator('label[for="cri-med"]').evaluate((label) => {
+      const style = getComputedStyle(label);
+      return { size: style.fontSize, weight: style.fontWeight, tracking: style.letterSpacing };
+    });
+    for (const text of ['Phosphate target', 'Potassium target']) {
+      const targetLabelStyle = await panel.getByText(text, { exact: true }).evaluate((label) => {
+        const style = getComputedStyle(label);
+        return { size: style.fontSize, weight: style.fontWeight, tracking: style.letterSpacing };
+      });
+      expect(targetLabelStyle).toEqual(referenceLabelStyle);
+    }
   });
 
   test('switches the potassium target between Added and Total without moving results', async ({ page }) => {

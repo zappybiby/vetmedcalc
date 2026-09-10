@@ -130,19 +130,19 @@
     : null;
 </script>
 
-<section class="grid min-w-0 gap-2 text-slate-200 sm:gap-3" aria-label="Food calculator">
+<section class="ui-tool-stack text-slate-200" aria-label="Food calculator">
   <div class="grid min-w-0 gap-2 sm:gap-3">
-    <div class="ui-card min-w-0 p-2.5 sm:p-4">
-      <h2 class="text-[13px] font-black uppercase tracking-wide text-slate-200 sm:text-sm">Inputs</h2>
+    <div class="ui-card min-w-0 ui-card-padding">
+      <h2 class="ui-section-title">Inputs</h2>
 
       <div class="mt-2 grid gap-2 min-[360px]:grid-cols-2 sm:mt-3 sm:gap-3 xl:grid-cols-[minmax(180px,0.8fr)_minmax(0,1fr)_minmax(0,1fr)]">
-        <div class="grid min-w-0 gap-1.5 sm:gap-2">
+        <div class="grid min-w-0 gap-1.5">
           <div class="ui-label" id="food-species-label">Species</div>
           <div class="grid min-w-0 grid-cols-2 gap-1.5" role="group" aria-labelledby="food-species-label">
             {#each speciesOptions as option (option.value)}
               <button
                 type="button"
-                class={`rounded-lg border px-3 py-2 text-sm font-extrabold transition-colors ${selectedSpecies === option.value ? 'border-sky-400/70 bg-sky-400/15 text-slate-100 shadow-[inset_0_2px_0_rgba(127,192,229,0.55)]' : 'border-slate-700/50 bg-surface-sunken text-slate-300 hover:border-slate-600/70 hover:text-slate-100'}`}
+                class="ui-choice"
                 aria-pressed={selectedSpecies === option.value}
                 on:click={() => selectSpecies(option.value)}
               >
@@ -152,8 +152,8 @@
           </div>
         </div>
 
-        <label class="grid gap-1.5 sm:gap-2">
-          <span class="text-xs font-semibold uppercase tracking-wide text-slate-300">RER factor</span>
+        <label class="grid gap-1.5">
+          <span class="ui-label">RER factor</span>
           <input
             class="field-control"
             type="number"
@@ -165,8 +165,8 @@
           />
         </label>
 
-        <label class="grid gap-1.5 sm:gap-2">
-          <span class="text-xs font-semibold uppercase tracking-wide text-slate-300">Interval (hours)</span>
+        <label class="grid gap-1.5">
+          <span class="ui-label">Interval (hours)</span>
           <input
             class="field-control"
             type="number"
@@ -180,7 +180,7 @@
       </div>
 
       {#if issues.length}
-        <div class="mt-2 rounded-lg border border-amber-300/30 bg-amber-950/40 px-3 py-2 text-sm font-semibold text-amber-100 sm:mt-3">
+        <div class="mt-2 ui-alert border-amber-300/30 bg-amber-950/40 text-amber-100 sm:mt-3">
           {#each issues as issue}
             <div>{issue}</div>
           {/each}
@@ -190,19 +190,19 @@
 
     {#if firstPlan}
       <div class="ui-card min-w-0 overflow-hidden">
-        <div class="grid gap-px bg-slate-800/70 p-px sm:gap-1.5 sm:bg-transparent sm:p-2 min-[860px]:grid-cols-2 min-[1540px]:grid-cols-3">
-          <article class="grid min-w-0 grid-cols-[minmax(0,1fr)_auto] gap-x-2 gap-y-0.5 bg-surface-sunken px-2.5 py-1.5 text-sm text-slate-200 sm:rounded-lg sm:border sm:border-slate-700/40">
+        <div class="grid gap-px bg-[var(--ui-result-divider)] p-px sm:gap-1.5 sm:bg-transparent sm:p-2 min-[860px]:grid-cols-2 min-[1540px]:grid-cols-3">
+          <article class="grid min-w-0 grid-cols-[minmax(0,1fr)_auto] gap-x-2 gap-y-0.5 bg-surface-sunken px-2.5 py-1.5 text-sm text-slate-200 sm:rounded-lg sm:border ui-rule">
             <div class="flex min-w-0 items-center gap-2">
               <button
                 type="button"
-                class="inline-flex h-8 shrink-0 items-center rounded-md border border-sky-400/35 bg-sky-400/10 px-2 text-xs font-black uppercase tracking-wide text-slate-100"
+                class="ui-button h-8 shrink-0 px-2 text-xs"
                 on:click={focusCustomKcal}
               >
                 Custom
               </button>
               <input
                 bind:this={customKcalInput}
-                class="field-control h-8 max-w-[7.25rem] px-2 py-1 text-right text-sm font-black tabular-nums"
+                class="field-control h-8 max-w-[7.25rem] px-2 py-1 text-right text-sm tabular-nums"
                 type="number"
                 min="0"
                 step="1"
@@ -213,16 +213,16 @@
               />
             </div>
 
-            <div class="row-span-2 self-center rounded-md border border-sky-400/35 bg-sky-400/10 px-2 py-1 text-right">
-              <div class="whitespace-nowrap text-[15px] font-black leading-tight tabular-nums text-slate-100">
+            <div class="row-span-2 self-center px-2 py-1 text-right">
+              <div class="whitespace-nowrap ui-row-value leading-tight">
                 {customPlan ? formatCanPortion(customPlan.roundedCansPerInterval) : '—'}
               </div>
-              <div class="mt-0.5 whitespace-nowrap text-[10px] leading-tight tabular-nums text-slate-400">
+              <div class="mt-0.5 whitespace-nowrap ui-meta-compact tabular-nums">
                 {#if customPlan}{fmt(customPlan.exactCansPerInterval, 2)} exact{:else}<span aria-hidden="true">&nbsp;</span>{/if}
               </div>
             </div>
 
-            <div class="min-w-0 text-[11px] leading-tight tabular-nums text-slate-400">
+            <div class="min-w-0 ui-meta-compact tabular-nums">
               {#if customPlan}
                 <span>{fmtWhole(customPlan.roundedKcalPerInterval)} kcal/feed</span>
               {:else}
@@ -232,20 +232,20 @@
           </article>
 
           {#each plans as plan (plan.food.id)}
-            <article class="grid min-w-0 grid-cols-[minmax(0,1fr)_auto] gap-x-2 gap-y-0.5 bg-surface-sunken px-2.5 py-1.5 text-sm text-slate-200 sm:rounded-lg sm:border sm:border-slate-700/40">
+            <article class="grid min-w-0 grid-cols-[minmax(0,1fr)_auto] gap-x-2 gap-y-0.5 bg-surface-sunken px-2.5 py-1.5 text-sm text-slate-200 sm:rounded-lg sm:border ui-rule">
               <div class="min-w-0">
                 <span class="break-words font-semibold leading-tight text-slate-100">{plan.food.name}</span>
-                <span class="ml-1 whitespace-nowrap text-[11px] font-semibold tabular-nums text-slate-400">{plan.food.canSize}</span>
+                <span class="ml-1 whitespace-nowrap ui-meta-compact font-semibold tabular-nums">{plan.food.canSize}</span>
               </div>
 
-              <div class="row-span-2 self-center rounded-md border border-sky-400/35 bg-sky-400/10 px-2 py-1 text-right">
-                <div class="whitespace-nowrap text-[15px] font-black leading-tight tabular-nums text-slate-100">{formatCanPortion(plan.roundedCansPerInterval)}</div>
-                <div class="mt-0.5 whitespace-nowrap text-[10px] leading-tight tabular-nums text-slate-400">{fmt(plan.exactCansPerInterval, 2)} exact</div>
+              <div class="row-span-2 self-center px-2 py-1 text-right">
+                <div class="whitespace-nowrap ui-row-value leading-tight">{formatCanPortion(plan.roundedCansPerInterval)}</div>
+                <div class="mt-0.5 whitespace-nowrap ui-meta-compact tabular-nums">{fmt(plan.exactCansPerInterval, 2)} exact</div>
               </div>
 
-              <div class="min-w-0 text-[11px] leading-tight tabular-nums text-slate-400">
+              <div class="min-w-0 ui-meta-compact tabular-nums">
                 <span>{fmtWhole(plan.food.kcalPerCan)} kcal/can</span>
-                <span class="mx-1 text-slate-600">/</span>
+                <span class="mx-1 text-slate-400">/</span>
                 <span>{fmtWhole(plan.roundedKcalPerInterval)} kcal/feed</span>
               </div>
             </article>

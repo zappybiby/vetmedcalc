@@ -110,14 +110,15 @@
         : 'Input = output';
 </script>
 
-<section class="grid min-w-0 gap-2 text-slate-200 sm:gap-3" aria-label="Ins and outs calculator">
+<section class="ui-tool-stack text-slate-200" aria-label="Ins and outs calculator">
   <div class="grid min-w-0 gap-2 sm:gap-3 lg:grid-cols-3">
-    <article class="ui-card grid min-w-0 content-start gap-2 p-2.5 sm:p-3">
-      <div class="text-xs font-black uppercase tracking-wide text-slate-200">Fluid in</div>
+    <article class="ui-card grid min-w-0 content-start gap-2 ui-card-padding">
+      <div class="ui-label-strong">Fluid in</div>
 
       <div class="grid min-w-0 grid-cols-2 gap-1.5" role="radiogroup" aria-label="Fluid in entry mode">
         <label
-          class={`flex min-w-0 cursor-pointer items-center justify-center gap-1.5 rounded-md border px-2 py-1.5 text-xs font-semibold uppercase tracking-wide transition-colors ${insMode === 'rate' ? 'border-sky-400/50 bg-sky-400/10 text-slate-100' : 'border-slate-700/40 bg-surface-sunken text-slate-300 hover:border-slate-600/60'}`}
+          class="ui-choice"
+          class:is-selected={insMode === 'rate'}
           for="ins-mode-rate"
         >
           <input
@@ -131,7 +132,8 @@
         </label>
 
         <label
-          class={`flex min-w-0 cursor-pointer items-center justify-center gap-1.5 rounded-md border px-2 py-1.5 text-xs font-semibold uppercase tracking-wide transition-colors ${insMode === 'total' ? 'border-sky-400/50 bg-sky-400/10 text-slate-100' : 'border-slate-700/40 bg-surface-sunken text-slate-300 hover:border-slate-600/60'}`}
+          class="ui-choice"
+          class:is-selected={insMode === 'total'}
           for="ins-mode-total"
         >
           <input
@@ -146,7 +148,15 @@
       </div>
 
       <label class="grid min-w-0 gap-1.5">
-        <span class="ui-label">{insMode === 'rate' ? 'mL/hr' : totalInsLabel(windowHours)}</span>
+        <span class="ui-label">
+          {#if insMode === 'rate'}
+            <span class="normal-case">mL/hr</span>
+          {:else if windowHours != null && windowHours > 0}
+            Total over {fmtCompact(windowHours)} <span class="normal-case">hr</span>
+          {:else}
+            {totalInsLabel(windowHours)}
+          {/if}
+        </span>
         <div class="grid min-w-0 grid-cols-[minmax(0,1fr)_auto] items-center gap-2">
           {#if insMode === 'rate'}
             <input
@@ -159,7 +169,7 @@
               inputmode="decimal"
               placeholder="0"
             />
-            <span class="text-xs font-semibold uppercase tracking-wide text-slate-400">mL/hr</span>
+            <span class="ui-unit">mL/hr</span>
           {:else}
             <input
               id="ins-total"
@@ -171,15 +181,15 @@
               inputmode="decimal"
               placeholder="0"
             />
-            <span class="text-xs font-semibold uppercase tracking-wide text-slate-400">mL</span>
+            <span class="ui-unit">mL</span>
           {/if}
         </div>
       </label>
     </article>
 
-    <article class="ui-card grid min-w-0 content-start gap-2 p-2.5 sm:p-3">
+    <article class="ui-card grid min-w-0 content-start gap-2 ui-card-padding">
       <label class="grid min-w-0 gap-2">
-        <span class="text-xs font-black uppercase tracking-wide text-slate-200">Urine out</span>
+        <span class="ui-label-strong">Urine out</span>
         <div class="grid min-w-0 grid-cols-[minmax(0,1fr)_auto] items-center gap-2">
           <input
             id="out-total"
@@ -191,14 +201,14 @@
             inputmode="decimal"
             placeholder="0"
           />
-          <span class="text-xs font-semibold uppercase tracking-wide text-slate-400">mL</span>
+          <span class="ui-unit">mL</span>
         </div>
       </label>
     </article>
 
-    <article class="ui-card grid min-w-0 content-start gap-2 p-2.5 sm:p-3">
+    <article class="ui-card grid min-w-0 content-start gap-2 ui-card-padding">
       <label class="grid min-w-0 gap-2">
-        <span class="text-xs font-black uppercase tracking-wide text-slate-200">Hours</span>
+        <span class="ui-label-strong">Hours</span>
         <div class="grid min-w-0 grid-cols-[minmax(0,1fr)_auto] items-center gap-2">
           <input
             id="io-duration"
@@ -209,7 +219,7 @@
             bind:value={hoursWindow}
             inputmode="decimal"
           />
-          <span class="text-xs font-semibold uppercase tracking-wide text-slate-400">hr</span>
+          <span class="ui-unit">hr</span>
         </div>
       </label>
     </article>
@@ -217,79 +227,79 @@
 
   {#if hasInput}
     <div class="grid min-w-0 gap-2 sm:gap-3 lg:grid-cols-3">
-      <article class="ui-card min-w-0 p-2.5 sm:p-3">
-        <header class="text-xs font-black uppercase tracking-wide text-slate-200">Fluid in</header>
+      <article class="ui-card min-w-0 ui-card-padding">
+        <header class="ui-label-strong">Fluid in</header>
         <dl class="mt-2 grid min-w-0 gap-1.5 text-sm text-slate-300">
           <div class="grid min-w-0 grid-cols-[minmax(0,1fr)_auto] items-baseline gap-2">
-            <dt class="text-xs font-semibold uppercase tracking-wide text-slate-400">Total</dt>
+            <dt class="ui-label">Total</dt>
             <dd class="text-right font-black text-slate-100">
               <span class="tabular-nums">{fmt(totalInsMl)}</span>
-              <span class="ml-1 text-xs font-semibold uppercase tracking-wide text-slate-400">mL</span>
+              <span class="ml-1 ui-unit">mL</span>
             </dd>
           </div>
           <div class="grid min-w-0 grid-cols-[minmax(0,1fr)_auto] items-baseline gap-2">
-            <dt class="text-xs font-semibold uppercase tracking-wide text-slate-400">Rate</dt>
+            <dt class="ui-label">Rate</dt>
             <dd class="text-right font-black text-slate-100">
               <span class="tabular-nums">{fmt(insMlPerHr)}</span>
-              <span class="ml-1 text-xs font-semibold uppercase tracking-wide text-slate-400">mL/hr</span>
+              <span class="ml-1 ui-unit">mL/hr</span>
             </dd>
           </div>
           <div class="grid min-w-0 grid-cols-[minmax(0,1fr)_auto] items-baseline gap-2">
-            <dt class="text-xs font-semibold uppercase tracking-wide text-slate-400">Weight rate</dt>
+            <dt class="ui-label">Weight rate</dt>
             <dd class="text-right font-black text-slate-100">
               <span class="tabular-nums">{fmt(insMlPerKgHr)}</span>
-              <span class="ml-1 text-xs font-semibold uppercase tracking-wide text-slate-400">mL/kg/hr</span>
+              <span class="ml-1 ui-unit">mL/kg/hr</span>
             </dd>
           </div>
         </dl>
       </article>
 
-      <article class="ui-card min-w-0 p-2.5 sm:p-3">
-        <header class="text-xs font-black uppercase tracking-wide text-slate-200">Urine out</header>
+      <article class="ui-card min-w-0 ui-card-padding">
+        <header class="ui-label-strong">Urine out</header>
         <dl class="mt-2 grid min-w-0 gap-1.5 text-sm text-slate-300">
           <div class="grid min-w-0 grid-cols-[minmax(0,1fr)_auto] items-baseline gap-2">
-            <dt class="text-xs font-semibold uppercase tracking-wide text-slate-400">Total</dt>
+            <dt class="ui-label">Total</dt>
             <dd class="text-right font-black text-slate-100">
               <span class="tabular-nums">{fmt(totalOutMl)}</span>
-              <span class="ml-1 text-xs font-semibold uppercase tracking-wide text-slate-400">mL</span>
+              <span class="ml-1 ui-unit">mL</span>
             </dd>
           </div>
           <div class="grid min-w-0 grid-cols-[minmax(0,1fr)_auto] items-baseline gap-2">
-            <dt class="text-xs font-semibold uppercase tracking-wide text-slate-400">Rate</dt>
+            <dt class="ui-label">Rate</dt>
             <dd class="text-right font-black text-slate-100">
               <span class="tabular-nums">{fmt(outMlPerHr)}</span>
-              <span class="ml-1 text-xs font-semibold uppercase tracking-wide text-slate-400">mL/hr</span>
+              <span class="ml-1 ui-unit">mL/hr</span>
             </dd>
           </div>
           <div class="grid min-w-0 grid-cols-[minmax(0,1fr)_auto] items-baseline gap-2">
-            <dt class="text-xs font-semibold uppercase tracking-wide text-slate-400">Weight rate</dt>
+            <dt class="ui-label">Weight rate</dt>
             <dd class="text-right font-black text-slate-100">
               <span class="tabular-nums">{fmt(outMlPerKgHr)}</span>
-              <span class="ml-1 text-xs font-semibold uppercase tracking-wide text-slate-400">mL/kg/hr</span>
+              <span class="ml-1 ui-unit">mL/kg/hr</span>
             </dd>
           </div>
         </dl>
       </article>
 
-      <article class="ui-card min-w-0 p-2.5 sm:p-3">
-        <header class="text-xs font-black uppercase tracking-wide text-slate-200">Net balance</header>
+      <article class="ui-card min-w-0 ui-card-padding">
+        <header class="ui-label-strong">Net balance</header>
         <dl class="mt-2 grid min-w-0 gap-1.5 text-sm text-slate-300">
           <div class="grid min-w-0 grid-cols-[minmax(0,1fr)_auto] items-baseline gap-2">
-            <dt class="text-xs font-semibold uppercase tracking-wide text-slate-400">Total</dt>
+            <dt class="ui-label">Total</dt>
             <dd class="text-right font-black text-slate-100">
               <span class="tabular-nums">{fmtSigned(netTotalMl)}</span>
-              <span class="ml-1 text-xs font-semibold uppercase tracking-wide text-slate-400">mL</span>
+              <span class="ml-1 ui-unit">mL</span>
             </dd>
           </div>
           <div class="grid min-w-0 grid-cols-[minmax(0,1fr)_auto] items-baseline gap-2">
-            <dt class="text-xs font-semibold uppercase tracking-wide text-slate-400">Rate</dt>
+            <dt class="ui-label">Rate</dt>
             <dd class="text-right font-black text-slate-100">
               <span class="tabular-nums">{fmtSigned(netMlPerHr)}</span>
-              <span class="ml-1 text-xs font-semibold uppercase tracking-wide text-slate-400">mL/hr</span>
+              <span class="ml-1 ui-unit">mL/hr</span>
             </dd>
           </div>
           <div class="grid min-w-0 grid-cols-[minmax(0,1fr)_auto] items-baseline gap-2">
-            <dt class="text-xs font-semibold uppercase tracking-wide text-slate-400">Balance</dt>
+            <dt class="ui-label">Balance</dt>
             <dd class="text-right font-black text-slate-100">{balanceDescriptor}</dd>
           </div>
         </dl>

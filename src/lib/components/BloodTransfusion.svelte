@@ -70,13 +70,13 @@
   $: if (!hasInput) summaryOpen = false;
 </script>
 
-<section class="grid min-w-0 gap-2 text-slate-200 sm:gap-3" aria-label="Blood transfusion planner">
+<section class="ui-tool-stack text-slate-200" aria-label="Blood transfusion planner">
   <div class="grid min-w-0 gap-2 sm:gap-3">
-    <div class="ui-card min-w-0 p-2.5 sm:p-3">
-      <h2 class="text-[13px] font-black uppercase tracking-wide text-slate-200 sm:text-sm">Inputs</h2>
+    <div class="ui-card min-w-0 ui-card-padding">
+      <h2 class="ui-section-title">Inputs</h2>
       <div class="mt-2 grid gap-2 min-[360px]:grid-cols-2 sm:mt-3 sm:gap-3">
-        <label class="grid gap-1.5 sm:gap-2">
-          <span class="text-xs font-semibold uppercase tracking-wide text-slate-300">Total volume (mL)</span>
+        <label class="grid gap-1.5">
+          <span class="ui-label">Total volume <span class="normal-case">(mL)</span></span>
           <input
             class="field-control"
             type="number"
@@ -88,8 +88,8 @@
           />
         </label>
 
-        <label class="grid gap-1.5 sm:gap-2">
-          <span class="text-xs font-semibold uppercase tracking-wide text-slate-300">Total time (hr)</span>
+        <label class="grid gap-1.5">
+          <span class="ui-label">Total time <span class="normal-case">(hr)</span></span>
           <input
             class="field-control"
             type="number"
@@ -103,33 +103,33 @@
       </div>
 
       {#if showIssues}
-        <div class="mt-3 rounded-lg border border-amber-300/30 bg-amber-950/40 px-3 py-2 text-sm font-semibold text-amber-100">
+        <div class="mt-3 ui-alert border-amber-300/30 bg-amber-950/40 text-amber-100">
           {#each issues as issue}
             <div>{issue}</div>
           {/each}
         </div>
       {/if}
 
-      <div class="mt-2 text-[11px] leading-relaxed text-slate-400 sm:text-xs">
+      <div class="mt-2 ui-meta">
         First hour ramps at 20/40/60/80% of the final rate, then continues at the final rate.
       </div>
     </div>
 
     {#if hasInput}
-      <div class="ui-card min-w-0 p-2.5 sm:p-3">
-        <h3 class="text-[13px] font-black uppercase tracking-wide text-slate-200 sm:text-sm">Step-by-step plan</h3>
+      <div class="ui-card min-w-0 ui-card-padding">
+        <h3 class="ui-section-title">Step-by-step plan</h3>
         {#if plan}
           <div class="mt-2 overflow-x-auto sm:mt-3">
             <table class="min-w-full text-[12px] sm:text-sm">
-              <thead class="text-xs font-semibold uppercase tracking-wide text-slate-400">
-                <tr class="border-b border-slate-700">
+              <thead class="ui-label">
+                <tr class="border-b ui-rule">
                   <th class="px-1.5 py-1.5 text-left sm:px-3 sm:py-2">Interval</th>
-                  <th class="px-1.5 py-1.5 text-right sm:px-3 sm:py-2">Rate (mL/hr)</th>
-                  <th class="px-1.5 py-1.5 text-right sm:px-3 sm:py-2">Volume (mL)</th>
-                  <th class="px-1.5 py-1.5 text-right sm:px-3 sm:py-2">Cumulative (mL)</th>
+                  <th class="px-1.5 py-1.5 text-right sm:px-3 sm:py-2">Rate <span class="normal-case">(mL/hr)</span></th>
+                  <th class="px-1.5 py-1.5 text-right sm:px-3 sm:py-2">Volume <span class="normal-case">(mL)</span></th>
+                  <th class="px-1.5 py-1.5 text-right sm:px-3 sm:py-2">Cumulative <span class="normal-case">(mL)</span></th>
                 </tr>
               </thead>
-              <tbody class="divide-y divide-slate-800">
+              <tbody class="ui-table-rows">
                 {#each plan.steps as step}
                   <tr class="text-slate-200">
                     <td class="px-1.5 py-1.5 font-semibold text-slate-100 sm:px-3 sm:py-2">{intervalLabel(step)}</td>
@@ -146,11 +146,11 @@
         {/if}
       </div>
 
-      <div class="ui-card min-w-0 p-2.5 sm:p-3">
-        <h2 class="text-[13px] font-black uppercase tracking-wide text-slate-200 sm:text-sm">
+      <div class="ui-card min-w-0 ui-card-padding">
+        <h2 class="ui-section-title">
           <button
             type="button"
-            class="flex w-full items-center justify-between text-left"
+            class="ui-section-title flex w-full items-center justify-between text-left"
             aria-expanded={summaryOpen}
             aria-controls="blood-transfusion-summary"
             on:click={() => (summaryOpen = !summaryOpen)}
@@ -198,7 +198,7 @@
                 <span class="font-black tabular-nums text-slate-100">{fmtSigned(plan.summary.deltaMl, 2)} mL</span>
               </div>
             </div>
-            <div class="mt-2 text-xs text-slate-400">
+            <div class="mt-2 ui-meta">
               Rates are rounded to whole mL/hr (minimum 1). Delivered volume can differ slightly from target.
             </div>
           {:else}

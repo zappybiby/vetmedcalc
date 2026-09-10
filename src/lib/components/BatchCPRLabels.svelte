@@ -177,20 +177,20 @@
   }
 </script>
 
-<section class="grid gap-4" aria-label="Batch CPR Labels">
+<section class="ui-tool-stack" aria-label="Batch CPR Labels">
   <header class="flex flex-col gap-1">
-    <div class="text-sm font-black uppercase tracking-wide text-slate-100">Batch CPR Labels</div>
-    <p class="m-0 text-xs text-slate-400">
+    <div class="ui-section-title">Batch CPR Labels</div>
+    <p class="m-0 ui-meta">
       Enter patient details row by row. A fresh row appears automatically so you can stay on the keyboard.
     </p>
   </header>
 
-  <div class="ui-card grid gap-4 p-4">
+  <div class="ui-card ui-tool-stack ui-card-padding">
     <div class="grid gap-2">
-      <div class="grid grid-cols-[2fr_1fr_1fr] gap-3 text-xs font-semibold uppercase tracking-wide text-slate-400">
+      <div class="grid grid-cols-[2fr_1fr_1fr] gap-3 ui-label">
         <span>Patient Name</span>
         <span>Species</span>
-        <span>Weight (kg)</span>
+        <span>Weight <span class="normal-case">(kg)</span></span>
       </div>
 
       <div class="grid gap-2">
@@ -242,8 +242,8 @@
     </div>
 
     <div class="text-center">
-      <button class="ui-button px-4 py-2 font-bold uppercase tracking-wide" on:click={printAll} disabled={!canPrint}>
-        Print All Labels ({printablePatients.length})
+      <button class="ui-button px-4 py-2 font-bold" on:click={printAll} disabled={!canPrint}>
+        Print all labels ({printablePatients.length})
       </button>
     </div>
   </div>

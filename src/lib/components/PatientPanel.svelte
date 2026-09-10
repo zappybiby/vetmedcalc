@@ -22,7 +22,7 @@
   aria-label="Patient weight"
 >
   <label class="patient-weight-field grid min-w-0 gap-1.5">
-    <span class="ui-label">Weight (kg)</span>
+    <span class="ui-label">Weight <span class="normal-case">(kg)</span></span>
     <input
       id="patient-weight"
       class="field-control patient-weight-input"

@@ -142,7 +142,7 @@
   let diluentLine: PrepareLine | null = null;
   $: diluentLine = prepareLines.find((line) => line.label === 'Diluent') ?? null;
 
-  const alertBase = 'rounded-lg border px-3 py-2 text-sm font-semibold';
+  const alertBase = 'ui-alert';
   const defaultAlert = 'border-slate-600/40 bg-surface-sunken text-slate-200';
   const alertStyles: Record<string, string> = {
     warn: 'border-amber-300/30 bg-amber-950/40 text-amber-100',
@@ -225,8 +225,8 @@
   }
 </script>
 
-<section class="grid min-w-0 gap-2 text-slate-200 sm:gap-3" aria-label="CRI calculator">
-  <article class="ui-card grid gap-2 p-2.5 sm:gap-3 sm:p-3">
+<section class="ui-tool-stack text-slate-200" aria-label="CRI calculator">
+  <article class="ui-card ui-card-padding grid gap-2 sm:gap-3">
     <div class="grid min-w-0 grid-cols-2 gap-2 sm:gap-2.5 xl:grid-cols-[minmax(220px,1.45fr)_minmax(220px,1.25fr)_minmax(104px,0.55fr)_minmax(120px,0.65fr)]">
       <div class="col-span-2 flex min-w-0 flex-col gap-1.5 xl:col-span-1">
         <label class="ui-label" for="cri-med">Medication</label>
@@ -253,7 +253,7 @@
         </div>
 
         <div class="flex min-w-0 flex-col gap-1.5">
-          <label class="ui-label" for="cri-custom-concentration">Stock concentration (mg/mL)</label>
+          <label class="ui-label" for="cri-custom-concentration">Stock concentration <span class="normal-case">(mg/mL)</span></label>
           <input
             id="cri-custom-concentration"
             class="field-control"
@@ -324,7 +324,7 @@
     </div>
 
     {#if med?.notes}
-      <div class="border-t border-slate-700/40 pt-2 text-[12px] text-amber-300">{med.notes}</div>
+      <div class="border-t ui-rule pt-2 text-[12px] text-amber-300">{med.notes}</div>
     {/if}
   </article>
 
@@ -342,7 +342,7 @@
         <div class="grid min-w-0 gap-3 md:grid-cols-[minmax(0,1fr)_auto] md:items-center">
           <div class="min-w-0">
             <div class="ui-label-strong">Instruction</div>
-            <div class="mt-1.5 flex flex-wrap items-baseline gap-x-1.5 gap-y-1 text-[14px] leading-relaxed text-slate-300 sm:gap-x-2 sm:gap-y-1.5 sm:text-[15px]">
+            <div class="mt-1.5 flex flex-wrap items-baseline gap-x-1.5 gap-y-1 ui-instruction sm:gap-x-2 sm:gap-y-1.5">
               <span>Draw up</span>
               {#if stockLine}
                 <span class="ui-statement-value">{stockLine.value}</span>
@@ -371,11 +371,11 @@
         </div>
       </section>
 
-      <div class="grid gap-y-0 border-t border-slate-700/40 md:grid-cols-3">
+      <div class="grid gap-y-0 border-t ui-rule md:grid-cols-3">
         {#each summaryCards as card, index}
-          <section class={`grid min-w-0 grid-cols-[minmax(0,0.72fr)_minmax(0,1fr)] items-baseline gap-2 px-3 py-2.5 sm:block sm:px-4 sm:py-3 ${index > 0 ? 'border-t border-slate-700/40 md:border-t-0 md:border-l' : ''}`}>
+          <section class={`grid min-w-0 grid-cols-[minmax(0,0.72fr)_minmax(0,1fr)] items-baseline gap-2 px-3 py-2.5 sm:block sm:px-4 sm:py-3 ${index > 0 ? 'border-t ui-rule md:border-t-0 md:border-l' : ''}`}>
             <div class="ui-label-strong">{card.label}</div>
-            <div class="text-right text-[1.12rem] font-black leading-tight tracking-tight tabular-nums text-slate-100 sm:mt-1.5 sm:text-left sm:text-[1.6rem] sm:leading-none">{card.value}</div>
+            <div class="ui-result-value text-right sm:mt-1.5 sm:text-left">{card.value}</div>
             {#if card.secondary}
               <div class="ui-meta mt-1">{card.secondary}</div>
             {/if}
@@ -397,7 +397,7 @@
         </svg>
       </summary>
 
-      <div class="border-t border-slate-700/40 px-2 py-2 sm:px-3 lg:px-3.5">
+      <div class="border-t ui-rule px-2 py-2 sm:px-3 lg:px-3.5">
         <div class="grid gap-2">
           {#each vm.stepByStep.rows as row}
             <div class="ui-inset grid gap-1.5 px-2.5 py-2 sm:px-3 lg:grid-cols-[168px_minmax(0,1fr)] lg:items-center lg:gap-3 lg:py-1.5">
