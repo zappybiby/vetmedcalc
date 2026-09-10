@@ -49,11 +49,6 @@
     return num > 0 ? `+${rounded}` : rounded;
   }
 
-  function totalInsLabel(hours: number | null): string {
-    if (hours == null || hours <= 0) return 'Total fluid ins';
-    return `Total over ${fmtCompact(hours)} hr`;
-  }
-
   function selectInsMode(mode: InsMode) {
     if (insMode === mode) return;
     insMode = mode;
@@ -111,105 +106,11 @@
 </script>
 
 <section class="ui-tool-stack text-slate-200" aria-label="Ins and outs calculator">
-  <div class="grid min-w-0 gap-2 sm:gap-3 lg:grid-cols-3">
-    <article class="ui-card grid min-w-0 content-start gap-2 ui-card-padding">
-      <div class="ui-label-strong">Fluid in</div>
-
-      <div class="grid min-w-0 grid-cols-2 gap-1.5" role="radiogroup" aria-label="Fluid in entry mode">
-        <label
-          class="ui-choice"
-          class:is-selected={insMode === 'rate'}
-          for="ins-mode-rate"
-        >
-          <input
-            id="ins-mode-rate"
-            class="field-radio h-3.5 w-3.5"
-            type="radio"
-            checked={insMode === 'rate'}
-            on:change={() => selectInsMode('rate')}
-          />
-          Rate
-        </label>
-
-        <label
-          class="ui-choice"
-          class:is-selected={insMode === 'total'}
-          for="ins-mode-total"
-        >
-          <input
-            id="ins-mode-total"
-            class="field-radio h-3.5 w-3.5"
-            type="radio"
-            checked={insMode === 'total'}
-            on:change={() => selectInsMode('total')}
-          />
-          Total
-        </label>
-      </div>
-
-      <label class="grid min-w-0 gap-1.5">
-        <span class="ui-label">
-          {#if insMode === 'rate'}
-            <span class="normal-case">mL/hr</span>
-          {:else if windowHours != null && windowHours > 0}
-            Total over {fmtCompact(windowHours)} <span class="normal-case">hr</span>
-          {:else}
-            {totalInsLabel(windowHours)}
-          {/if}
-        </span>
-        <div class="grid min-w-0 grid-cols-[minmax(0,1fr)_auto] items-center gap-2">
-          {#if insMode === 'rate'}
-            <input
-              id="ins-rate"
-              class="field-control"
-              type="number"
-              min="0"
-              step="0.1"
-              bind:value={insRateMlHr}
-              inputmode="decimal"
-              placeholder="0"
-            />
-            <span class="ui-unit">mL/hr</span>
-          {:else}
-            <input
-              id="ins-total"
-              class="field-control"
-              type="number"
-              min="0"
-              step="1"
-              bind:value={insMl}
-              inputmode="decimal"
-              placeholder="0"
-            />
-            <span class="ui-unit">mL</span>
-          {/if}
-        </div>
-      </label>
-    </article>
-
-    <article class="ui-card grid min-w-0 content-start gap-2 ui-card-padding">
-      <label class="grid min-w-0 gap-2">
-        <span class="ui-label-strong">Urine out</span>
-        <div class="grid min-w-0 grid-cols-[minmax(0,1fr)_auto] items-center gap-2">
-          <input
-            id="out-total"
-            class="field-control"
-            type="number"
-            min="0"
-            step="1"
-            bind:value={urineOutMl}
-            inputmode="decimal"
-            placeholder="0"
-          />
-          <span class="ui-unit">mL</span>
-        </div>
-      </label>
-    </article>
-
-    <article class="ui-card grid min-w-0 content-start gap-2 ui-card-padding">
-      <label class="grid min-w-0 gap-2">
-        <span class="ui-label-strong">Hours</span>
-        <div class="grid min-w-0 grid-cols-[minmax(0,1fr)_auto] items-center gap-2">
+  <article class="ui-card grid min-w-0 gap-3 ui-card-padding">
+    <div class="io-context-row">
+      <label class="grid min-w-0 gap-1.5" for="io-duration">
+        <span class="ui-label">Time period</span>
+        <div class="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-2">
           <input
             id="io-duration"
             class="field-control"
@@ -222,88 +123,150 @@
           <span class="ui-unit">hr</span>
         </div>
       </label>
-    </article>
-  </div>
+
+      <fieldset class="grid min-w-0 gap-1.5">
+        <legend class="ui-label mb-1.5">Enter fluid in as</legend>
+        <div class="grid grid-cols-2 gap-1.5" role="radiogroup" aria-label="Fluid in entry mode">
+          <label class="ui-choice" class:is-selected={insMode === 'total'} for="ins-mode-total">
+            <input
+              id="ins-mode-total"
+              class="field-radio h-3.5 w-3.5"
+              type="radio"
+              name="ins-mode"
+              checked={insMode === 'total'}
+              on:change={() => selectInsMode('total')}
+            />
+            Total
+          </label>
+          <label class="ui-choice" class:is-selected={insMode === 'rate'} for="ins-mode-rate">
+            <input
+              id="ins-mode-rate"
+              class="field-radio h-3.5 w-3.5"
+              type="radio"
+              name="ins-mode"
+              checked={insMode === 'rate'}
+              on:change={() => selectInsMode('rate')}
+            />
+            Rate
+          </label>
+        </div>
+      </fieldset>
+    </div>
+
+    <div class="grid min-w-0 grid-cols-2 gap-3">
+      <label class="grid min-w-0 gap-1.5" for={insMode === 'rate' ? 'ins-rate' : 'ins-total'}>
+        <span class="ui-label">Fluid in <span class="ui-unit">({insMode === 'rate' ? 'mL/hr' : 'mL'})</span></span>
+        {#if insMode === 'rate'}
+          <input
+            id="ins-rate"
+            class="field-control"
+            type="number"
+            min="0"
+            step="0.1"
+            bind:value={insRateMlHr}
+            inputmode="decimal"
+            placeholder="0"
+          />
+        {:else}
+          <input
+            id="ins-total"
+            class="field-control"
+            type="number"
+            min="0"
+            step="1"
+            bind:value={insMl}
+            inputmode="decimal"
+            placeholder="0"
+          />
+        {/if}
+      </label>
+      <label class="grid min-w-0 gap-1.5" for="out-total">
+        <span class="ui-label">Urine out <span class="ui-unit">(mL)</span></span>
+        <input
+          id="out-total"
+          class="field-control"
+          type="number"
+          min="0"
+          step="1"
+          bind:value={urineOutMl}
+          inputmode="decimal"
+          placeholder="0"
+        />
+      </label>
+    </div>
+  </article>
 
   {#if hasInput}
-    <div class="grid min-w-0 gap-2 sm:gap-3 lg:grid-cols-3">
-      <article class="ui-card min-w-0 ui-card-padding">
-        <header class="ui-label-strong">Fluid in</header>
-        <dl class="mt-2 grid min-w-0 gap-1.5 text-sm text-slate-300">
-          <div class="grid min-w-0 grid-cols-[minmax(0,1fr)_auto] items-baseline gap-2">
-            <dt class="ui-label">Total</dt>
-            <dd class="text-right font-black text-slate-100">
-              <span class="tabular-nums">{fmt(totalInsMl)}</span>
-              <span class="ml-1 ui-unit">mL</span>
-            </dd>
+    <article class="ui-card min-w-0 ui-card-padding" aria-label="Fluid balance results">
+      <div class="flex min-w-0 flex-wrap items-center justify-between gap-x-4 gap-y-2 border-b pb-3 ui-rule">
+        <div class="grid gap-1">
+          <h2 class="ui-label-strong">Net balance</h2>
+          <p class="ui-meta-compact">{balanceDescriptor}</p>
+          {#if windowHours != null && windowHours > 0}
+            <p class="ui-meta-compact">Over {fmtCompact(windowHours)} hr</p>
+          {/if}
+        </div>
+        <div class="grid min-w-0 gap-1 text-right">
+          <div>
+            <span class="ui-result-value" data-testid="io-net-total">{fmtSigned(netTotalMl)}</span>
+            <span class="ml-1 ui-unit">mL</span>
           </div>
-          <div class="grid min-w-0 grid-cols-[minmax(0,1fr)_auto] items-baseline gap-2">
-            <dt class="ui-label">Rate</dt>
-            <dd class="text-right font-black text-slate-100">
-              <span class="tabular-nums">{fmt(insMlPerHr)}</span>
-              <span class="ml-1 ui-unit">mL/hr</span>
-            </dd>
+          <div>
+            <span class="ui-row-value" data-testid="io-net-rate">{fmtSigned(netMlPerHr)}</span>
+            <span class="ml-1 ui-unit">mL/hr</span>
           </div>
-          <div class="grid min-w-0 grid-cols-[minmax(0,1fr)_auto] items-baseline gap-2">
-            <dt class="ui-label">Weight rate</dt>
-            <dd class="text-right font-black text-slate-100">
-              <span class="tabular-nums">{fmt(insMlPerKgHr)}</span>
-              <span class="ml-1 ui-unit">mL/kg/hr</span>
-            </dd>
-          </div>
-        </dl>
-      </article>
+        </div>
+      </div>
 
-      <article class="ui-card min-w-0 ui-card-padding">
-        <header class="ui-label-strong">Urine out</header>
-        <dl class="mt-2 grid min-w-0 gap-1.5 text-sm text-slate-300">
-          <div class="grid min-w-0 grid-cols-[minmax(0,1fr)_auto] items-baseline gap-2">
-            <dt class="ui-label">Total</dt>
-            <dd class="text-right font-black text-slate-100">
-              <span class="tabular-nums">{fmt(totalOutMl)}</span>
-              <span class="ml-1 ui-unit">mL</span>
-            </dd>
-          </div>
-          <div class="grid min-w-0 grid-cols-[minmax(0,1fr)_auto] items-baseline gap-2">
-            <dt class="ui-label">Rate</dt>
-            <dd class="text-right font-black text-slate-100">
-              <span class="tabular-nums">{fmt(outMlPerHr)}</span>
-              <span class="ml-1 ui-unit">mL/hr</span>
-            </dd>
-          </div>
-          <div class="grid min-w-0 grid-cols-[minmax(0,1fr)_auto] items-baseline gap-2">
-            <dt class="ui-label">Weight rate</dt>
-            <dd class="text-right font-black text-slate-100">
-              <span class="tabular-nums">{fmt(outMlPerKgHr)}</span>
-              <span class="ml-1 ui-unit">mL/kg/hr</span>
-            </dd>
-          </div>
-        </dl>
-      </article>
-
-      <article class="ui-card min-w-0 ui-card-padding">
-        <header class="ui-label-strong">Net balance</header>
-        <dl class="mt-2 grid min-w-0 gap-1.5 text-sm text-slate-300">
-          <div class="grid min-w-0 grid-cols-[minmax(0,1fr)_auto] items-baseline gap-2">
-            <dt class="ui-label">Total</dt>
-            <dd class="text-right font-black text-slate-100">
-              <span class="tabular-nums">{fmtSigned(netTotalMl)}</span>
-              <span class="ml-1 ui-unit">mL</span>
-            </dd>
-          </div>
-          <div class="grid min-w-0 grid-cols-[minmax(0,1fr)_auto] items-baseline gap-2">
-            <dt class="ui-label">Rate</dt>
-            <dd class="text-right font-black text-slate-100">
-              <span class="tabular-nums">{fmtSigned(netMlPerHr)}</span>
-              <span class="ml-1 ui-unit">mL/hr</span>
-            </dd>
-          </div>
-          <div class="grid min-w-0 grid-cols-[minmax(0,1fr)_auto] items-baseline gap-2">
-            <dt class="ui-label">Balance</dt>
-            <dd class="text-right font-black text-slate-100">{balanceDescriptor}</dd>
-          </div>
-        </dl>
-      </article>
-    </div>
+      <table class="io-comparison mt-2 w-full text-sm" aria-label="Fluid in and urine out comparison">
+        <thead>
+          <tr class="ui-label">
+            <th scope="col" class="text-left"><span class="sr-only">Measurement</span></th>
+            <th scope="col" class="text-right">Fluid in</th>
+            <th scope="col" class="text-right">Urine out</th>
+          </tr>
+        </thead>
+        <tbody class="ui-table-rows">
+          <tr>
+            <th scope="row" class="text-left font-semibold">Total <span class="ui-unit">(mL)</span></th>
+            <td class="ui-row-value text-right">{fmt(totalInsMl)}</td>
+            <td class="ui-row-value text-right">{fmt(totalOutMl)}</td>
+          </tr>
+          <tr>
+            <th scope="row" class="text-left font-semibold">Rate <span class="ui-unit">(mL/hr)</span></th>
+            <td class="ui-row-value text-right">{fmt(insMlPerHr)}</td>
+            <td class="ui-row-value text-right">{fmt(outMlPerHr)}</td>
+          </tr>
+          <tr>
+            <th scope="row" class="text-left font-semibold">Weight rate <span class="ui-unit">(mL/kg/hr)</span></th>
+            <td class="ui-row-value text-right">{fmt(insMlPerKgHr)}</td>
+            <td class="ui-row-value text-right">{fmt(outMlPerKgHr)}</td>
+          </tr>
+        </tbody>
+      </table>
+    </article>
   {/if}
 </section>
+
+<style>
+  .io-context-row {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr);
+    align-items: end;
+    gap: 0.75rem;
+  }
+
+  .io-comparison :is(th, td) {
+    padding: 0.5rem 0;
+  }
+
+  .io-comparison :is(th, td) + :is(th, td) {
+    padding-left: 0.75rem;
+  }
+
+  @media (min-width: 640px) {
+    .io-context-row {
+      grid-template-columns: minmax(10rem, 1fr) minmax(0, 1fr);
+    }
+  }
+</style>
