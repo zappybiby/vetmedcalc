@@ -136,9 +136,7 @@
 <section class="ui-tool-stack text-slate-200" aria-label="Tube Feeding">
   <div class="ui-tool-stack">
     <div class="ui-card min-w-0 ui-card-padding">
-      <h2 class="ui-section-title">Inputs</h2>
-
-      <div class="mt-2 grid items-end gap-2 min-[360px]:grid-cols-2 sm:mt-3 sm:gap-3 md:grid-cols-2 xl:grid-cols-3">
+      <div class="grid items-end gap-2 min-[360px]:grid-cols-2 sm:gap-3 md:grid-cols-2 xl:grid-cols-3">
         <label class="grid gap-1.5">
           <span class="ui-label">Diet density <span class="normal-case">(kcal/mL)</span></span>
           <input
@@ -193,10 +191,8 @@
     </div>
 
     {#if plan}
-      <div class="ui-card min-w-0 ui-card-padding">
-        <h2 class="ui-section-title">Administration target</h2>
-
-        <div class="mt-2 ui-inset p-3 sm:mt-3 sm:p-4">
+      <div class="ui-tool-stack">
+        <div class="ui-card ui-card-padding">
           <div class="ui-label-strong">Give every {fmtCompact(plan.intervalHours)} <span class="normal-case">hr</span></div>
           <div class="ui-result-value mt-1.5">{fmtWhole(plan.mlPerInterval)} mL</div>
           <div class="mt-1.5 text-sm text-slate-300 sm:mt-2">
@@ -204,8 +200,7 @@
           </div>
         </div>
 
-        <div class="mt-2 sm:mt-3">
-          <div class="ui-inset p-3 sm:p-4">
+          <div class="ui-card ui-card-padding">
             <header class="ui-label-strong">Quick reference</header>
             <div class="mt-2 grid gap-2 text-sm sm:mt-3 sm:gap-3">
               <div class="grid gap-2 sm:gap-3">
@@ -229,7 +224,6 @@
               </div>
             </div>
           </div>
-        </div>
       </div>
 
       <details class="group ui-card overflow-hidden">
