@@ -52,12 +52,12 @@
 <div class="flex min-h-dvh flex-col">
   <main class="flex-1 py-2 sm:py-3 md:py-4">
     <div class="mx-auto grid min-w-0 max-w-[1280px] gap-2 px-2 sm:px-3 md:px-4">
-      <header class="desktop-brand">
-        <img class="brand-logo brand-logo-dark" src={logoDark} width="1208" height="356" alt="Brian's VetMedCalc" />
-        <img class="brand-logo brand-logo-light" src={logoLight} width="1208" height="356" alt="Brian's VetMedCalc" />
-      </header>
       <div class="flex min-w-0 justify-center">
         <TabShell>
+          <div slot="brand" class="desktop-brand">
+            <img class="brand-logo brand-logo-dark" src={logoDark} width="1208" height="356" alt="Brian's VetMedCalc" />
+            <img class="brand-logo brand-logo-light" src={logoLight} width="1208" height="356" alt="Brian's VetMedCalc" />
+          </div>
           <button
             slot="tab-extra"
             type="button"

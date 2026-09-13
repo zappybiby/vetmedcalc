@@ -1,10 +1,12 @@
 # Desktop logo
 
-The desktop wordmark sits above the tool tabs, aligned to the left edge of the
-main container. It is 200px wide (about 59px tall), with an 8px gap below it.
-This leaves the eight calculator tabs their existing width. The logo appears
-from 1024px, matching the navigation's desktop breakpoint, and is hidden on
-smaller screens and in print.
+The desktop wordmark is 200px wide (about 59px tall). From 1360px it sits to the
+left of the tool tabs in a shared header band. The header can use up to 1600px,
+while the calculator content keeps its existing width. Slightly tighter desktop
+tab padding and a compact header inset preserve room for the densest tools.
+
+Between 1024px and 1359px, the logo sits on its own row above the tabs with an
+8px gap. It is hidden on smaller screens and in print.
 
 Both assets are transparent SVGs with a `1208 356` viewBox. Lettering is outlined
 and the mascot is made of pixel-aligned vector paths; neither fonts nor embedded
