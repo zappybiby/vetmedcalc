@@ -141,6 +141,31 @@
 }
 
 @layer components {
+  .desktop-brand {
+    display: none;
+  }
+
+  .brand-logo {
+    display: block;
+    width: 200px;
+    height: auto;
+  }
+
+  .brand-logo-light,
+  :root[data-theme='light'] .brand-logo-dark {
+    display: none;
+  }
+
+  :root[data-theme='light'] .brand-logo-light {
+    display: block;
+  }
+
+  @media screen and (min-width: 1024px) {
+    .desktop-brand {
+      display: block;
+    }
+  }
+
   /* CRI's visual roles. Keep tool-specific grids and result density local. */
   .ui-tool-stack {
     @apply grid min-w-0 gap-2 sm:gap-3;
