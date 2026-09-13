@@ -231,12 +231,12 @@
       <div class="col-span-2 flex min-w-0 flex-col gap-1.5 xl:col-span-1">
         <label class="ui-label" for="cri-med">Medication</label>
         <select id="cri-med" bind:value={medId} class="field-select">
+          <option value={CUSTOM_MEDICATION_ID}>Custom</option>
           {#each MEDICATIONS as m}
             <option value={m.id}>
               {m.name} — {formatConcDisplay(m)}
             </option>
           {/each}
-          <option value={CUSTOM_MEDICATION_ID}>Custom</option>
         </select>
       </div>
 
