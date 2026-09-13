@@ -16,6 +16,11 @@
 
   function formatConcDisplay(m?: MedicationDef | null): string {
     if (!m) return '—';
+    if (m.id === 'fentanyl-50') {
+      const mg = concMgPerMl(m) ?? 0;
+      const mcg = Math.round(mg * 1000);
+      return `${mcg} mcg/mL`;
+    }
     return `${m.concentration.value} ${m.concentration.units}`;
   }
 
@@ -254,14 +259,14 @@
   <article class="ui-card grid min-w-0 gap-2 p-2.5 sm:gap-3 sm:p-3">
     <div class="grid min-w-0 items-end gap-2 min-[380px]:grid-cols-2 sm:gap-3 md:grid-cols-2">
       <div class="flex min-w-0 flex-col gap-1.5 min-[380px]:col-span-2 md:col-span-1">
-        <label class="ui-label" for="drugbag-drug">Drug</label>
+        <label class="ui-label" for="drugbag-drug">Medication</label>
         <select id="drugbag-drug" class="field-select" bind:value={selectedDrugId}>
+          <option value={CUSTOM_MEDICATION_ID}>Custom</option>
           {#each MEDICATIONS as option}
             <option value={option.id}>
-              {option.name} {formatConcDisplay(option)}
+              {option.name} — {formatConcDisplay(option)}
             </option>
           {/each}
-          <option value={CUSTOM_MEDICATION_ID}>Custom</option>
         </select>
       </div>
 
@@ -302,7 +307,7 @@
             step="0.01"
             bind:value={dose}
             inputmode="decimal"
-            placeholder="e.g., 1"
+            placeholder="0.4"
           />
           <select bind:value={doseUnit} aria-label="Dose unit" class="field-select">
             <option value="mg/kg/day">mg/kg/day</option>
@@ -324,12 +329,12 @@
           step="1"
           bind:value={bagVolumeMl}
           inputmode="decimal"
-          placeholder="e.g., 1000"
+          placeholder="1000 mL"
         />
       </div>
 
       <div class="flex min-w-0 flex-col gap-1.5">
-        <label class="ui-label" for="drugbag-rate">Maint. rate <span class="normal-case">(mL/hr)</span></label>
+        <label class="ui-label" for="drugbag-rate">Rate <span class="normal-case">(mL/hr)</span></label>
         <input
           id="drugbag-rate"
           class="field-control"
@@ -338,7 +343,7 @@
           step="0.1"
           bind:value={maintRateMlHr}
           inputmode="decimal"
-          placeholder="e.g., 60"
+          placeholder="ml/hr"
         />
       </div>
     </div>
