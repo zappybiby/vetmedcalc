@@ -36,7 +36,7 @@
   const tabInactive = '';
 </script>
 
-<section class="grid min-w-0 w-full gap-2" aria-label="Main tools">
+<section class="grid grid-cols-1 min-w-0 w-full gap-2" aria-label="Main tools">
   <div class="tab-strip-outer">
     <div class="tab-strip-frame">
       <slot name="brand" />
