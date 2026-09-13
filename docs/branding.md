@@ -1,16 +1,14 @@
 # Desktop logo
 
-The desktop wordmark uses the free left margin beside independently centered
-tool tabs. From 1360px it scales with the available margin: roughly 140px wide
-(about 41px tall) at a 1440px viewport, up to a maximum of 160px. Equal flexible
-columns on either side of the tabs keep the navigation centered regardless of
-the logo's width.
+The 160px wordmark floats in the existing blank space to the left of the patient
+weight panel, just below the tool tabs. It uses absolute positioning within a
+relative wrapper around the weight panel, so it contributes no width or height
+to the page layout. The tabs retain their original size, spacing and centering;
+the patient field and calculators keep their original positions.
 
-The header can use up to 1600px, while the calculator content keeps its existing
-width. Compact desktop tab padding leaves a clear gap between the logo and tabs.
-
-Between 1024px and 1359px, the 160px logo sits on its own row above the tabs with
-an 8px gap. It is hidden on smaller screens and in print.
+The logo appears from 1024px and is hidden in print and on smaller screens. It
+also hides with the patient panel in CPR batch mode, keeping the label-entry
+area clear.
 
 Both assets are transparent SVGs with a `1208 356` viewBox. Lettering is outlined
 and the mascot is made of pixel-aligned vector paths; neither fonts nor embedded
@@ -30,7 +28,7 @@ base. CSS selects the visible image from the application's `data-theme` value;
 both images are available immediately when the theme toggle is used. The hidden
 image is excluded from layout and the accessibility tree.
 
-To adjust the desktop size, change `.brand-logo` and the wide-screen
-`.desktop-brand .brand-logo` maximum width in `src/app.css`. Keep `height: auto` and the intrinsic
-image dimensions so the logo scales proportionally. Recheck clearance at 1360px
-if the tab labels or their padding change.
+To adjust the desktop size, change `.brand-logo` in `src/app.css`. Keep `height:
+auto` and the intrinsic image dimensions so the logo scales proportionally.
+The `.desktop-brand` absolute positioning must be retained so image sizing never
+moves the surrounding interface.
