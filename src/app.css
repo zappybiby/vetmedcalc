@@ -141,6 +141,33 @@
 }
 
 @layer components {
+  .desktop-brand {
+    display: none;
+  }
+
+  .brand-logo {
+    display: block;
+    width: 200px;
+    height: auto;
+  }
+
+  .brand-logo-light,
+  :root[data-theme='light'] .brand-logo-dark {
+    display: none;
+  }
+
+  :root[data-theme='light'] .brand-logo-light {
+    display: block;
+  }
+
+  @media screen and (min-width: 1024px) {
+    .desktop-brand {
+      display: block;
+      width: 100%;
+    }
+
+  }
+
   /* CRI's visual roles. Keep tool-specific grids and result density local. */
   .ui-tool-stack {
     @apply grid min-w-0 gap-2 sm:gap-3;
@@ -363,6 +390,13 @@
     @apply flex w-full max-w-full min-w-0 flex-wrap items-start justify-center gap-1 sm:flex-nowrap;
   }
 
+  @media screen and (min-width: 1024px) {
+    .tab-strip-frame {
+      flex-wrap: wrap;
+      row-gap: 8px;
+    }
+  }
+
   .ui-tablist {
     @apply grid w-full max-w-full min-w-0 grid-cols-3 items-center justify-center gap-1 rounded-lg px-1 py-1 sm:rounded-xl sm:px-1.5;
     background-color: color-mix(in srgb, var(--ui-tab-bg) 85%, var(--ui-surface));
@@ -429,6 +463,33 @@
       font-size: 13.5px;
       padding-inline: 0.875rem;
       padding-block: 0.75rem;
+    }
+  }
+
+  /* Keep the logo and navigation in one compact band on wide desktops. */
+  @media screen and (min-width: 1360px) {
+    .tab-strip-outer {
+      justify-self: center;
+      width: min(1600px, calc(100vw - 64px));
+      max-width: none;
+      margin-block: -4px;
+    }
+
+    .tab-strip-frame {
+      flex-wrap: nowrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+    }
+
+    .desktop-brand {
+      flex: none;
+      width: auto;
+    }
+
+    .ui-tab {
+      font-size: 13px;
+      padding-inline: 10px;
     }
   }
 
