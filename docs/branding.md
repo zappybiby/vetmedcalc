@@ -3,7 +3,11 @@
 The 160px wordmark floats in the existing blank space to the left of the patient
 weight panel, just below the tool tabs. It uses absolute positioning within a
 relative wrapper around the weight panel, so it contributes no width or height
-to the page layout. The tabs retain their original size, spacing and centering;
+to the page layout. Its left edge follows the centered 1040px calculator content
+area, aligning with the medication and result cards. The offset becomes zero
+when the available width is smaller than 1040px.
+
+The tabs retain their original size, spacing and centering;
 the patient field and calculators keep their original positions.
 
 The logo appears from 1024px and is hidden in print and on smaller screens. It

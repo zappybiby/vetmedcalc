@@ -149,7 +149,7 @@
   .desktop-brand {
     display: none;
     position: absolute;
-    left: 0;
+    left: max(0px, calc((100% - 1040px) / 2));
     top: 50%;
     transform: translateY(-50%);
     pointer-events: none;
