@@ -56,7 +56,10 @@
   </div>
 
   {#if !$cprBatchMode}
-    <PatientPanel />
+    <div class="patient-header">
+      <slot name="brand" />
+      <PatientPanel />
+    </div>
   {/if}
 
   <div
