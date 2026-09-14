@@ -88,8 +88,26 @@ async function expectFoodFitsViewport(page: Page, panel: Locator, testInfo: Test
 
     for (const control of root.querySelectorAll<HTMLElement>('input, button, textarea')) {
       const rect = control.getBoundingClientRect();
-      if (rect.width && rect.height && !within(rect, screen)) {
-        violations.push(`Control outside viewport: ${control.getAttribute('aria-label') || control.textContent?.trim() || control.tagName}`);
+      if (!rect.width || !rect.height) continue;
+      const label = control.getAttribute('aria-label') || control.textContent?.trim() || control.tagName;
+      if (!within(rect, screen)) violations.push(`Control outside viewport: ${label}`);
+      const cell = control.closest('th, td');
+      if (cell && !within(rect, cell.getBoundingClientRect())) {
+        violations.push(`Control outside table cell: ${label}`);
+      }
+      // A button can lose its border or padding while its text still fits.
+      // Check its entire box against every ancestor that can clip content.
+      for (let ancestor = control.parentElement; ancestor; ancestor = ancestor.parentElement) {
+        const style = getComputedStyle(ancestor);
+        const boundary = ancestor.getBoundingClientRect();
+        if (/(hidden|clip|auto|scroll)/.test(style.overflowX) &&
+            (rect.left < boundary.left - tolerance || rect.right > boundary.right + tolerance)) {
+          violations.push(`Horizontally clipped control: ${label}`);
+        }
+        if (/(hidden|clip|auto|scroll)/.test(style.overflowY) &&
+            (rect.top < boundary.top - tolerance || rect.bottom > boundary.bottom + tolerance)) {
+          violations.push(`Vertically clipped control: ${label}`);
+        }
       }
       if (control instanceof HTMLTextAreaElement &&
           (control.scrollHeight > control.clientHeight + tolerance || control.scrollWidth > control.clientWidth + tolerance)) {

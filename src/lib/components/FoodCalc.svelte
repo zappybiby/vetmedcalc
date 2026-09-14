@@ -449,10 +449,6 @@
       width: 14%;
     }
 
-    .food-copy-column {
-      width: 6.25rem;
-    }
-
     .food-table tbody th,
     .food-table tbody td {
       padding-top: 0.125rem;

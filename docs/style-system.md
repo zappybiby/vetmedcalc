@@ -126,7 +126,7 @@ calculation workflow.
 
 ### Food calculator desktop fitting
 
-At desktop widths of 1280px and above, the complete Food calc must fit without
+At desktop viewport sizes of 1280×720 and above, the complete Food calc must fit without
 page scrolling, including custom food and the selectable clipboard fallback.
 Use the wider 1248px tool area for inline food names and can details. Keep the
 calorie target beside the inputs and retain every portion, exact value and unit.
