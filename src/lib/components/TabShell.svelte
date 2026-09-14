@@ -101,7 +101,7 @@
     }
   }
 
-  @media (min-width: 1280px) and (max-height: 800px) {
+  @media (min-width: 1280px) and (max-height: 820px) {
     .food-active .patient-header :global(.patient-weight-field) {
       grid-template-columns: auto minmax(0, 1fr);
       align-items: center;

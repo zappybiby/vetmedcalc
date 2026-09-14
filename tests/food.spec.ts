@@ -133,6 +133,8 @@ for (const viewport of [
   { width: 1280, height: 720, theme: 'dark' },
   { width: 1280, height: 720, theme: 'light' },
   { width: 1366, height: 768, theme: 'dark' },
+  // The relaxed layout needs more than 800px when the fallback is open.
+  { width: 1280, height: 801, theme: 'dark' },
   { width: 1440, height: 900, theme: 'dark' },
   { width: 1920, height: 1080, theme: 'dark' },
 ] as const) {

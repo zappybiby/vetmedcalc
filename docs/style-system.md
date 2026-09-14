@@ -130,7 +130,7 @@ At desktop viewport sizes of 1280×720 and above, the complete Food calc must fi
 page scrolling, including custom food and the selectable clipboard fallback.
 Use the wider 1248px tool area for inline food names and can details. Keep the
 calorie target beside the inputs and retain every portion, exact value and unit.
-On viewports up to 800px tall, use tighter local row padding and an inline patient
+On viewports up to 820px tall, use tighter local row padding and an inline patient
 weight label; shared typography and the other tools retain their existing styles.
 Narrower screens keep the wrapping table and larger fallback note field.
 

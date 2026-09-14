@@ -278,7 +278,7 @@
         <colgroup>
           <col class="food-name-column" />
           <col class="food-portion-column" />
-          <col class="hidden md:table-column" />
+          <col class="food-exact-column hidden md:table-column" />
           <col class="hidden md:table-column" />
           <col class="food-copy-column" />
         </colgroup>
@@ -449,6 +449,10 @@
       width: 14%;
     }
 
+    .food-exact-column {
+      width: 11%;
+    }
+
     .food-table tbody th,
     .food-table tbody td {
       padding-top: 0.125rem;
@@ -477,7 +481,7 @@
     }
   }
 
-  @media (min-width: 1280px) and (max-height: 800px) {
+  @media (min-width: 1280px) and (max-height: 820px) {
     .food-setup {
       padding-top: 0.5rem;
       padding-bottom: 0.5rem;
