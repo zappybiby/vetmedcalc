@@ -63,7 +63,8 @@
   {/if}
 
   <div
-    class="mx-auto w-full max-w-[1040px] min-w-0 overflow-x-auto"
+    class="tool-panel mx-auto w-full max-w-[1040px] min-w-0 overflow-x-auto"
+    class:food-panel={active === 'food'}
     role="tabpanel"
   >
     <div hidden={active !== 'cri'}>
@@ -92,3 +93,11 @@
     </div>
   </div>
 </section>
+
+<style>
+  @media (min-width: 1280px) {
+    .tool-panel.food-panel {
+      max-width: 1248px;
+    }
+  }
+</style>
