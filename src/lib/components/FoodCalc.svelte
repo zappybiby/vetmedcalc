@@ -182,7 +182,7 @@
 
 <section class="ui-tool-stack text-slate-200" aria-label="Food calculator">
   <div class="ui-card min-w-0 overflow-hidden">
-    <div class="ui-card-padding">
+    <div class="food-setup ui-card-padding">
       <div class="food-inputs grid grid-cols-2 items-end gap-2 sm:gap-3 md:grid-cols-4">
         <div class="grid min-w-0 gap-1.5">
           <div class="ui-label" id="food-species-label">Species</div>
@@ -262,7 +262,7 @@
           <label class="food-note grid gap-1.5">
             <span class="ui-label">Feeding note</span>
             <textarea
-              class="field-control resize-y text-sm leading-relaxed"
+              class="field-control min-h-32 resize-y text-sm leading-relaxed"
               rows="2"
               readonly
               value={fallbackNote}
@@ -476,7 +476,26 @@
     }
 
     .food-note textarea {
+      min-height: 0;
       line-height: 1.25;
+    }
+  }
+
+  @media (min-width: 1280px) and (max-height: 800px) {
+    .food-setup {
+      padding-top: 0.5rem;
+      padding-bottom: 0.5rem;
+    }
+
+    .food-table thead th {
+      padding-top: 0.375rem;
+      padding-bottom: 0.375rem;
+    }
+
+    .food-table tbody th,
+    .food-table tbody td {
+      padding-top: 0;
+      padding-bottom: 0;
     }
   }
 </style>

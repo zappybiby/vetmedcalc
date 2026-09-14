@@ -36,7 +36,7 @@
   const tabInactive = '';
 </script>
 
-<section class="grid min-w-0 w-full gap-2" aria-label="Main tools">
+<section class="grid min-w-0 w-full gap-2" class:food-active={active === 'food'} aria-label="Main tools">
   <div class="tab-strip-outer">
     <div class="tab-strip-frame">
       <div class="ui-tablist" role="tablist" aria-label="Tool tabs">
@@ -98,6 +98,13 @@
   @media (min-width: 1280px) {
     .tool-panel.food-panel {
       max-width: 1248px;
+    }
+  }
+
+  @media (min-width: 1280px) and (max-height: 800px) {
+    .food-active .patient-header :global(.patient-weight-field) {
+      grid-template-columns: auto minmax(0, 1fr);
+      align-items: center;
     }
   }
 </style>

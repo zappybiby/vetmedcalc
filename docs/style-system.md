@@ -124,6 +124,21 @@ Calculation formulas, rounding and dedicated print renderers are unchanged. Food
 Calc adds only note formatting and clipboard/fallback interaction to its existing
 calculation workflow.
 
+### Food calculator desktop fitting
+
+At desktop widths of 1280px and above, the complete Food calc must fit without
+page scrolling, including custom food and the selectable clipboard fallback.
+Use the wider 1248px tool area for inline food names and can details. Keep the
+calorie target beside the inputs and retain every portion, exact value and unit.
+On viewports up to 800px tall, use tighter local row padding and an inline patient
+weight label; shared typography and the other tools retain their existing styles.
+Narrower screens keep the wrapping table and larger fallback note field.
+
+The food regression tests cover Dog and Cat, custom food, copied feedback and
+long-name fallback notes from 1280×720 to 1920×1080, including both themes at the
+smallest desktop size. They check text/control bounds and textarea scrolling as
+well as document dimensions, so hiding overflow cannot satisfy the fitting rule.
+
 
 ## Requested workflow refinements
 
