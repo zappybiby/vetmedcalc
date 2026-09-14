@@ -182,8 +182,8 @@
 
 <section class="ui-tool-stack text-slate-200" aria-label="Food calculator">
   <div class="ui-card min-w-0 overflow-hidden">
-    <div class="ui-card-padding">
-      <div class="grid grid-cols-2 items-end gap-2 sm:gap-3 md:grid-cols-4">
+    <div class="food-setup ui-card-padding">
+      <div class="food-inputs grid grid-cols-2 items-end gap-2 sm:gap-3 md:grid-cols-4">
         <div class="grid min-w-0 gap-1.5">
           <div class="ui-label" id="food-species-label">Species</div>
           <div class="grid min-w-0 grid-cols-2 gap-1.5" role="group" aria-labelledby="food-species-label">
@@ -239,6 +239,13 @@
             placeholder="Optional"
           />
         </label>
+
+        {#if firstPlan}
+          <p class="food-target flex flex-wrap gap-x-4 gap-y-1 text-sm" aria-label="Feeding target">
+            <span><span class="font-bold">Target</span> {fmtWhole(firstPlan.targetKcalPerDay)} kcal/day</span>
+            <span>{fmtWhole(firstPlan.kcalPerInterval)} kcal every {intervalHoursValue} hr</span>
+          </p>
+        {/if}
       </div>
 
       {#if issues.length}
@@ -249,25 +256,21 @@
         </div>
       {/if}
 
-      {#if firstPlan}
-        <p class="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-sm sm:mt-3" aria-label="Feeding target">
-          <span><span class="font-bold">Target</span> {fmtWhole(firstPlan.targetKcalPerDay)} kcal/day</span>
-          <span>{fmtWhole(firstPlan.kcalPerInterval)} kcal every {intervalHoursValue} hr</span>
-        </p>
-      {/if}
-
-      <p role="status" aria-live="polite" class:mt-2={copyMessage !== ''} class="ui-meta">{copyMessage}</p>
-      {#if fallbackNote}
-        <label class="mt-2 grid gap-1.5">
-          <span class="ui-label">Feeding note</span>
-          <textarea
-            class="field-control min-h-32 resize-y text-sm leading-relaxed"
-            readonly
-            value={fallbackNote}
-            on:focus={(event) => event.currentTarget.select()}
-          ></textarea>
-        </label>
-      {/if}
+      <div class="food-copy-feedback" class:has-message={copyMessage !== ''} class:has-fallback={fallbackNote !== ''}>
+        <p role="status" aria-live="polite" class="ui-meta">{copyMessage}</p>
+        {#if fallbackNote}
+          <label class="food-note grid gap-1.5">
+            <span class="ui-label">Feeding note</span>
+            <textarea
+              class="field-control min-h-32 resize-y text-sm leading-relaxed"
+              rows="2"
+              readonly
+              value={fallbackNote}
+              on:focus={(event) => event.currentTarget.select()}
+            ></textarea>
+          </label>
+        {/if}
+      </div>
     </div>
 
     {#if firstPlan}
@@ -275,7 +278,7 @@
         <colgroup>
           <col class="food-name-column" />
           <col class="food-portion-column" />
-          <col class="hidden md:table-column" />
+          <col class="food-exact-column hidden md:table-column" />
           <col class="hidden md:table-column" />
           <col class="food-copy-column" />
         </colgroup>
@@ -292,9 +295,11 @@
           {#each displayedPlans as plan (plan.food.id)}
             <tr>
               <th scope="row" class="font-normal">
-                <div class="break-words font-semibold leading-snug text-slate-100">{plan.food.id === 'custom' ? 'Custom food' : plan.food.name}</div>
-                <div class="mt-0.5 ui-meta-compact tabular-nums">
-                  {#if plan.food.canSize}{plan.food.canSize} · {/if}{fmtWhole(plan.food.kcalPerCan)} kcal/can
+                <div class="food-description">
+                  <div class="break-words font-semibold leading-snug text-slate-100">{plan.food.id === 'custom' ? 'Custom food' : plan.food.name}</div>
+                  <div class="food-can-details mt-0.5 ui-meta-compact tabular-nums">
+                    {#if plan.food.canSize}{plan.food.canSize} · {/if}{fmtWhole(plan.food.kcalPerCan)} kcal/can
+                  </div>
                 </div>
               </th>
               <td class="food-portion-cell">
@@ -307,7 +312,7 @@
               <td class="food-copy-cell">
                 <button
                   type="button"
-                  class="ui-button min-h-9 min-w-9 whitespace-nowrap px-2"
+                  class="food-copy-button ui-button min-h-9 min-w-9 whitespace-nowrap px-2"
                   aria-label={`Copy note for ${plan.food.id === 'custom' ? 'custom food' : plan.food.name}`}
                   title={copiedFoodId === plan.food.id ? 'Copied feeding note' : 'Copy feeding note'}
                   disabled={copyingFoodId !== null}
@@ -333,6 +338,16 @@
 </section>
 
 <style>
+  .food-target {
+    grid-column: 1 / -1;
+  }
+
+  .food-copy-feedback.has-message {
+    display: grid;
+    gap: 0.5rem;
+    margin-top: 0.5rem;
+  }
+
   .food-table th,
   .food-table td {
     padding: 0.5rem 0.625rem;
@@ -399,6 +414,88 @@
       padding-right: 0.75rem;
       padding-left: 0.75rem;
       text-align: right;
+    }
+  }
+
+  /* Use desktop width for complete food details instead of adding a second line
+     to every row. Keep the naturally wrapping table on narrower screens. */
+  @media (min-width: 1280px) {
+    .food-inputs {
+      grid-template-columns: 1fr 1fr 1fr 1fr 1.25fr;
+    }
+
+    .food-target {
+      grid-column: auto;
+      align-self: center;
+    }
+
+    .food-description {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 0.75rem;
+    }
+
+    .food-can-details {
+      flex-shrink: 0;
+      margin-top: 0;
+    }
+
+    .food-name-column {
+      width: 57%;
+    }
+
+    .food-portion-column {
+      width: 14%;
+    }
+
+    .food-exact-column {
+      width: 11%;
+    }
+
+    .food-table tbody th,
+    .food-table tbody td {
+      padding-top: 0.125rem;
+      padding-bottom: 0.125rem;
+    }
+
+    .food-copy-button {
+      min-height: 1.5rem;
+      padding-top: 0;
+      padding-bottom: 0;
+    }
+
+    .food-copy-feedback.has-fallback {
+      grid-template-columns: minmax(0, 1fr) minmax(0, 3fr);
+      align-items: center;
+    }
+
+    .food-note {
+      grid-template-columns: auto minmax(0, 1fr);
+      align-items: center;
+    }
+
+    .food-note textarea {
+      min-height: 0;
+      line-height: 1.25;
+    }
+  }
+
+  @media (min-width: 1280px) and (max-height: 820px) {
+    .food-setup {
+      padding-top: 0.5rem;
+      padding-bottom: 0.5rem;
+    }
+
+    .food-table thead th {
+      padding-top: 0.375rem;
+      padding-bottom: 0.375rem;
+    }
+
+    .food-table tbody th,
+    .food-table tbody td {
+      padding-top: 0;
+      padding-bottom: 0;
     }
   }
 </style>
