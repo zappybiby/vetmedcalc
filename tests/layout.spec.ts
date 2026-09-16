@@ -562,7 +562,7 @@ test.describe('responsive layout guardrails', () => {
         }
 
         await selectTab(page, 'Ins / outs');
-        await activePanel(page).getByRole('radio', { name: 'Rate', exact: true }).check();
+        await activePanel(page).getByRole('switch', { name: 'Fluid in rate mode', exact: true }).check();
         await page.locator('#ins-rate').fill('60');
         await capture('Ins outs rate');
         await expectAxeColorContrast(page, `${theme} ${viewport.name} Ins outs rate`);

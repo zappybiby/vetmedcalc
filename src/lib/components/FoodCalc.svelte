@@ -256,7 +256,7 @@
         </p>
       {/if}
 
-      <p role="status" aria-live="polite" class:mt-2={copyMessage !== ''} class="ui-meta">{copyMessage}</p>
+      <p role="status" aria-live="polite" class:sr-only={!fallbackNote} class:mt-2={!!fallbackNote} class="ui-meta">{copyMessage}</p>
       {#if fallbackNote}
         <label class="mt-2 grid gap-1.5">
           <span class="ui-label">Feeding note</span>

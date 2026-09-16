@@ -266,18 +266,18 @@
           </div>
           <div class="kphos-field kphos-potassium-field">
             <div class="kphos-field-heading">
-              <label class="ui-label" for="kphos-k-target">Potassium target</label>
               <button
                 type="button"
                 role="switch"
                 aria-checked={kTargetBasis === 'total'}
                 aria-label={kBasisSwitchLabel}
-                class="kphos-basis-button"
+                class="ui-inline-toggle"
                 data-testid="k-target-basis"
                 on:click={toggleKTargetBasis}
               >
                 {kBasisLabel}
               </button>
+              <label class="ui-label" for="kphos-k-target">Potassium target</label>
             </div>
             <div class="kphos-control-row">
             <input
@@ -342,7 +342,8 @@
           </div>
         </div>
         {:else}
-          <div class="kphos-field-grid kphos-cri-fields">
+          <div class="kphos-cri-fields" class:kphos-cri-has-bag={plan.hasKTarget}>
+            <div class="kphos-field-grid kphos-cri-setup-fields" role="group" aria-label="CRI preparation settings">
             <div class="kphos-field">
               <div class="kphos-field-heading"><label class="ui-label" for="kphos-cri-duration">Duration</label></div>
               <div class="kphos-control-row">
@@ -384,6 +385,8 @@
               {/each}
             </select>
           </div>
+            </div>
+            <div class="kphos-field-grid kphos-cri-fluid-fields" role="group" aria-label="Main fluid settings">
             <div class="kphos-field">
               <div class="kphos-field-heading"><label class="ui-label" for="kphos-main-fluid">Fluid Type</label></div>
             <select id="kphos-main-fluid" class="field-select" aria-label="Fluid Type" bind:value={mainFluidId}>
@@ -426,6 +429,7 @@
                 </div>
             </div>
           {/if}
+            </div>
         </div>
       {/if}
       </section>
@@ -707,12 +711,11 @@
   .kphos-field-grid {
     display: grid;
     min-width: 0;
-    gap: 0.75rem;
+    gap: 1.25rem;
   }
 
   .kphos-target-fields {
     grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 1.25rem;
   }
 
   .kphos-bag-fields {
@@ -720,7 +723,26 @@
   }
 
   .kphos-cri-fields {
-    grid-template-columns: repeat(6, minmax(0, 1fr));
+    display: grid;
+    min-width: 0;
+    grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
+    gap: 2rem;
+  }
+
+  .kphos-cri-has-bag {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .kphos-cri-setup-fields {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .kphos-cri-fluid-fields {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .kphos-cri-has-bag .kphos-cri-fluid-fields {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 
   .kphos-field {
@@ -735,12 +757,8 @@
     min-height: 1.5rem;
     min-width: 0;
     align-items: center;
-    justify-content: space-between;
+    justify-content: flex-start;
     gap: 0.5rem;
-  }
-
-  .kphos-target-fields .kphos-field-heading {
-    min-height: 2.25rem;
   }
 
   .kphos-instruction-value {
@@ -934,31 +952,10 @@
     font-variant-numeric: tabular-nums;
   }
 
-  .kphos-basis-button {
-    display: inline-flex;
-    min-width: 3.5rem;
-    height: 2.25rem;
-    flex: 0 0 auto;
-    align-items: center;
-    justify-content: center;
-    border-radius: 9999px;
-    border: 1px solid var(--ui-accent-border);
-    background: var(--ui-accent-surface);
-    padding: 0 0.4rem;
-    color: var(--ui-link);
-    font-size: 0.875rem;
-    font-weight: 800;
-    transition: background-color 150ms, border-color 150ms;
-  }
-
-  .kphos-basis-button:hover {
-    border-color: var(--ui-field-border-strong);
-    background: var(--ui-hover-surface);
-  }
-
-  @media (max-width: 1365px) {
+  @media (max-width: 1199px) {
     .kphos-cri-fields {
-      grid-template-columns: repeat(3, minmax(0, 1fr));
+      grid-template-columns: minmax(0, 1fr);
+      gap: 1.5rem;
     }
   }
 
@@ -981,8 +978,18 @@
 
     .kphos-target-fields,
     .kphos-bag-fields,
-    .kphos-cri-fields {
+    .kphos-cri-setup-fields,
+    .kphos-cri-fluid-fields,
+    .kphos-cri-has-bag .kphos-cri-fluid-fields {
       grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .kphos-field-grid {
+      gap: 1rem;
+    }
+
+    .kphos-cri-setup-fields > .kphos-field:last-child {
+      grid-column: 1 / -1;
     }
 
     .kphos-control-row {

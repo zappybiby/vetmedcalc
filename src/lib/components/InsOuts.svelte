@@ -106,56 +106,41 @@
 </script>
 
 <section class="ui-tool-stack text-slate-200" aria-label="Ins and outs calculator">
-  <article class="ui-card grid min-w-0 gap-3 ui-card-padding">
-    <div class="io-context-row">
-      <label class="grid min-w-0 gap-1.5" for="io-duration">
-        <span class="ui-label">Time period</span>
-        <div class="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-2">
-          <input
-            id="io-duration"
-            class="field-control"
-            type="number"
-            min="0.25"
-            step="0.25"
-            bind:value={hoursWindow}
-            inputmode="decimal"
-          />
-          <span class="ui-unit">hr</span>
-        </div>
-      </label>
-
-      <fieldset class="grid min-w-0 gap-1.5">
-        <legend class="ui-label mb-1.5">Enter fluid in as</legend>
-        <div class="grid grid-cols-2 gap-1.5" role="radiogroup" aria-label="Fluid in entry mode">
-          <label class="ui-choice" class:is-selected={insMode === 'total'} for="ins-mode-total">
-            <input
-              id="ins-mode-total"
-              class="field-radio h-3.5 w-3.5"
-              type="radio"
-              name="ins-mode"
-              checked={insMode === 'total'}
-              on:change={() => selectInsMode('total')}
-            />
-            Total
-          </label>
-          <label class="ui-choice" class:is-selected={insMode === 'rate'} for="ins-mode-rate">
-            <input
-              id="ins-mode-rate"
-              class="field-radio h-3.5 w-3.5"
-              type="radio"
-              name="ins-mode"
-              checked={insMode === 'rate'}
-              on:change={() => selectInsMode('rate')}
-            />
-            Rate
-          </label>
-        </div>
-      </fieldset>
+  <article class="ui-card io-inputs ui-card-padding">
+    <div class="io-field io-period">
+      <div class="io-field-heading">
+        <label class="ui-label" for="io-duration">Time period</label>
+      </div>
+      <div class="io-control-row">
+        <input
+          id="io-duration"
+          class="field-control"
+          type="number"
+          min="0.25"
+          step="0.25"
+          bind:value={hoursWindow}
+          inputmode="decimal"
+        />
+        <span class="ui-unit">hr</span>
+      </div>
     </div>
 
-    <div class="grid min-w-0 grid-cols-2 gap-3">
-      <label class="grid min-w-0 gap-1.5" for={insMode === 'rate' ? 'ins-rate' : 'ins-total'}>
-        <span class="ui-label">Fluid in <span class="ui-unit">({insMode === 'rate' ? 'mL/hr' : 'mL'})</span></span>
+    <div class="io-field">
+      <div class="io-field-heading">
+        <label class="ui-label" for={insMode === 'rate' ? 'ins-rate' : 'ins-total'}>Fluid in</label>
+        <button
+          type="button"
+          role="switch"
+          aria-checked={insMode === 'rate'}
+          aria-label="Fluid in rate mode"
+          title={insMode === 'total' ? 'Switch to rate (mL/hr)' : 'Switch to total (mL)'}
+          class="ui-inline-toggle"
+          on:click={() => selectInsMode(insMode === 'total' ? 'rate' : 'total')}
+        >
+          {insMode === 'total' ? 'Total' : 'Rate'}
+        </button>
+      </div>
+      <div class="io-control-row">
         {#if insMode === 'rate'}
           <input
             id="ins-rate"
@@ -164,6 +149,7 @@
             min="0"
             step="0.1"
             bind:value={insRateMlHr}
+            aria-label="Fluid in (mL/hr)"
             inputmode="decimal"
             placeholder="0"
           />
@@ -175,13 +161,20 @@
             min="0"
             step="1"
             bind:value={insMl}
+            aria-label="Fluid in (mL)"
             inputmode="decimal"
             placeholder="0"
           />
         {/if}
-      </label>
-      <label class="grid min-w-0 gap-1.5" for="out-total">
-        <span class="ui-label">Urine out <span class="ui-unit">(mL)</span></span>
+        <span class="ui-unit">{insMode === 'rate' ? 'mL/hr' : 'mL'}</span>
+      </div>
+    </div>
+
+    <div class="io-field">
+      <div class="io-field-heading">
+        <label class="ui-label" for="out-total">Urine out</label>
+      </div>
+      <div class="io-control-row">
         <input
           id="out-total"
           class="field-control"
@@ -189,10 +182,12 @@
           min="0"
           step="1"
           bind:value={urineOutMl}
+          aria-label="Urine out (mL)"
           inputmode="decimal"
           placeholder="0"
         />
-      </label>
+        <span class="ui-unit">mL</span>
+      </div>
     </div>
   </article>
 
@@ -249,11 +244,37 @@
 </section>
 
 <style>
-  .io-context-row {
+  .io-inputs {
     display: grid;
-    grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr);
-    align-items: end;
-    gap: 0.75rem;
+    min-width: 0;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    align-items: start;
+    gap: 1rem;
+  }
+
+  .io-period {
+    grid-column: 1 / -1;
+  }
+
+  .io-field {
+    display: grid;
+    min-width: 0;
+    gap: 0.375rem;
+  }
+
+  .io-field-heading {
+    display: flex;
+    min-height: 1.5rem;
+    align-items: center;
+    gap: 0.375rem;
+  }
+
+  .io-control-row {
+    display: grid;
+    min-width: 0;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 0.5rem;
   }
 
   .io-comparison :is(th, td) {
@@ -265,8 +286,13 @@
   }
 
   @media (min-width: 640px) {
-    .io-context-row {
-      grid-template-columns: minmax(10rem, 1fr) minmax(0, 1fr);
+    .io-inputs {
+      grid-template-columns: minmax(8rem, 0.8fr) repeat(2, minmax(0, 1fr));
+      gap: 1.25rem;
+    }
+
+    .io-period {
+      grid-column: auto;
     }
   }
 </style>
