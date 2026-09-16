@@ -249,6 +249,26 @@
     box-shadow: inset 0 2px 0 color-mix(in srgb, var(--ui-accent-border) 82%, transparent);
   }
 
+  .ui-inline-toggle {
+    @apply inline-flex shrink-0 cursor-pointer items-center justify-center rounded-md text-xs font-extrabold normal-case tracking-normal transition-colors;
+    height: 1.5rem;
+    min-width: 3rem;
+    padding: 0 0.4rem;
+    line-height: 1;
+    color: var(--ui-text-100);
+    border: 1px solid var(--ui-accent-border);
+    background-color: color-mix(in srgb, var(--ui-accent-surface) 18%, var(--ui-surface-2));
+  }
+
+  .ui-inline-toggle:hover {
+    background-color: var(--ui-field-bg-hover);
+  }
+
+  .ui-inline-toggle:focus-visible {
+    outline: 2px solid var(--ui-accent-border);
+    outline-offset: 2px;
+  }
+
   .field-control,
   .field-select {
     color-scheme: var(--ui-input-scheme);

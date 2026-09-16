@@ -43,6 +43,7 @@ test('copies only the food name, decimal portion, interval and matching calories
     "Hill's a/d: 0.65 cans every 6 hours (119 kcal/feed).",
   ]);
   await expect(panel.getByRole('status')).toHaveText("Copied Hill's a/d Urgent Care feeding note.");
+  await expect(panel.getByRole('status')).toHaveClass(/sr-only/);
 });
 
 test('mobile custom notes follow species, weight, interval and calorie changes', async ({ page }) => {
@@ -82,6 +83,7 @@ for (const mode of ['denied', 'unavailable'] as const) {
     await panel.getByRole('button', { name: "Copy note for Hill's a/d Urgent Care", exact: true }).click();
 
     await expect(panel.getByRole('status')).toHaveText('Clipboard unavailable. Select and copy the note below.');
+    await expect(panel.getByRole('status')).not.toHaveClass(/sr-only/);
     const note = panel.getByRole('textbox', { name: 'Feeding note', exact: true });
     await expect(note).toHaveValue(
       "Hill's a/d: 0.54 cans every 6 hours (99 kcal/feed).",

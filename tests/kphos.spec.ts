@@ -482,8 +482,8 @@ test.describe('KPhos workflow', () => {
       height: button.getBoundingClientRect().height,
       fontSize: Number.parseFloat(getComputedStyle(button).fontSize),
     }));
-    expect(basisStyle.height).toBeGreaterThanOrEqual(32);
-    expect(basisStyle.fontSize).toBeGreaterThanOrEqual(14);
+    expect(basisStyle.height).toBe(24);
+    expect(basisStyle.fontSize).toBe(12);
     await expect(panel.getByLabel('Total potassium target (mEq/L)', { exact: true })).toHaveValue('30');
     await expect(panel.getByTestId('kcl-stock-volume')).toContainText('9.6 mL');
     const totalResultTop = await panel.getByTestId('kphos-results').evaluate((element) => element.getBoundingClientRect().top);

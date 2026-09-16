@@ -46,7 +46,7 @@ test('rate and total entries use the shared period and changing modes clears onl
   await page.locator('#ins-total').fill('240');
   await page.locator('#out-total').fill('120');
 
-  await page.getByRole('radio', { name: 'Rate', exact: true }).check();
+  await page.getByRole('switch', { name: 'Fluid in rate mode', exact: true }).check();
   await expect(page.locator('#ins-rate')).toHaveValue('');
   await expect(page.locator('#out-total')).toHaveValue('120');
   await expect(page.getByTestId('io-net-total')).toHaveText('—');
@@ -61,7 +61,7 @@ test('rate and total entries use the shared period and changing modes clears onl
   await expect(page.getByTestId('io-net-total')).toHaveText('+240.00');
   await expect(page.getByTestId('io-net-rate')).toHaveText('+40.00');
 
-  await page.getByRole('radio', { name: 'Total', exact: true }).check();
+  await page.getByRole('switch', { name: 'Fluid in rate mode', exact: true }).uncheck();
   await expect(page.locator('#ins-total')).toHaveValue('');
   await expect(page.locator('#out-total')).toHaveValue('120');
   await page.locator('#ins-total').fill('360');

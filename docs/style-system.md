@@ -45,6 +45,7 @@ Use the classes in [app.css](../src/app.css) before inventing a local visual sty
 | Unit suffix | `ui-unit` | 12px semibold, normal case and tracking. |
 | Divider | `ui-rule`, `ui-table-rows` | CRI result-divider color for both themes; border placement stays local. |
 | Choice | `ui-choice` | Shared selectable control; `aria-pressed="true"` or `is-selected` styles the active state. |
+| Inline mode toggle | `ui-inline-toggle` | Compact 24px-high switch beside a field label; use `aria-checked` for its state and a descriptive accessible name. |
 | Action | `ui-button` | Actions such as printing or focusing an input. |
 | Alert geometry | `ui-alert` | CRI padding, border, radius and typography; retain the appropriate severity colors. |
 
@@ -142,3 +143,13 @@ The follow-up is split into nine feature commits, matching the requested changes
 Workflow tests cover copied note contents, clipboard fallback, positive/negative/zero
 fluid balances, mode changes, centered mode controls and all-source electrolyte
 semantics. The PR links the current quality run and screenshot artifacts.
+
+### Compact field controls
+
+KPhos now places the 24px Added/Total toggle before the potassium label, replacing
+the earlier 36px control. Field gutters are 20px on desktop and 16px on mobile;
+CRI setup and main-fluid settings have a larger gap between groups. Ins / outs
+uses the same compact toggle after Fluid in, with all three fields on one desktop
+row and the shared period above the paired fluid fields on mobile. Successful
+Food Calc copies announce their status to screen readers without adding visible
+text; clipboard failure still reveals the selectable fallback note.
