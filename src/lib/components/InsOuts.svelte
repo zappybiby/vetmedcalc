@@ -51,12 +51,19 @@
 
   function selectInsMode(mode: InsMode) {
     if (insMode === mode) return;
-    insMode = mode;
-    if (mode === 'rate') {
-      insMl = '';
-    } else {
-      insRateMlHr = '';
+
+    const hours = numeric(hoursWindow);
+    if (hours != null && hours > 0) {
+      if (mode === 'rate') {
+        const total = numeric(insMl);
+        if (total != null) insRateMlHr = total / hours;
+      } else {
+        const rate = numeric(insRateMlHr);
+        if (rate != null) insMl = rate * hours;
+      }
     }
+
+    insMode = mode;
   }
 
   // Core numbers
@@ -192,23 +199,32 @@
   </article>
 
   {#if hasInput}
-    <article class="ui-card min-w-0 ui-card-padding" aria-label="Fluid balance results">
-      <div class="flex min-w-0 flex-wrap items-center justify-between gap-x-4 gap-y-2 border-b pb-3 ui-rule">
-        <div class="grid gap-1">
-          <h2 class="ui-label-strong">Net balance</h2>
-          <p class="ui-meta-compact">{balanceDescriptor}</p>
+    <article class="ui-card min-w-0 ui-card-padding" aria-label="Ins and outs results">
+      <div class="border-b pb-3 ui-rule">
+        <div class="flex min-w-0 flex-wrap items-end justify-between gap-x-4 gap-y-1">
+          <div class="grid gap-1">
+            <h2 class="ui-label-strong">Weight-adjusted rate</h2>
+            <p class="ui-meta-compact">mL/kg/hr</p>
+          </div>
           {#if windowHours != null && windowHours > 0}
-            <p class="ui-meta-compact">Over {fmtCompact(windowHours)} hr</p>
+            <p class="ui-meta-compact">{fmtCompact(windowHours)} hr period</p>
           {/if}
         </div>
-        <div class="grid min-w-0 gap-1 text-right">
-          <div>
-            <span class="ui-result-value" data-testid="io-net-total">{fmtSigned(netTotalMl)}</span>
-            <span class="ml-1 ui-unit">mL</span>
+
+        <div class="mt-3 grid min-w-0 grid-cols-2 gap-4">
+          <div class="grid min-w-0 gap-1">
+            <div class="ui-meta-compact">Fluid in</div>
+            <div class="min-w-0">
+              <span class="ui-result-value" data-testid="io-in-weight-rate">{fmt(insMlPerKgHr)}</span>
+              <span class="ml-1 ui-unit">mL/kg/hr</span>
+            </div>
           </div>
-          <div>
-            <span class="ui-row-value" data-testid="io-net-rate">{fmtSigned(netMlPerHr)}</span>
-            <span class="ml-1 ui-unit">mL/hr</span>
+          <div class="grid min-w-0 gap-1 text-right">
+            <div class="ui-meta-compact">Urine out</div>
+            <div class="min-w-0">
+              <span class="ui-result-value" data-testid="io-out-weight-rate">{fmt(outMlPerKgHr)}</span>
+              <span class="ml-1 ui-unit">mL/kg/hr</span>
+            </div>
           </div>
         </div>
       </div>
@@ -232,13 +248,25 @@
             <td class="ui-row-value text-right">{fmt(insMlPerHr)}</td>
             <td class="ui-row-value text-right">{fmt(outMlPerHr)}</td>
           </tr>
-          <tr>
-            <th scope="row" class="text-left font-semibold">Weight rate <span class="ui-unit">(mL/kg/hr)</span></th>
-            <td class="ui-row-value text-right">{fmt(insMlPerKgHr)}</td>
-            <td class="ui-row-value text-right">{fmt(outMlPerKgHr)}</td>
-          </tr>
         </tbody>
       </table>
+
+      <div class="mt-2 flex min-w-0 items-center justify-between gap-4 border-t pt-3 ui-rule">
+        <div class="min-w-0">
+          <div class="ui-label">Net balance</div>
+          <div class="ui-meta-compact">{balanceDescriptor}</div>
+        </div>
+        <div class="grid min-w-0 gap-0.5 text-right">
+          <div>
+            <span class="ui-row-value" data-testid="io-net-total">{fmtSigned(netTotalMl)}</span>
+            <span class="ml-1 ui-unit">mL</span>
+          </div>
+          <div class="ui-meta-compact">
+            <span data-testid="io-net-rate">{fmtSigned(netMlPerHr)}</span>
+            <span class="ml-1">mL/hr</span>
+          </div>
+        </div>
+      </div>
     </article>
   {/if}
 </section>
