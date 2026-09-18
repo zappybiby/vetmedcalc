@@ -343,20 +343,25 @@
           <div class="min-w-0">
             <div class="ui-label-strong">Instruction</div>
             <div class="mt-1.5 flex flex-wrap items-baseline gap-x-1.5 gap-y-1 ui-instruction sm:gap-x-2 sm:gap-y-1.5">
-              <span>Draw up</span>
-              {#if stockLine}
-                <span class="ui-statement-value">{stockLine.value}</span>
-                <span>of</span>
-              {/if}
-              <span class="font-semibold text-slate-100">{med?.name ?? 'drug'}</span>
+              <span class="flex min-w-0 flex-wrap items-baseline gap-x-1.5 sm:gap-x-2" class:w-full={!!diluentLine}>
+                <span>Draw up</span>
+                {#if stockLine}
+                  <span class="ui-statement-value whitespace-nowrap">{stockLine.value}</span>
+                  <span>of</span>
+                {/if}
+                <span class="min-w-0 break-words font-semibold text-slate-100">{med?.name ?? 'drug'}</span>
+              </span>
               {#if diluentLine}
-                <span>+</span>
-                <span class="ui-statement-value">{diluentLine.value}</span>
-                <span>diluent</span>
+                <span class="inline-flex items-baseline gap-x-1.5 whitespace-nowrap sm:gap-x-2">
+                  <span>+</span>
+                  <span class="ui-statement-value">{diluentLine.value}</span>
+                  <span>diluent</span>
+                </span>
               {/if}
-              <span>and run at</span>
-              <span class="ui-statement-value">{vm.resultCard.pumpRateText}</span>
-              <span>.</span>
+              <span class="inline-flex items-baseline gap-x-1.5 whitespace-nowrap sm:gap-x-2">
+                <span>and run at</span>
+                <span><span class="ui-statement-value">{vm.resultCard.pumpRateText}</span>.</span>
+              </span>
             </div>
           </div>
 
