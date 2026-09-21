@@ -7,71 +7,46 @@ async function openInsOuts(page: Page) {
   await page.locator('#io-duration').fill('4');
 }
 
-function comparisonRow(page: Page, measurement: string) {
-  return page.getByRole('table', { name: 'Fluid in and urine out comparison' })
-    .getByRole('row')
-    .filter({ has: page.getByRole('rowheader', { name: measurement, exact: true }) })
-    .getByRole('cell');
-}
-
-test('fluid comparison prioritizes weight-adjusted rates and keeps net signs clear', async ({ page }) => {
+test('results show only fluid in and out weight rates on separate lines', async ({ page }) => {
   await openInsOuts(page);
   await page.locator('#ins-total').fill('240');
   await page.locator('#out-total').fill('120');
-
-  await expect(page.getByTestId('io-in-weight-rate')).toHaveText('6.00');
-  await expect(page.getByTestId('io-out-weight-rate')).toHaveText('3.00');
-  await expect(comparisonRow(page, 'Total (mL)')).toHaveText(['240.00', '120.00']);
-  await expect(comparisonRow(page, 'Rate (mL/hr)')).toHaveText(['60.00', '30.00']);
-  await expect(page.getByTestId('io-net-total')).toHaveText('+120.00');
-  await expect(page.getByTestId('io-net-rate')).toHaveText('+30.00');
-  await expect(page.getByText('Input > output', { exact: true })).toBeVisible();
-
-  await page.locator('#out-total').fill('320');
-  await expect(page.getByTestId('io-out-weight-rate')).toHaveText('8.00');
-  await expect(page.getByTestId('io-net-total')).toHaveText('-80.00');
-  await expect(page.getByTestId('io-net-rate')).toHaveText('-20.00');
-  await expect(page.getByText('Input < output', { exact: true })).toBeVisible();
-
-  await page.locator('#out-total').fill('240');
-  await expect(page.getByTestId('io-net-total')).toHaveText('0.00');
-  await expect(page.getByTestId('io-net-rate')).toHaveText('0.00');
-  await expect(page.getByText('Input = output', { exact: true })).toBeVisible();
-
+  const results = page.getByRole('article', { name: 'Ins and outs results' });
+  await expect(results).toHaveText(/Fluid in\s*6.00\s*mL\/kg\/hr\s*Fluid out\s*3.00\s*mL\/kg\/hr/);
+  for (const width of [384, 1440]) {
+    await page.setViewportSize({ width, height: 900 });
+    const input = await page.getByTestId('io-in-weight-rate').boundingBox();
+    const output = await page.getByTestId('io-out-weight-rate').boundingBox();
+    expect(output!.y).toBeGreaterThanOrEqual(input!.y + input!.height);
+    expect(await results.evaluate(el => el.scrollWidth <= el.clientWidth)).toBe(true);
+  }
   await page.getByLabel('Weight (kg)', { exact: true }).fill('');
   await expect(page.getByTestId('io-in-weight-rate')).toHaveText('—');
   await expect(page.getByTestId('io-out-weight-rate')).toHaveText('—');
-  await expect(comparisonRow(page, 'Rate (mL/hr)')).toHaveText(['60.00', '60.00']);
 });
 
-test('rate and total modes convert fluid in without clearing values', async ({ page }) => {
+test('rate and total toggles preserve the entered number', async ({ page }) => {
   await openInsOuts(page);
   await page.locator('#ins-total').fill('240');
   await page.locator('#out-total').fill('120');
-
-  await page.getByRole('switch', { name: 'Fluid in rate mode', exact: true }).check();
-  await expect(page.locator('#ins-rate')).toHaveValue('60');
+  const toggle = page.getByRole('switch', { name: 'Fluid in rate mode', exact: true });
+  await toggle.check();
+  await expect(page.locator('#ins-rate')).toHaveValue('240');
+  await expect(page.getByTestId('io-in-weight-rate')).toHaveText('24.00');
+  await page.locator('#ins-rate').fill('60.5');
+  await toggle.uncheck();
+  await expect(page.locator('#ins-total')).toHaveValue('60.5');
+  await expect(page.getByTestId('io-in-weight-rate')).toHaveText('1.51');
   await expect(page.locator('#out-total')).toHaveValue('120');
-  await expect(comparisonRow(page, 'Total (mL)')).toHaveText(['240.00', '120.00']);
-  await expect(page.getByTestId('io-in-weight-rate')).toHaveText('6.00');
-  await expect(page.getByTestId('io-net-total')).toHaveText('+120.00');
-
-  await page.locator('#io-duration').fill('6');
-  await expect(page.locator('#ins-rate')).toHaveValue('60');
-  await expect(comparisonRow(page, 'Total (mL)')).toHaveText(['360.00', '120.00']);
-  await expect(comparisonRow(page, 'Rate (mL/hr)')).toHaveText(['60.00', '20.00']);
-  await expect(page.getByTestId('io-in-weight-rate')).toHaveText('6.00');
-  await expect(page.getByTestId('io-out-weight-rate')).toHaveText('2.00');
-  await expect(page.getByTestId('io-net-total')).toHaveText('+240.00');
-  await expect(page.getByTestId('io-net-rate')).toHaveText('+40.00');
-
-  await page.getByRole('switch', { name: 'Fluid in rate mode', exact: true }).uncheck();
-  await expect(page.locator('#ins-total')).toHaveValue('360');
-  await expect(page.locator('#out-total')).toHaveValue('120');
-
-  await page.locator('#ins-total').fill('300');
-  await page.getByRole('switch', { name: 'Fluid in rate mode', exact: true }).check();
-  await expect(page.locator('#ins-rate')).toHaveValue('50');
-  await page.getByRole('switch', { name: 'Fluid in rate mode', exact: true }).uncheck();
-  await expect(page.locator('#ins-total')).toHaveValue('300');
+  await page.locator('#io-duration').fill('');
+  await toggle.check();
+  await expect(page.locator('#ins-rate')).toHaveValue('60.5');
+  await expect(page.getByTestId('io-in-weight-rate')).toHaveText('6.05');
+  await expect(page.getByTestId('io-out-weight-rate')).toHaveText('—');
+  await page.locator('#ins-rate').fill('');
+  await toggle.uncheck();
+  await expect(page.locator('#ins-total')).toHaveValue('');
+  await page.locator('#ins-total').fill('0');
+  await toggle.check();
+  await expect(page.locator('#ins-rate')).toHaveValue('0');
 });
