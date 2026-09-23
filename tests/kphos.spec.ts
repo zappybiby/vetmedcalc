@@ -359,7 +359,7 @@ test.describe('KPhos workflow', () => {
       };
     });
 
-    expect(await placeholderStyle('#kphos-phos-target')).toEqual(await placeholderStyle('#drugbag-dose'));
+    expect(await placeholderStyle('#kphos-phos-target')).toEqual(await placeholderStyle('#drugbag-dose-0'));
   });
 
   test('orders and formats the bag preparation summary', async ({ page }) => {

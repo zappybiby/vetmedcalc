@@ -85,9 +85,10 @@ const TAB_FILLERS: Record<string, (page: Page, panel: Locator) => Promise<void>>
     await page.locator('#cri-rate').fill('8');
   },
   'Drug in bag': async (page) => {
-    await page.locator('#drugbag-dose').fill('1');
+    await page.locator('#drugbag-drug-0').selectOption('diazepam-5');
+    await page.locator('#drugbag-dose-0').fill('1');
     await page.locator('#drugbag-bag').fill('1000');
-    await page.locator('#drugbag-rate').fill('60');
+    await page.locator('#drugbag-time').fill('12');
   },
   'Ins / outs': async (page) => {
     await page.locator('#ins-total').fill('240');
@@ -537,7 +538,7 @@ test.describe('responsive layout guardrails', () => {
             const fields = tabName === 'Tube Feeding'
               ? [activePanel(page).getByLabel('Diet density (kcal/mL)', { exact: true }), activePanel(page).getByLabel('RER factor', { exact: true })]
               : (tabName === 'Drug in bag'
-                ? ['#drugbag-bag', '#drugbag-rate']
+                ? ['#drugbag-bag', '#drugbag-time']
                 : ['#kphos-phos-target', '#kphos-k-target']).map((selector) => page.locator(selector));
             const [left, right] = await Promise.all(fields.map((field) => field.boundingBox()));
             expect(left).not.toBeNull();
