@@ -14,7 +14,6 @@ async function example(page: Page) {
   await page.locator('#drugbag-drug-1').selectOption('ketamine-100');
   await page.locator('#drugbag-dose-1').fill('5');
   await page.getByLabel('Dose unit 2', { exact: true }).selectOption('mcg/kg/hr');
-  await page.getByRole('button', { name: 'Add medication' }).click();
   await page.locator('#drugbag-drug-2').selectOption('lidocaine-20');
   await page.locator('#drugbag-dose-2').fill('25');
 }
@@ -24,11 +23,16 @@ for (const [width, height] of [[1280, 720], [1366, 768], [1920, 1080], [384, 854
     await page.setViewportSize({ width, height });
     await example(page);
     const prep = page.getByRole('article', { name: 'Bag preparation' });
-    await expect(prep).toContainText('19.9452 mL');
-    await expect(prep).toContainText('0.132 mL');
-    await expect(prep).toContainText('0.0132 mL');
-    await expect(prep).toContainText('19.8 mL');
-    await expect(prep).toContainText('8.333 mL/hr');
+    await expect(prep).toContainText('20.14 mL');
+    await expect(prep).toContainText('0.13 mL');
+    await expect(prep).toContainText('0.01 mL');
+    await expect(prep).toContainText('20 mL');
+    await expect(prep).toContainText('8 mL/hr');
+    await expect(prep).toContainText('12.5 hours');
+    await expect(prep).toContainText('Delivers 0.236 mcg/kg/hr');
+    await expect(prep).toContainText('Delivers 3.636 mcg/kg/hr');
+    await expect(prep).toContainText('Delivers 24.242 mcg/kg/min');
+    await expect(page.locator('#drugbag-drug-3')).toBeVisible();
     await page.getByText('Step-By-Step calculations', { exact: true }).last().click();
     await page.screenshot({ path: testInfo.outputPath(`drug-bag-${width}.png`), fullPage: true });
     const bounds = await page.evaluate(() => ({
@@ -47,7 +51,6 @@ for (const [width, height] of [[1280, 720], [1366, 768], [1920, 1080], [384, 854
 test('incomplete and invalid cards block the full bag; blank cards, removal and rate mode work', async ({ page }) => {
   await example(page);
   const prep = page.getByRole('article', { name: 'Bag preparation' });
-  await page.getByRole('button', { name: 'Add medication' }).click();
   await expect(prep).toBeVisible();
   await page.locator('#drugbag-drug-3').selectOption('fentanyl-50');
   await expect(prep).toBeHidden();
@@ -57,8 +60,8 @@ test('incomplete and invalid cards block the full bag; blank cards, removal and 
   await expect(prep).toBeVisible();
   await page.getByRole('switch', { name: 'Enter pump rate instead of duration' }).click();
   await page.locator('#drugbag-time').fill('10');
-  await expect(prep).toContainText('16.621 mL');
-  await expect(prep).toContainText('10 hr');
+  await expect(prep).toContainText('17.12 mL');
+  await expect(prep).toContainText('10 hours');
   await page.locator('#drugbag-time').fill('0');
   await expect(prep).toBeHidden();
   await page.getByRole('switch', { name: 'Enter pump rate instead of duration' }).click();
@@ -66,4 +69,37 @@ test('incomplete and invalid cards block the full bag; blank cards, removal and 
   await page.locator('#drugbag-bag').fill('10');
   await expect(prep).toBeHidden();
   await expect(page.getByRole('alert')).toContainText('exceeding');
+});
+
+
+test('pump precision changes delivered doses and runtime; 6 cc uses 0.2 mL ticks', async ({ page }) => {
+  await page.goto('/vetmedcalc/');
+  await page.getByRole('tab', { name: 'Drug in bag', exact: true }).click();
+  await page.getByLabel('Weight (kg)', { exact: true }).fill('10');
+  await page.locator('#drugbag-bag').fill('100');
+  await page.locator('#drugbag-time').fill('12');
+  await page.locator('#drugbag-drug-0').selectOption('custom');
+  await page.locator('#drugbag-name-0').fill('Example');
+  await page.locator('#drugbag-stock-0').fill('10');
+  await page.locator('#drugbag-dose-0').fill('0.43');
+  const prep = page.getByRole('article', { name: 'Bag preparation' });
+  await expect(prep).toContainText('5.2 mL');
+  await expect(prep).toContainText('Delivers 0.416 mg/kg/hr');
+  await expect(prep).toContainText('12.5 hours');
+  await page.getByRole('switch', { name: 'Allow tenths of mL/hr' }).click();
+  await expect(prep).toContainText('8.3 mL/hr');
+  await expect(prep).toContainText('12 hours');
+  await expect(prep).toContainText('Delivers 0.432 mg/kg/hr');
+  await page.getByText('Step-By-Step calculations', { exact: true }).last().click();
+  await expect(page.getByText('6 cc, 0.2 mL ticks', { exact: false })).toBeVisible();
+  await page.getByRole('switch', { name: 'Enter pump rate instead of duration' }).click();
+  await page.locator('#drugbag-time').fill('15.5');
+  await expect(prep).toContainText('15.5 mL/hr');
+  await page.getByRole('switch', { name: 'Allow tenths of mL/hr' }).click();
+  await expect(prep).toContainText('16 mL/hr');
+  await expect(prep).toContainText('6.3 hours');
+  await page.locator('#drugbag-time').fill('0.4');
+  await expect(prep).toBeHidden();
+  await page.getByRole('switch', { name: 'Allow tenths of mL/hr' }).click();
+  await expect(page.getByRole('status')).not.toBeVisible();
 });
