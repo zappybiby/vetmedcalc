@@ -23,15 +23,15 @@ for (const [width, height] of [[1280, 720], [1366, 768], [1920, 1080], [384, 854
     await page.setViewportSize({ width, height });
     await example(page);
     const prep = page.getByRole('article', { name: 'Bag preparation' });
-    await expect(prep).toContainText('20.14 mL');
-    await expect(prep).toContainText('0.13 mL');
+    await expect(prep).toContainText('21.15 mL');
+    await expect(prep).toContainText('0.14 mL');
     await expect(prep).toContainText('0.01 mL');
-    await expect(prep).toContainText('20 mL');
+    await expect(prep).toContainText('21 mL');
     await expect(prep).toContainText('8 mL/hr');
     await expect(prep).toContainText('12.5 hours');
-    await expect(prep).toContainText('Delivers 0.236 mcg/kg/hr');
+    await expect(prep).toContainText('Delivers 0.255 mcg/kg/hr');
     await expect(prep).toContainText('Delivers 3.636 mcg/kg/hr');
-    await expect(prep).toContainText('Delivers 24.242 mcg/kg/min');
+    await expect(prep).toContainText('Delivers 25.455 mcg/kg/min');
     await expect(page.locator('#drugbag-drug-3')).toBeVisible();
     await page.getByText('Step-By-Step calculations', { exact: true }).last().click();
     await page.screenshot({ path: testInfo.outputPath(`drug-bag-${width}.png`), fullPage: true });
@@ -68,7 +68,7 @@ test('incomplete and invalid cards block the full bag; blank cards, removal and 
   await expect(page.locator('#drugbag-time')).toHaveValue('12');
   await page.locator('#drugbag-bag').fill('10');
   await expect(prep).toBeHidden();
-  await expect(page.getByRole('alert')).toContainText('exceeding');
+  await expect(page.getByRole('alert')).toContainText('No pump rate');
 });
 
 
@@ -83,10 +83,10 @@ test('pump precision changes delivered doses and runtime; 6 cc uses 0.2 mL ticks
   await page.locator('#drugbag-stock-0').fill('10');
   await page.locator('#drugbag-dose-0').fill('0.43');
   const prep = page.getByRole('article', { name: 'Bag preparation' });
-  await expect(prep).toContainText('5.2 mL');
-  await expect(prep).toContainText('Delivers 0.416 mg/kg/hr');
+  await expect(prep).toContainText('5.4 mL');
+  await expect(prep).toContainText('Delivers 0.432 mg/kg/hr');
   await expect(prep).toContainText('12.5 hours');
-  await page.getByRole('switch', { name: 'Allow tenths of mL/hr' }).click();
+  await page.getByRole('radio', { name: '0.1 mL/hr', exact: true }).check();
   await expect(prep).toContainText('8.3 mL/hr');
   await expect(prep).toContainText('12 hours');
   await expect(prep).toContainText('Delivers 0.432 mg/kg/hr');
@@ -95,11 +95,46 @@ test('pump precision changes delivered doses and runtime; 6 cc uses 0.2 mL ticks
   await page.getByRole('switch', { name: 'Enter pump rate instead of duration' }).click();
   await page.locator('#drugbag-time').fill('15.5');
   await expect(prep).toContainText('15.5 mL/hr');
-  await page.getByRole('switch', { name: 'Allow tenths of mL/hr' }).click();
+  await page.getByRole('radio', { name: '1 mL/hr', exact: true }).check();
   await expect(prep).toContainText('16 mL/hr');
   await expect(prep).toContainText('6.3 hours');
   await page.locator('#drugbag-time').fill('0.4');
   await expect(prep).toBeHidden();
-  await page.getByRole('switch', { name: 'Allow tenths of mL/hr' }).click();
+  await page.getByRole('radio', { name: '0.1 mL/hr', exact: true }).check();
   await expect(page.getByRole('status')).not.toBeVisible();
+});
+
+
+test('MLK precision is an input, defaults to whole rates, and clean results have no boilerplate', async ({ page }, testInfo) => {
+  await page.addInitScript(() => localStorage.setItem('vetmedcalc.theme', 'light'));
+  await page.goto('/vetmedcalc/');
+  await page.getByRole('tab', { name: 'Drug in bag', exact: true }).click();
+  await page.getByLabel('Weight (kg)', { exact: true }).fill('20');
+  await page.locator('#drugbag-bag').fill('500');
+  await page.locator('#drugbag-time').fill('12');
+  await page.locator('#drugbag-drug-0').selectOption('custom');
+  await page.locator('#drugbag-name-0').fill('Morphine');
+  await page.locator('#drugbag-stock-0').fill('15');
+  await page.locator('#drugbag-dose-0').fill('0.12');
+  await page.locator('#drugbag-drug-1').selectOption('lidocaine-20');
+  await page.locator('#drugbag-dose-1').fill('50');
+  await page.locator('#drugbag-drug-2').selectOption('ketamine-100');
+  await page.locator('#drugbag-dose-2').fill('10');
+  await page.getByLabel('Dose unit 3', { exact: true }).selectOption('mcg/kg/min');
+  const prep = page.getByRole('article', { name: 'Bag preparation' });
+  await expect(page.locator('.input-column').getByRole('radio', { name: '1 mL/hr', exact: true })).toBeChecked();
+  await expect(prep).toContainText('40 mL/hr');
+  await page.getByRole('radio', { name: '0.1 mL/hr', exact: true }).check();
+  await expect(prep).toContainText('40.4 mL/hr');
+  await expect(prep).toContainText('12.4 hours');
+  await expect(prep).toContainText('40.5 mL');
+  await expect(prep).toContainText('Delivers 10.1 mcg/kg/min');
+  await expect(prep).not.toContainText('exceeds');
+  await page.screenshot({ path: testInfo.outputPath('mlk-light.png'), fullPage: true });
+  await expect(page.getByRole('region', { name: 'Drug in bag calculator' })).not.toContainText(/verify|compatibility|stability|unrounded/i);
+  await page.getByText('Timing allowance:', { exact: false }).click();
+  await page.getByLabel('Earlier (min)').fill('0');
+  await page.getByLabel('Later (min)').fill('0');
+  await expect(prep).toBeHidden();
+  await expect(page.getByRole('alert')).toContainText('No pump rate');
 });
