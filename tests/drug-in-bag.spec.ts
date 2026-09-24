@@ -18,7 +18,7 @@ async function example(page: Page) {
   await page.locator('#drugbag-dose-2').fill('25');
 }
 
-for (const [width, height] of [[1280, 720], [1366, 768], [1920, 1080], [384, 854], [320, 740], [412, 915], [768, 1024]]) {
+for (const [width, height] of [[1280, 720], [1366, 768], [1920, 1080], [384, 854], [320, 740], [412, 915], [768, 1024], [1024, 768]]) {
   test(`three medications and expanded calculations at ${width}x${height}`, async ({ page }, testInfo) => {
     await page.setViewportSize({ width, height });
     await example(page);
@@ -33,6 +33,26 @@ for (const [width, height] of [[1280, 720], [1366, 768], [1920, 1080], [384, 854
     await expect(prep).toContainText('Delivers 3.636 mcg/kg/hr');
     await expect(prep).toContainText('Delivers 25.455 mcg/kg/min');
     await expect(page.locator('#drugbag-drug-3')).toBeVisible();
+    // Every field keeps the CRI calculator's 6 px label-to-control gap.
+    const labelGaps = await page.locator('.input-column label[for]').evaluateAll(labels => labels.map(label => {
+      const control = document.getElementById(label.getAttribute('for')!)!;
+      return control.getBoundingClientRect().top - label.getBoundingClientRect().bottom;
+    }));
+    for (const gap of labelGaps) expect(gap).toBeCloseTo(6, 1);
+    // Neither mode text nor precision selection may move or resize the input form.
+    const formGeometry = () => page.locator('.input-column .field, .settings-controls, .mode-toggle, .drug-card').evaluateAll(elements => elements.map(element => {
+      const rect = element.getBoundingClientRect();
+      return [rect.x + window.scrollX, rect.y + window.scrollY, rect.width, rect.height];
+    }));
+    const beforeToggle = await formGeometry();
+    const modeSwitch = page.getByRole('switch', { name: 'Enter pump rate instead of duration' });
+    await modeSwitch.click();
+    expect(await formGeometry()).toEqual(beforeToggle);
+    await page.getByRole('radio', { name: '0.1 mL/hr', exact: true }).check();
+    expect(await formGeometry()).toEqual(beforeToggle);
+    await modeSwitch.click();
+    await page.getByRole('radio', { name: '1 mL/hr', exact: true }).check();
+    expect(await formGeometry()).toEqual(beforeToggle);
     await page.getByText('Step-By-Step calculations', { exact: true }).last().click();
     await page.screenshot({ path: testInfo.outputPath(`drug-bag-${width}.png`), fullPage: true });
     if (width < 768) {

@@ -118,17 +118,19 @@
   <div class="drug-grid">
     {#each drugs as drug, index (drug.key)}
       <article class="ui-card ui-card-padding drug-card" aria-label={`Medication ${index + 1}`}>
-        <div class="medication-heading">
+        <div class="field medication-field">
           <label class="ui-label" for={`drugbag-drug-${drug.key}`}>Medication {index + 1}</label>
-          <button class="remove-drug" type="button" disabled={drugs.length === 1} aria-label={`Remove medication ${index + 1}`} on:click={() => drugs = drugs.filter(item => item.key !== drug.key)}>×</button>
+          <div class="medication-controls">
+            <select id={`drugbag-drug-${drug.key}`} class="field-select" bind:value={drug.id} on:change={() => selectDrug(drug)}>
+              <option value="">Select medication</option>
+              <option value={CUSTOM_MEDICATION_ID}>Custom</option>
+              {#each MEDICATIONS as option}
+                <option value={option.id}>{option.name} — {option.concentration.value} {option.concentration.units}</option>
+              {/each}
+            </select>
+            <button class="remove-drug" type="button" disabled={drugs.length === 1} aria-label={`Remove medication ${index + 1}`} on:click={() => drugs = drugs.filter(item => item.key !== drug.key)}>×</button>
+          </div>
         </div>
-        <select id={`drugbag-drug-${drug.key}`} class="field-select" bind:value={drug.id} on:change={() => selectDrug(drug)}>
-          <option value="">Select medication</option>
-          <option value={CUSTOM_MEDICATION_ID}>Custom</option>
-          {#each MEDICATIONS as option}
-            <option value={option.id}>{option.name} — {option.concentration.value} {option.concentration.units}</option>
-          {/each}
-        </select>
         {#if drug.id === CUSTOM_MEDICATION_ID}
           <div class="custom-fields">
             <div class="field">
@@ -141,7 +143,7 @@
             </div>
           </div>
         {/if}
-        <div class="field">
+        <div class="field dose-field">
           <label class="ui-label" for={`drugbag-dose-${drug.key}`}>Dose</label>
           <div class="dose-fields">
             <input id={`drugbag-dose-${drug.key}`} class="field-control" type="number" min="0" step="any" bind:value={drug.dose} inputmode="decimal" placeholder="Dose" />
@@ -207,11 +209,11 @@
   .add-drug { gap: 4px; box-shadow: none; grid-column: 1 / -1; background: #166534; color: #fff; border-color: #15803d; }
   .add-drug > span:first-child { font-size: 20px; line-height: 1; }
   .drug-grid { display: grid; gap: 10px; min-width: 0; }
-  .drug-card { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+  .drug-card { display: grid; gap: 10px; min-width: 0; }
   .dose-fields { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 6px; }
-  .custom-fields { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
-  .medication-heading { position: relative; display: flex; align-items: end; padding-right: 28px; }
-  .remove-drug { position: absolute; right: 0; bottom: -4px; font-size: 20px; line-height: 24px; min-width: 28px; border-radius: 4px; }
+  .custom-fields { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+  .medication-controls { display: grid; grid-template-columns: minmax(0, 1fr) 28px; gap: 6px; }
+  .remove-drug { font-size: 20px; line-height: 24px; border-radius: 4px; }
   .remove-drug:disabled { opacity: 0.35; }
   .results-grid { margin-top: 8px; }
   .draw-result { display: grid; gap: 4px; padding: 8px 10px; overflow-wrap: anywhere; }
@@ -220,27 +222,27 @@
   .calculation-step + .calculation-step { border-top: 1px solid var(--ui-border); padding-top: 6px; }
   .calculation-drug { padding: 4px 0; overflow-wrap: anywhere; }
   .calculation-drug + .calculation-drug { border-top: 1px solid var(--ui-border); }
-  .mode-toggle { display: inline-flex; align-items: center; justify-content: center; gap: 6px; border: 1px solid var(--ui-field-border); border-radius: 9999px; background: var(--ui-field-bg); color: var(--ui-text-200); padding: 4px 8px; font-size: 12px; font-weight: 600; line-height: 16px; }
+  .mode-toggle { width: 190px; white-space: nowrap; display: inline-flex; align-items: center; justify-content: center; gap: 6px; border: 1px solid var(--ui-field-border); border-radius: 9999px; background: var(--ui-field-bg); color: var(--ui-text-200); padding: 4px 8px; font-size: 12px; font-weight: 600; line-height: 16px; }
   .mode-toggle:focus-visible { outline: 2px solid var(--ui-accent-border); outline-offset: 2px; }
-  .settings-controls { grid-column: 1 / -1; display: flex; align-items: end; justify-content: space-between; gap: 8px; flex-wrap: wrap; }
+  .settings-controls { grid-column: 1 / -1; display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: end; gap: 10px; }
   .large-error { font-weight: 700; color: var(--ui-text-100); }
   .toggle-dot { width: 12px; height: 12px; border-radius: 50%; background: #38bdf8; flex: none; }
   .toggle-dot.enabled { background: #f59e0b; }
   .precision-control { border: 0; padding: 0; margin: 0; min-width: 0; font-size: 12px; color: var(--ui-text-200); }
-  .precision-control legend { margin-bottom: 4px; font-weight: 600; }
-  .precision-options { display: flex; border: 1px solid var(--ui-field-border); border-radius: 999px; background: var(--ui-field-bg); padding: 2px; }
+  .precision-control legend { margin-bottom: 6px; font-weight: 600; }
+  .precision-options { width: fit-content; display: flex; border: 1px solid var(--ui-field-border); border-radius: 999px; background: var(--ui-field-bg); padding: 2px; }
   .precision-options label { position: relative; border-radius: 999px; padding: 2px 7px; cursor: pointer; line-height: 16px; }
   .precision-options label.chosen { background: var(--ui-accent-surface); color: var(--ui-text-100); box-shadow: inset 0 0 0 1px var(--ui-accent-border); }
   .precision-options input { position: absolute; opacity: 0; width: 1px; height: 1px; }
   .precision-options label:focus-within { outline: 2px solid var(--ui-accent-border); outline-offset: 2px; }
   @media (max-width: 767px) {
     .settings-controls { display: grid; grid-template-columns: 1fr; gap: 10px; }
-    .precision-control { width: 100%; }
+    .precision-control, .precision-options, .mode-toggle { width: 100%; }
     .precision-options label { flex: 1; min-height: 40px; display: flex; justify-content: center; align-items: center; }
     .mode-toggle, .add-drug { min-height: 44px; }
     .field-control, .field-select { min-height: 44px; font-size: 16px; }
-    .medication-heading { justify-content: space-between; align-items: center; padding-right: 0; }
-    .remove-drug { position: static; min-width: 36px; min-height: 32px; }
+    .medication-controls { grid-template-columns: minmax(0, 1fr) 36px; }
+    .remove-drug { min-height: 44px; }
     .draw-result { grid-template-columns: minmax(0, 1fr) auto; align-items: baseline; gap: 4px 8px; }
     .draw-result .ui-result-value { font-size: 20px; white-space: nowrap; }
     .delivered-result { grid-column: 1 / -1; }
@@ -252,23 +254,19 @@
     .drugbag-layout { grid-template-columns: minmax(0, 0.95fr) minmax(0, 1.05fr); align-items: start; }
     .input-column, .output-column { align-content: start; }
     .drug-grid { grid-template-columns: 1fr; }
-    .drug-card { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); align-items: end; column-gap: 10px; }
-    .drug-card > div:first-child { grid-column: 1; grid-row: 1; }
-    .drug-card > .field { display: contents; }
-    .drug-card > .field > label { grid-column: 2; grid-row: 1; }
-    .dose-fields { grid-column: 2; grid-row: 2; }
+    .drug-card { grid-template-columns: repeat(2, minmax(0, 1fr)); align-items: end; gap: 8px 10px; }
+    .medication-field { grid-column: 1; grid-row: 1; }
+    .dose-field { grid-column: 2; grid-row: 1; }
     .bag-settings { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) auto; }
     .add-drug { grid-column: auto; width: 36px; height: 36px; padding: 6px; }
     .add-label { display: none; }
-    .drug-card > select { grid-column: 1; grid-row: 2; }
-    .drug-card > .field { grid-column: 2; grid-row: 2; }
     .custom-fields { grid-column: 1 / -1; }
     .results-grid { grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); }
     .draw-result { grid-template-rows: auto auto 1fr; gap: 3px; padding: 6px; }
     .drug-card { padding: 6px 8px; }
-    .bag-settings { gap: 6px 10px; padding: 8px 12px; }
+    .bag-settings { gap: 8px 10px; padding: 8px 12px; }
     .input-column { gap: 8px; }
-    .input-column > .drug-grid { gap: 6px; }
+    .input-column > .drug-grid { gap: 8px; }
     .calculation-step:first-child > .ui-formula, .calculation-step:last-child > .ui-formula { display: inline; }
     .draw-result .ui-result-value { font-size: 18px; }
     .delivered-result { grid-column: 1 / -1; }
