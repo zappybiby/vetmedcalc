@@ -83,7 +83,8 @@
   $: active = plan ? activeInputs.map((result, index) => ({ ...result, ...plan!.drugs[index], delivered: plan!.drugs[index].deliveredMgKgHr / factor(result.drug.unit) })) : [];
   $: pumpRate = plan?.rate;
   $: runtime = plan?.hours;
-  $: totalDraw = plan?.totalDraw ?? 0;
+  // Ignore floating-point noise when a sum is already a whole mL.
+  $: removalMl = Math.ceil((plan?.totalDraw ?? 0) - 1e-9);
   const deviation = (value: number) => `${value > 0 ? '+' : ''}${fmt(value, 1)}%`;
 </script>
 
@@ -162,7 +163,7 @@
     <div class="ui-alert border-amber-300/30 bg-amber-950/40 text-amber-100" role="alert">{outcome.error}</div>
   {:else if plan}
     <article class="ui-card ui-card-padding" aria-label="Bag preparation">
-      <div class="ui-instruction">Remove <strong class="ui-statement-value">{volume(totalDraw)} mL</strong> from the bag, then add:</div>
+      <div class="ui-instruction">Remove <strong class="ui-statement-value">{removalMl} mL</strong> from the bag, then add:</div>
       <div class="drug-grid results-grid">
         {#each active as result}
           <div class="ui-inset draw-result">
@@ -196,7 +197,7 @@
           {/each}
         </div>
         <div class="ui-formula">Dose (mg/kg/hr) = draw × stock × rate ÷ bag ÷ weight.</div>
-        <div class="calculation-step"><strong>3. Prepare bag</strong> <div class="ui-formula">Remove {active.map(result => volume(result.draw!)).join(' + ')} = {volume(totalDraw)} mL, then add the drugs.</div></div>
+        <div class="calculation-step"><strong>3. Prepare bag</strong> <div class="ui-formula">Remove {removalMl} mL, then add the drugs.</div></div>
       </div>
     </details>
   {/if}

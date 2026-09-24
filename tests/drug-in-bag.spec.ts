@@ -23,7 +23,7 @@ for (const [width, height] of [[1280, 720], [1366, 768], [1920, 1080], [384, 854
     await page.setViewportSize({ width, height });
     await example(page);
     const prep = page.getByRole('article', { name: 'Bag preparation' });
-    await expect(prep).toContainText('21.15 mL');
+    await expect(prep).toContainText('Remove 22 mL');
     await expect(prep).toContainText('0.14 mL');
     await expect(prep).toContainText('0.01 mL');
     await expect(prep).toContainText('21 mL');
@@ -54,6 +54,7 @@ for (const [width, height] of [[1280, 720], [1366, 768], [1920, 1080], [384, 854
     await page.getByRole('radio', { name: '1 mL/hr', exact: true }).check();
     expect(await formGeometry()).toEqual(beforeToggle);
     await page.getByText('Step-By-Step calculations', { exact: true }).last().click();
+    await expect(page.locator('.calculation-step').last()).toContainText('Remove 22 mL, then add the drugs.');
     await page.screenshot({ path: testInfo.outputPath(`drug-bag-${width}.png`), fullPage: true });
     if (width < 768) {
       // Touch targets and both input modes remain usable at phone widths.
@@ -93,7 +94,7 @@ test('incomplete and invalid cards block the full bag; blank cards, removal and 
   await expect(prep).toBeVisible();
   await page.getByRole('switch', { name: 'Enter pump rate instead of duration' }).click();
   await page.locator('#drugbag-time').fill('10');
-  await expect(prep).toContainText('17.12 mL');
+  await expect(prep).toContainText('Remove 18 mL');
   await expect(prep).toContainText('10 hours');
   await page.locator('#drugbag-time').fill('0');
   await expect(prep).toBeHidden();
@@ -160,7 +161,7 @@ test('MLK precision is an input, defaults to whole rates, and clean results have
   await page.getByRole('radio', { name: '0.1 mL/hr', exact: true }).check();
   await expect(prep).toContainText('40.4 mL/hr');
   await expect(prep).toContainText('12.4 hours');
-  await expect(prep).toContainText('40.5 mL');
+  await expect(prep).toContainText('Remove 41 mL');
   await expect(prep).toContainText('Delivers 10.1 mcg/kg/min');
   await expect(prep).not.toContainText('exceeds');
   await page.screenshot({ path: testInfo.outputPath('mlk-light.png'), fullPage: true });
