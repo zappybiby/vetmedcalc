@@ -9,7 +9,7 @@ const mlk = {
     { doseMgKgHr: 0.6, concentrationMgMl: 100 },
   ],
 };
-const timing = { mode: 'duration' as const, durationHr: 12, earlyMinutes: 10, lateMinutes: 30 };
+const timing = { mode: 'duration' as const, durationHr: 12 };
 
 test('MLK reaches 12 hours with each dose within 1%; whole rates minimize the worst error', () => {
   const precise = optimizeDrugBag({ ...mlk, ...timing }).plan!;
@@ -31,11 +31,11 @@ test('entered rate is locked and volumes are recalculated at its pump setting', 
   expect(plan.drugs[1].deliveredMgKgHr).toBeCloseTo(2.9781818);
 });
 
-test('runtime bounds apply before displaying rounded hours; timing can be adjusted', () => {
-  const rejected = optimizeDrugBag({ ...mlk, ...timing, increment: 1, earlyMinutes: 0, lateMinutes: 0 });
+test('runtime bounds apply before displaying rounded hours; timing remains fixed', () => {
+  const rejected = optimizeDrugBag({ ...mlk, ...timing, increment: 1, bagMl: 10 });
   expect(rejected.plan).toBeNull();
   expect(rejected.error).toContain('No pump rate');
-  const onTime = optimizeDrugBag({ ...mlk, ...timing, increment: 1, durationHr: 12.5, earlyMinutes: 0, lateMinutes: 0 }).plan!;
+  const onTime = optimizeDrugBag({ ...mlk, ...timing, increment: 1, durationHr: 12.5 }).plan!;
   expect(onTime.rate).toBe(40);
   expect(onTime.hours).toBe(12.5);
   for (const bagMl of [100, 500, 1000]) {
@@ -58,6 +58,6 @@ test('no hidden zero-dose preparations, zero rates, overfilled bags, or unbounde
   expect(tiny.worstErrorPct).toBeGreaterThan(5);
   expect(optimizeDrugBag({ ...mlk, mode: 'rate', rateMlHr: 0.4, increment: 1 }).error).toContain('below');
   expect(optimizeDrugBag({ ...mlk, mode: 'rate', rateMlHr: 1 }).error).toContain('capacity');
-  expect(optimizeDrugBag({ ...mlk, ...timing, earlyMinutes: 720 }).plan).toBeNull();
+  expect(optimizeDrugBag({ ...mlk, ...timing, durationHr: 0.1 }).plan).toBeNull();
   expect(optimizeDrugBag({ ...mlk, ...timing, bagMl: 1e10 }).error).toContain('range');
 });

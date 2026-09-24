@@ -24,8 +24,6 @@
   let rate: Input = '';
   let mode: 'duration' | 'rate' = 'duration';
   let rateIncrement: 1 | 0.1 = 1;
-  let earlyMinutes: Input = 10;
-  let lateMinutes: Input = 30;
   $: if (drugs.length && drugs.every(drug => drug.id !== '' && positive(drug.dose) && (drug.id !== CUSTOM_MEDICATION_ID || positive(drug.concentration)))) {
     drugs = [...drugs, blankDrug()];
   }
@@ -78,7 +76,7 @@
     weightKg: $patient.weightKg!, bagMl: Number(bagVolumeMl), increment: rateIncrement,
     drugs: activeInputs.map(result => ({ doseMgKgHr: Number(result.drug.dose) * factor(result.drug.unit), concentrationMgMl: Number(result.concentration) })),
     ...(mode === 'duration'
-      ? { mode: 'duration' as const, durationHr: Number(duration), earlyMinutes: earlyMinutes === '' || earlyMinutes == null ? NaN : earlyMinutes, lateMinutes: lateMinutes === '' || lateMinutes == null ? NaN : lateMinutes }
+      ? { mode: 'duration' as const, durationHr: Number(duration) }
       : { mode: 'rate' as const, rateMlHr: Number(rate) }),
   }) : null;
   $: plan = outcome?.plan;
@@ -103,7 +101,7 @@
     <button class="mode-toggle" type="button" role="switch" aria-label="Enter pump rate instead of duration" aria-checked={mode === 'rate'} on:click={() => mode = mode === 'duration' ? 'rate' : 'duration'}><span class="toggle-dot" class:enabled={mode === 'rate'} aria-hidden="true"></span>Change to {mode === 'duration' ? 'Rate' : 'Duration'} Mode</button>
     </div>
     <div class="field">
-      <label class="ui-label" for="drugbag-bag">Final bag volume <span class="normal-case">(mL)</span></label>
+      <label class="ui-label" for="drugbag-bag">Volume <span class="normal-case">(mL)</span></label>
       <input id="drugbag-bag" class="field-control" type="number" min="0" step="any" bind:value={bagVolumeMl} inputmode="decimal" placeholder="100 mL" />
     </div>
     <div class="field">
@@ -115,15 +113,6 @@
       {/if}
     </div>
     <button class="ui-button add-drug" aria-label="Add medication" title="Add medication" type="button" on:click={addDrug}><span aria-hidden="true">+</span><span class="add-label">Add medication</span></button>
-    {#if mode === 'duration'}
-      <details class="timing-settings">
-        <summary>Timing allowance: −{earlyMinutes} / +{lateMinutes} min</summary>
-        <div class="custom-fields">
-          <div class="field"><label class="ui-label" for="drugbag-early">Earlier (min)</label><input id="drugbag-early" class="field-control" type="number" min="0" step="1" bind:value={earlyMinutes} /></div>
-          <div class="field"><label class="ui-label" for="drugbag-late">Later (min)</label><input id="drugbag-late" class="field-control" type="number" min="0" step="1" bind:value={lateMinutes} /></div>
-        </div>
-      </details>
-    {/if}
   </article>
 
   <div class="drug-grid">
@@ -234,9 +223,6 @@
   .mode-toggle { display: inline-flex; align-items: center; justify-content: center; gap: 6px; border: 1px solid var(--ui-field-border); border-radius: 9999px; background: var(--ui-field-bg); color: var(--ui-text-200); padding: 4px 8px; font-size: 12px; font-weight: 600; line-height: 16px; }
   .mode-toggle:focus-visible { outline: 2px solid var(--ui-accent-border); outline-offset: 2px; }
   .settings-controls { grid-column: 1 / -1; display: flex; align-items: end; justify-content: space-between; gap: 8px; flex-wrap: wrap; }
-  .timing-settings { grid-column: 1 / -1; color: var(--ui-text-400); font-size: 12px; }
-  .timing-settings summary { cursor: pointer; }
-  .timing-settings .custom-fields { margin-top: 8px; }
   .large-error { font-weight: 700; color: var(--ui-text-100); }
   .toggle-dot { width: 12px; height: 12px; border-radius: 50%; background: #38bdf8; flex: none; }
   .toggle-dot.enabled { background: #f59e0b; }
@@ -247,6 +233,21 @@
   .precision-options label.chosen { background: var(--ui-accent-surface); color: var(--ui-text-100); box-shadow: inset 0 0 0 1px var(--ui-accent-border); }
   .precision-options input { position: absolute; opacity: 0; width: 1px; height: 1px; }
   .precision-options label:focus-within { outline: 2px solid var(--ui-accent-border); outline-offset: 2px; }
+  @media (max-width: 767px) {
+    .settings-controls { display: grid; grid-template-columns: 1fr; gap: 10px; }
+    .precision-control { width: 100%; }
+    .precision-options label { flex: 1; min-height: 40px; display: flex; justify-content: center; align-items: center; }
+    .mode-toggle, .add-drug { min-height: 44px; }
+    .field-control, .field-select { min-height: 44px; font-size: 16px; }
+    .medication-heading { justify-content: space-between; align-items: center; padding-right: 0; }
+    .remove-drug { position: static; min-width: 36px; min-height: 32px; }
+    .draw-result { grid-template-columns: minmax(0, 1fr) auto; align-items: baseline; gap: 4px 8px; }
+    .draw-result .ui-result-value { font-size: 20px; white-space: nowrap; }
+    .delivered-result { grid-column: 1 / -1; }
+  }
+  @media (max-width: 399px) {
+    .custom-fields { grid-template-columns: 1fr; }
+  }
   @media (min-width: 1024px) {
     .drugbag-layout { grid-template-columns: minmax(0, 0.95fr) minmax(0, 1.05fr); align-items: start; }
     .input-column, .output-column { align-content: start; }

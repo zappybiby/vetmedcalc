@@ -18,7 +18,7 @@ async function example(page: Page) {
   await page.locator('#drugbag-dose-2').fill('25');
 }
 
-for (const [width, height] of [[1280, 720], [1366, 768], [1920, 1080], [384, 854], [320, 740]]) {
+for (const [width, height] of [[1280, 720], [1366, 768], [1920, 1080], [384, 854], [320, 740], [412, 915], [768, 1024]]) {
   test(`three medications and expanded calculations at ${width}x${height}`, async ({ page }, testInfo) => {
     await page.setViewportSize({ width, height });
     await example(page);
@@ -35,6 +35,19 @@ for (const [width, height] of [[1280, 720], [1366, 768], [1920, 1080], [384, 854
     await expect(page.locator('#drugbag-drug-3')).toBeVisible();
     await page.getByText('Step-By-Step calculations', { exact: true }).last().click();
     await page.screenshot({ path: testInfo.outputPath(`drug-bag-${width}.png`), fullPage: true });
+    if (width < 768) {
+      // Touch targets and both input modes remain usable at phone widths.
+      for (const selector of ['.precision-options label', '.mode-toggle', '.add-drug', '.field-control', '.field-select']) {
+        const heights = await page.locator(`[aria-label="Drug in bag calculator"] ${selector}`).evaluateAll(elements => elements.map(e => e.getBoundingClientRect().height));
+        expect(Math.min(...heights)).toBeGreaterThanOrEqual(40);
+      }
+      await page.getByRole('switch', { name: 'Enter pump rate instead of duration' }).click();
+      await page.locator('#drugbag-time').fill('8.3');
+      await page.getByRole('radio', { name: '0.1 mL/hr', exact: true }).check();
+      await expect(prep).toContainText('8.3 mL/hr');
+      await page.evaluate(() => document.documentElement.dataset.theme = 'light');
+      await page.screenshot({ path: testInfo.outputPath(`drug-bag-rate-light-${width}.png`), fullPage: true });
+    }
     const bounds = await page.evaluate(() => ({
       width: document.documentElement.scrollWidth,
       height: document.documentElement.scrollHeight,
@@ -132,9 +145,7 @@ test('MLK precision is an input, defaults to whole rates, and clean results have
   await expect(prep).not.toContainText('exceeds');
   await page.screenshot({ path: testInfo.outputPath('mlk-light.png'), fullPage: true });
   await expect(page.getByRole('region', { name: 'Drug in bag calculator' })).not.toContainText(/verify|compatibility|stability|unrounded/i);
-  await page.getByText('Timing allowance:', { exact: false }).click();
-  await page.getByLabel('Earlier (min)').fill('0');
-  await page.getByLabel('Later (min)').fill('0');
-  await expect(prep).toBeHidden();
-  await expect(page.getByRole('alert')).toContainText('No pump rate');
+  await expect(page.getByLabel('Earlier (min)')).toHaveCount(0);
+  await expect(page.getByLabel('Later (min)')).toHaveCount(0);
+  await expect(page.getByText('Timing allowance:', { exact: false })).toHaveCount(0);
 });

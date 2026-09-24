@@ -2,6 +2,8 @@ import { SYRINGES } from '../definitions/syringes';
 
 export const DOSE_TARGET_PCT = 1;
 export const DOSE_REVIEW_PCT = 5;
+const EARLY_MINUTES = 10;
+const LATE_MINUTES = 30;
 const EPS = 1e-9;
 
 type DrugInput = { doseMgKgHr: number; concentrationMgMl: number };
@@ -11,7 +13,7 @@ type Input = {
   drugs: DrugInput[];
   increment: 1 | 0.1;
 } & ({ mode: 'rate'; rateMlHr: number } | {
-  mode: 'duration'; durationHr: number; earlyMinutes: number; lateMinutes: number;
+  mode: 'duration'; durationHr: number;
 });
 
 function prepare(input: Input, rate: number) {
@@ -71,18 +73,17 @@ export function optimizeDrugBag(input: Input): BagOutcome {
     firstTick = lastTick = Math.round(input.rateMlHr * scale);
     if (firstTick === 0) return { plan: null, error: 'Rate is below the selected pump increment.' };
   } else {
-    const { durationHr, earlyMinutes, lateMinutes } = input;
-    if (!positive(durationHr) || !Number.isFinite(earlyMinutes) || !Number.isFinite(lateMinutes)
-      || earlyMinutes < 0 || lateMinutes < 0 || earlyMinutes >= durationHr * 60) {
-      return { plan: null, error: 'Early allowance must be shorter than the duration.' };
+    const { durationHr } = input;
+    if (!positive(durationHr) || EARLY_MINUTES >= durationHr * 60) {
+      return { plan: null, error: 'For durations of 10 minutes or less, enter a pump rate.' };
     }
-    firstTick = Math.max(1, Math.ceil(input.bagMl / (durationHr + lateMinutes / 60) * scale - EPS));
-    lastTick = Math.floor(input.bagMl / (durationHr - earlyMinutes / 60) * scale + EPS);
-    if (lastTick < firstTick) return { plan: null, error: 'No pump rate fits the timing allowance. Change precision or allowance.' };
+    firstTick = Math.max(1, Math.ceil(input.bagMl / (durationHr + LATE_MINUTES / 60) * scale - EPS));
+    lastTick = Math.floor(input.bagMl / (durationHr - EARLY_MINUTES / 60) * scale + EPS);
+    if (lastTick < firstTick) return { plan: null, error: 'No pump rate fits the timing allowance. Change pump precision or enter a rate.' };
   }
   // Reject extreme inputs rather than blocking the UI or silently sampling the search.
   if (!Number.isSafeInteger(firstTick) || !Number.isSafeInteger(lastTick) || lastTick - firstTick > 100_000) {
-    return { plan: null, error: 'Rate range is too large. Narrow the timing allowance or enter a rate.' };
+    return { plan: null, error: 'Rate range is too large. Enter a pump rate instead.' };
   }
   let best: BagPlan | null = null;
   for (let tick = firstTick; tick <= lastTick; tick++) {
