@@ -1,4 +1,5 @@
 <script lang="ts">
+  import ToolDisclosure from './ToolDisclosure.svelte';
   import { calculateRERPlan, type RERPlan } from '../helpers/rer';
   import { patient, type Patient } from '../stores/patient';
 
@@ -78,9 +79,6 @@
   $: {
     const next: string[] = [];
 
-    if (weightKg == null) {
-      next.push('Enter a patient weight to calculate RER.');
-    }
     if (kcalPerMlValue != null && kcalPerMlValue <= 0) {
       next.push('kcal per mL must be greater than 0.');
     }
@@ -136,7 +134,7 @@
 <section class="ui-tool-stack text-slate-200" aria-label="Tube Feeding">
   <div class="ui-tool-stack">
     <div class="ui-card min-w-0 ui-card-padding">
-      <div class="grid items-end gap-2 min-[360px]:grid-cols-2 sm:gap-3 md:grid-cols-2 xl:grid-cols-3">
+      <div class="ui-inputs-three grid items-end gap-2 min-[360px]:grid-cols-2 sm:gap-3 md:grid-cols-2 xl:grid-cols-3">
         <label class="grid gap-1.5">
           <span class="ui-label">Diet density <span class="normal-case">(kcal/mL)</span></span>
           <input
@@ -177,7 +175,7 @@
         </label>
       </div>
 
-      <div class="mt-2 ui-meta sm:mt-3">
+      <div class="feeding-setup-note mt-2 ui-meta sm:mt-3">
         RER = 70 x kg^0.75, then target kcal/day = RER x factor.
       </div>
 
@@ -191,7 +189,7 @@
     </div>
 
     {#if plan}
-      <div class="ui-tool-stack">
+      <div class="ui-tool-stack md:grid-cols-[minmax(0,0.8fr)_minmax(0,1.2fr)]">
         <div class="ui-card ui-card-padding">
           <div class="ui-label-strong">Give every {fmtCompact(plan.intervalHours)} <span class="normal-case">hr</span></div>
           <div class="ui-result-value mt-1.5">{fmtWhole(plan.mlPerInterval)} mL</div>
@@ -226,20 +224,8 @@
           </div>
       </div>
 
-      <details class="group ui-card overflow-hidden">
-        <summary class="ui-summary ui-card-padding flex cursor-pointer items-center justify-between gap-3">
-          <div class="ui-section-title">Calculation summary</div>
-          <svg class="h-5 w-5 flex-none text-slate-400 transition group-open:rotate-180" viewBox="0 0 20 20" aria-hidden="true">
-            <path
-              fill="currentColor"
-              fill-rule="evenodd"
-              d="M5.23 7.21a.75.75 0 011.06.02L10 11.173l3.71-3.94a.75.75 0 011.08 1.04l-4.24 4.5a.75.75 0 01-1.08 0l-4.24-4.5a.75.75 0 01.02-1.06z"
-              clip-rule="evenodd"
-            />
-          </svg>
-        </summary>
-
-        <div class="border-t ui-rule ui-card-padding">
+    <ToolDisclosure title="Calculation summary">
+      <div>
           <div class="grid gap-2">
             {#each calculationRows as row}
               <div class="ui-inset grid gap-1.5 px-2.5 py-2 sm:px-3 lg:grid-cols-[168px_minmax(0,1fr)] lg:items-center lg:gap-3 lg:py-1.5">
@@ -263,7 +249,13 @@
             {/each}
           </div>
         </div>
-      </details>
+    </ToolDisclosure>
     {/if}
   </div>
 </section>
+
+<style>
+  @media (min-width: 1024px) {
+    .feeding-setup-note { max-width: 38rem; margin-inline: auto; }
+  }
+</style>

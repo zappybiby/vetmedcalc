@@ -18,7 +18,7 @@
 </script>
 
 <aside
-  class="ui-panel ui-panel-contrast mx-auto w-full max-w-[360px] min-w-0 p-2 text-slate-100 sm:max-w-[390px] sm:p-2.5"
+  class="patient-panel ui-panel ui-panel-contrast mx-auto w-full max-w-[360px] min-w-0 p-2 text-slate-100 sm:max-w-[390px] sm:p-2.5 lg:max-w-[280px]"
   aria-label="Patient weight"
 >
   <label class="patient-weight-field grid min-w-0 gap-1.5">
@@ -36,6 +36,11 @@
 </aside>
 
 <style>
+  @media (max-width: 767px) {
+    .patient-panel { padding: 6px 8px; }
+    .patient-weight-field { grid-template-columns: auto minmax(0, 1fr); align-items: center; gap: 12px; }
+    .patient-panel .patient-weight-input { min-height: 40px; height: 40px; padding-block: 4px; font-size: 20px; }
+  }
   .patient-weight-input {
     min-height: 3rem;
     padding-top: 0.5rem;

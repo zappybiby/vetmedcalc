@@ -9,6 +9,7 @@ import type { SyringeDef } from '../definitions/types';
 
 export type KPhosMode = 'bag' | 'cri';
 export type KPhosKTargetBasis = 'added' | 'total';
+export type KPhosPhosTargetBasis = 'added' | 'total';
 export type KPhosCriRateIssue = 'below-stock-rate' | 'diluent-exceeds-phos-target';
 
 export const KPHOS_EXCESS_WARNING_FRACTION = 0.15;
@@ -36,6 +37,7 @@ export type KPhosPlanInput = {
   mainBagVolumeMl: number | null;
   mainFluidRateMlHr: number | null;
   phosTargetMmolKgHr: number | null;
+  phosTargetBasis?: KPhosPhosTargetBasis;
   kTargetBasis: KPhosKTargetBasis;
   kTargetMeqPerL: number | null;
   criDurationHr: number | null;
@@ -83,6 +85,7 @@ export type KPhosPlan = {
   finalMainBagPhosMmolPerL: number | null;
   totalKDeliveryMeqKgHr: number | null;
   totalPhosDeliveryMmolKgHr: number | null;
+  selectedPhosDeliveryMmolKgHr: number | null;
   combinedEquivalentKMeqPerL: number | null;
   combinedEquivalentPhosMmolPerL: number | null;
   kTargetExcessMeqPerL: number | null;
@@ -191,6 +194,7 @@ function snapCriMixture(
 }
 
 export function calculateKPhosPlan(input: KPhosPlanInput): KPhosPlan {
+  const includeNativePhos = input.phosTargetBasis !== 'added';
   const hasPhosTarget = input.phosTargetMmolKgHr != null;
   const weightKg = positive(input.weightKg);
   const mainBagVolumeMl = positive(input.mainBagVolumeMl);
@@ -226,7 +230,7 @@ export function calculateKPhosPlan(input: KPhosPlanInput): KPhosPlan {
   if (!hasPhosTarget) {
     idealKPhosStockRateMlHr = 0;
   } else if (phosTarget != null && weightKg != null && mainNativePhosDeliveryMmolKgHr != null) {
-    const remainingPhosMmolHr = Math.max(0, phosTarget - mainNativePhosDeliveryMmolKgHr) * weightKg;
+    const remainingPhosMmolHr = Math.max(0, phosTarget - (includeNativePhos ? mainNativePhosDeliveryMmolKgHr : 0)) * weightKg;
 
     if (input.mode === 'bag') {
       idealKPhosStockRateMlHr = remainingPhosMmolHr / KPHOS_PHOS_MMOL_PER_ML;
@@ -236,7 +240,7 @@ export function calculateKPhosPlan(input: KPhosPlanInput): KPhosPlan {
       criPumpRateMlHr = 0;
       criRequestedRateFeasible = requestedCriRateMlHr == null ? null : true;
     } else if (requestedCriRateMlHr != null) {
-      const diluentPhosMmolPerMl = input.criDiluentFluid.nativePhosMmolPerL / 1000;
+      const diluentPhosMmolPerMl = includeNativePhos ? input.criDiluentFluid.nativePhosMmolPerL / 1000 : 0;
       const stockPhosMmolPerMl = KPHOS_PHOS_MMOL_PER_ML;
       const requiredStockRate = (remainingPhosMmolHr - diluentPhosMmolPerMl * requestedCriRateMlHr) /
         (stockPhosMmolPerMl - diluentPhosMmolPerMl);
@@ -310,7 +314,7 @@ export function calculateKPhosPlan(input: KPhosPlanInput): KPhosPlan {
         const snapped = snapCriMixture(
           kPhosRawStockMl,
           criRawDiluentVolumeMl,
-          input.criDiluentFluid.nativePhosMmolPerL / 1000,
+          includeNativePhos ? input.criDiluentFluid.nativePhosMmolPerL / 1000 : 0,
         );
         kPhosDraw = snapped.stockDraw;
         criDiluentDraw = snapped.diluentDraw;
@@ -437,8 +441,9 @@ export function calculateKPhosPlan(input: KPhosPlanInput): KPhosPlan {
     ? selectedKActualMeqPerL - kTarget
     : null;
 
-  const phosTargetExcessMmolKgHr = phosTarget != null && totalPhosDeliveryMmolKgHr != null && totalPhosDeliveryMmolKgHr > phosTarget
-    ? totalPhosDeliveryMmolKgHr - phosTarget
+  const selectedPhosDeliveryMmolKgHr = includeNativePhos ? totalPhosDeliveryMmolKgHr : kPhosPhosDeliveryMmolKgHr;
+  const phosTargetExcessMmolKgHr = phosTarget != null && selectedPhosDeliveryMmolKgHr != null && selectedPhosDeliveryMmolKgHr > phosTarget
+    ? selectedPhosDeliveryMmolKgHr - phosTarget
     : null;
 
   return {
@@ -482,12 +487,13 @@ export function calculateKPhosPlan(input: KPhosPlanInput): KPhosPlan {
     finalMainBagPhosMmolPerL,
     totalKDeliveryMeqKgHr,
     totalPhosDeliveryMmolKgHr,
+    selectedPhosDeliveryMmolKgHr,
     combinedEquivalentKMeqPerL,
     combinedEquivalentPhosMmolPerL,
     kTargetExcessMeqPerL: rawKClAddedMeqPerL != null && rawKClAddedMeqPerL < 0
       ? Math.abs(rawKClAddedMeqPerL)
       : null,
-    fluidsMeetPhosTarget: hasPhosTarget && kPhosStockRateMlHr === 0,
+    fluidsMeetPhosTarget: includeNativePhos && hasPhosTarget && kPhosStockRateMlHr === 0,
     phosTargetExcessMmolKgHr,
   };
 }

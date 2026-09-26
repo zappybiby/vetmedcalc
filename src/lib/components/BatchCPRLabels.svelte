@@ -186,8 +186,8 @@
   </header>
 
   <div class="ui-card ui-tool-stack ui-card-padding">
-    <div class="grid gap-2">
-      <div class="grid grid-cols-[2fr_1fr_1fr] gap-3 ui-label">
+    <div class="batch-inputs grid gap-2">
+      <div class="hidden sm:grid grid-cols-[2fr_1fr_1fr] gap-3 ui-label">
         <span>Patient Name</span>
         <span>Species</span>
         <span>Weight <span class="normal-case">(kg)</span></span>
@@ -195,10 +195,13 @@
 
       <div class="grid gap-2">
         {#each rows as row, index (row.id)}
-          <div class="grid grid-cols-[2fr_1fr_1fr] items-center gap-3">
+          <div class="batch-patient-row grid grid-cols-2 sm:grid-cols-[2fr_1fr_1fr] items-end gap-3">
+            <label class="ui-field col-span-2 sm:col-span-1">
+            <span class="ui-label sm:sr-only">Patient name</span>
             <input
               class="field-control"
               type="text"
+              aria-label={`Patient ${index + 1} name`}
               placeholder="Patient name"
               autocomplete="off"
               spellcheck={false}
@@ -209,8 +212,12 @@
               on:keydown={(event) => handleKeyNav(event, index, 0)}
             />
 
+            </label>
+            <label class="ui-field">
+            <span class="ui-label sm:sr-only">Species</span>
             <select
               class="field-select"
+              aria-label={`Patient ${index + 1} species`}
               data-row={index}
               data-field={1}
               value={row.species}
@@ -222,10 +229,14 @@
                 <option value={option.value}>{option.label}</option>
               {/each}
             </select>
+            </label>
 
+            <label class="ui-field">
+            <span class="ui-label sm:sr-only">Weight <span class="normal-case">(kg)</span></span>
             <input
               class="field-control"
               type="number"
+              aria-label={`Patient ${index + 1} weight (kg)`}
               min="0"
               step="0.1"
               inputmode="decimal"
@@ -236,6 +247,7 @@
               on:input={(event) => updateRow(index, 'weight', event.currentTarget.value)}
               on:keydown={(event) => handleKeyNav(event, index, 2)}
             />
+            </label>
           </div>
         {/each}
       </div>
@@ -248,3 +260,12 @@
     </div>
   </div>
 </section>
+
+<style>
+  @media (min-width: 1024px) {
+    .batch-inputs { width: 100%; max-width: 40rem; margin-inline: auto; }
+  }
+  @media (max-width: 639px) {
+    .batch-patient-row + .batch-patient-row { border-top: 1px solid var(--ui-result-divider); padding-top: 12px; }
+  }
+</style>

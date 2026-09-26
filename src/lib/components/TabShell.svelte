@@ -23,6 +23,10 @@
   ];
 
   let active: Tab['id'] = 'cri';
+  const desktopWidths: Record<string, string> = {
+    cri: '56rem', drugbag: '65rem', insouts: '38rem', rer: '50rem',
+    food: '65rem', kphos: '65rem', blood: '50rem', cpr: '36rem',
+  };
 
   function selectTab(id: Tab['id']) {
     if (active === 'cpr' && id !== 'cpr' && $cprBatchMode) {
@@ -63,7 +67,8 @@
   {/if}
 
   <div
-    class="mx-auto w-full max-w-[1040px] min-w-0 overflow-x-auto"
+    class="tool-panel mx-auto w-full max-w-[1040px] min-w-0 overflow-x-auto"
+    style:--desktop-tool-width={active === 'cpr' && $cprBatchMode ? '44rem' : desktopWidths[active]}
     role="tabpanel"
   >
     <div hidden={active !== 'cri'}>
@@ -92,3 +97,9 @@
     </div>
   </div>
 </section>
+
+<style>
+  @media (min-width: 1024px) {
+    .tool-panel { max-width: var(--desktop-tool-width); }
+  }
+</style>

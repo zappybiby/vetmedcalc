@@ -1,4 +1,5 @@
 <script lang="ts">
+  import ToolDisclosure from './ToolDisclosure.svelte';
   import {
     buildBloodTransfusionPlan,
     type BloodTransfusionPlan,
@@ -73,7 +74,7 @@
 <section class="ui-tool-stack text-slate-200" aria-label="Blood transfusion planner">
   <div class="grid min-w-0 gap-2 sm:gap-3">
     <div class="ui-card min-w-0 ui-card-padding">
-      <div class="grid gap-2 min-[360px]:grid-cols-2 sm:gap-3">
+      <div class="ui-inputs-two grid gap-2 min-[360px]:grid-cols-2 sm:gap-3">
         <label class="grid gap-1.5">
           <span class="ui-label">Total volume <span class="normal-case">(mL)</span></span>
           <input
@@ -109,7 +110,7 @@
         </div>
       {/if}
 
-      <div class="mt-2 ui-meta">
+      <div class="blood-setup-note mt-2 ui-meta">
         First hour ramps at 20/40/60/80% of the final rate, then continues at the final rate.
       </div>
     </div>
@@ -118,8 +119,8 @@
       <div class="ui-card min-w-0 ui-card-padding">
         <h3 class="ui-section-title">Step-by-step plan</h3>
         {#if plan}
-          <div class="mt-2 overflow-x-auto sm:mt-3">
-            <table class="min-w-full text-[12px] sm:text-sm">
+          <div class="mt-2 sm:mt-3">
+            <table class="blood-schedule w-full text-[12px] sm:text-sm">
               <thead class="ui-label">
                 <tr class="border-b ui-rule">
                   <th class="px-1.5 py-1.5 text-left sm:px-3 sm:py-2">Interval</th>
@@ -132,9 +133,9 @@
                 {#each plan.steps as step}
                   <tr class="text-slate-200">
                     <td class="px-1.5 py-1.5 font-semibold text-slate-100 sm:px-3 sm:py-2">{intervalLabel(step)}</td>
-                    <td class="px-1.5 py-1.5 text-right tabular-nums sm:px-3 sm:py-2">{fmt(step.rateMlHr, 0)}</td>
-                    <td class="px-1.5 py-1.5 text-right tabular-nums sm:px-3 sm:py-2">{fmt(step.volumeMl, 2)}</td>
-                    <td class="px-1.5 py-1.5 text-right tabular-nums sm:px-3 sm:py-2">{fmt(step.cumulativeMl, 2)}</td>
+                    <td data-label="Rate (mL/hr)" class="px-1.5 py-1.5 text-right tabular-nums sm:px-3 sm:py-2">{fmt(step.rateMlHr, 0)}</td>
+                    <td data-label="Volume (mL)" class="px-1.5 py-1.5 text-right tabular-nums sm:px-3 sm:py-2">{fmt(step.volumeMl, 2)}</td>
+                    <td data-label="Cumulative (mL)" class="px-1.5 py-1.5 text-right tabular-nums sm:px-3 sm:py-2">{fmt(step.cumulativeMl, 2)}</td>
                   </tr>
                 {/each}
               </tbody>
@@ -145,31 +146,8 @@
         {/if}
       </div>
 
-      <div class="ui-card min-w-0 ui-card-padding">
-        <h2 class="ui-section-title">
-          <button
-            type="button"
-            class="ui-section-title flex w-full items-center justify-between text-left"
-            aria-expanded={summaryOpen}
-            aria-controls="blood-transfusion-summary"
-            on:click={() => (summaryOpen = !summaryOpen)}
-          >
-            <span>Summary</span>
-            <svg
-              viewBox="0 0 20 20"
-              fill="currentColor"
-              aria-hidden="true"
-              class={`h-4 w-4 text-slate-300 transition-transform duration-200 ${summaryOpen ? 'rotate-90' : ''}`}
-            >
-              <path
-                fill-rule="evenodd"
-                clip-rule="evenodd"
-                d="M7.21 14.79a.75.75 0 0 1 0-1.06L10.94 10 7.21 6.27a.75.75 0 1 1 1.06-1.06l4.25 4.25a.75.75 0 0 1 0 1.06l-4.25 4.25a.75.75 0 0 1-1.06 0Z"
-              />
-            </svg>
-          </button>
-        </h2>
-        <div id="blood-transfusion-summary" class={summaryOpen ? 'mt-2' : 'mt-2 hidden'}>
+      <ToolDisclosure title="Summary" bind:open={summaryOpen}>
+        <div id="blood-transfusion-summary">
           {#if plan}
             <div class="grid gap-2 text-sm md:grid-cols-2 md:gap-x-6">
               <div class="grid grid-cols-[minmax(0,1fr)_auto] items-baseline gap-2">
@@ -204,7 +182,23 @@
             <div class="text-sm text-slate-400">Enter a total volume and a total time greater than 1 hour.</div>
           {/if}
         </div>
-      </div>
+      </ToolDisclosure>
     {/if}
   </div>
 </section>
+
+<style>
+  @media (min-width: 1024px) {
+    .blood-setup-note { text-align: center; }
+  }
+  @media (max-width: 639px) {
+    .blood-schedule, .blood-schedule tbody { display: block; }
+    .blood-schedule thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+    .blood-schedule tbody tr { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px 8px; padding-block: 8px; }
+    .blood-schedule tbody tr + tr { padding-top: 14px; }
+    .blood-schedule td { min-width: 0; padding: 0; }
+    .blood-schedule td:first-child { grid-column: 1 / -1; text-align: left; font-size: 14px; }
+    .blood-schedule td[data-label] { display: flex; flex-direction: column; align-items: flex-start; gap: 2px; font-size: 14px; font-weight: 700; text-align: left; }
+    .blood-schedule td[data-label]::before { content: attr(data-label); color: var(--ui-text-400); font-size: 10px; font-weight: 400; }
+  }
+</style>

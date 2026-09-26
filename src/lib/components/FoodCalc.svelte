@@ -1,4 +1,5 @@
 <script lang="ts">
+  import SegmentedToggle from './SegmentedToggle.svelte';
   import { PET_FOOD_CANS } from '@defs';
   import type { PetFoodCanDef, Species } from '@defs';
   import { buildFoodFeedingPlan, formatCanPortion, type FoodFeedingPlan } from '../helpers/food';
@@ -7,10 +8,6 @@
   const DEFAULT_INTERVAL_HOURS = 6;
   const DEFAULT_RER_FACTOR = 1.0;
 
-  const speciesOptions: readonly { value: Species; label: string }[] = [
-    { value: 'dog', label: 'Dog' },
-    { value: 'cat', label: 'Cat' },
-  ];
 
   let p: Patient = { weightKg: null, species: '', name: '' };
   $: p = $patient;
@@ -122,9 +119,6 @@
   $: {
     const next: string[] = [];
 
-    if (weightKg == null) {
-      next.push('Enter a patient weight to calculate calories.');
-    }
     if (rerFactorValue != null && rerFactorValue <= 0) {
       next.push('RER factor must be greater than 0.');
     }
@@ -182,22 +176,11 @@
 
 <section class="ui-tool-stack text-slate-200" aria-label="Food calculator">
   <div class="ui-card min-w-0 overflow-hidden">
-    <div class="ui-card-padding">
-      <div class="grid grid-cols-2 items-end gap-2 sm:gap-3 md:grid-cols-4">
+    <div class="food-setup ui-card-padding">
+      <div class="ui-inputs-four grid grid-cols-2 items-end gap-2 sm:gap-3 md:grid-cols-4">
         <div class="grid min-w-0 gap-1.5">
           <div class="ui-label" id="food-species-label">Species</div>
-          <div class="grid min-w-0 grid-cols-2 gap-1.5" role="group" aria-labelledby="food-species-label">
-            {#each speciesOptions as option (option.value)}
-              <button
-                type="button"
-                class="ui-choice"
-                aria-pressed={selectedSpecies === option.value}
-                on:click={() => selectSpecies(option.value)}
-              >
-                {option.label}
-              </button>
-            {/each}
-          </div>
+          <SegmentedToggle label="Species" first="Dog" second="Cat" secondSelected={selectedSpecies === 'cat'} onToggle={cat => selectSpecies(cat ? 'cat' : 'dog')} />
         </div>
 
         <label class="grid gap-1.5">
@@ -261,7 +244,8 @@
         <label class="mt-2 grid gap-1.5">
           <span class="ui-label">Feeding note</span>
           <textarea
-            class="field-control min-h-32 resize-y text-sm leading-relaxed"
+            class="field-control food-note"
+            rows="2"
             readonly
             value={fallbackNote}
             on:focus={(event) => event.currentTarget.select()}
@@ -307,7 +291,7 @@
               <td class="food-copy-cell">
                 <button
                   type="button"
-                  class="ui-button min-h-9 min-w-9 whitespace-nowrap px-2"
+                  class="ui-button ui-action-quiet food-copy-button min-w-9 whitespace-nowrap px-2"
                   aria-label={`Copy note for ${plan.food.id === 'custom' ? 'custom food' : plan.food.name}`}
                   title={copiedFoodId === plan.food.id ? 'Copied feeding note' : 'Copy feeding note'}
                   disabled={copyingFoodId !== null}
@@ -333,6 +317,12 @@
 </section>
 
 <style>
+  @media (min-width: 1024px) {
+    .food-setup { max-width: 51.5rem; margin-inline: auto; }
+  }
+  .food-note { min-height: 64px; resize: vertical; }
+  .food-copy-button { min-width: 44px; }
+
   .food-table th,
   .food-table td {
     padding: 0.5rem 0.625rem;
@@ -346,11 +336,11 @@
   }
 
   .food-name-column {
-    width: 58%;
+    width: 54%;
   }
 
   .food-copy-column {
-    width: 3rem;
+    width: 3.5rem;
   }
 
   .food-table .food-portion-cell {
@@ -364,7 +354,15 @@
     text-align: center;
   }
 
+  @media (max-width: 359px) {
+    .food-name-column { width: 52%; }
+  }
+
   @media (min-width: 768px) {
+    .food-note { min-height: 54px; height: 54px; }
+    .food-copy-button { min-height: 28px; padding-block: 2px; font-size: 12px; }
+    .food-table .ui-meta-compact { line-height: 1.1; }
+
     .food-table th,
     .food-table td {
       padding-right: 0.75rem;
@@ -374,8 +372,8 @@
 
     .food-table tbody th,
     .food-table tbody td {
-      padding-top: 0.375rem;
-      padding-bottom: 0.375rem;
+      padding-top: 3px;
+      padding-bottom: 3px;
     }
 
     .food-table .food-portion-cell {

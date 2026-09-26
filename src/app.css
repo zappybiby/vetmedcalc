@@ -149,7 +149,7 @@
   .desktop-brand {
     display: none;
     position: absolute;
-    left: max(0px, calc((100% - 1040px) / 2));
+    left: max(0px, calc(50% - 324px));
     top: 50%;
     transform: translateY(-50%);
     pointer-events: none;
@@ -227,13 +227,28 @@
     @apply rounded-lg border px-3 py-2 text-sm font-semibold;
   }
 
+  /* Shared field geometry and choices; mobile targets grow without changing desktop density. */
+  .ui-field {
+    display: flex;
+    min-width: 0;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .ui-field-heading {
+    display: flex;
+    min-width: 0;
+    align-items: baseline;
+    gap: 8px;
+  }
+
   .ui-choice {
-    @apply inline-flex min-w-0 cursor-pointer items-center justify-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-semibold transition-colors;
-    min-height: 2.5rem;
+    @apply inline-flex min-w-0 cursor-pointer items-center justify-center gap-1.5 rounded-full px-3 text-sm font-semibold transition-colors;
+    min-height: 34px;
+    padding-block: 4px;
     color: var(--ui-text-200);
     border: 1px solid var(--ui-field-border);
     background-color: var(--ui-field-bg);
-    box-shadow: 0 1px 0 rgba(255, 255, 255, 0.03) inset;
   }
 
   .ui-choice:hover {
@@ -245,34 +260,46 @@
   .ui-choice.is-selected {
     color: var(--ui-text-100);
     border-color: var(--ui-accent-border);
-    background-color: color-mix(in srgb, var(--ui-accent-surface) 18%, var(--ui-surface-2));
-    box-shadow: inset 0 2px 0 color-mix(in srgb, var(--ui-accent-border) 82%, transparent);
+    background-color: var(--ui-accent-surface);
   }
 
-  .ui-inline-toggle {
-    @apply inline-flex shrink-0 cursor-pointer items-center justify-center rounded-md text-xs font-extrabold normal-case tracking-normal transition-colors;
-    height: 1.5rem;
-    min-width: 3rem;
-    padding: 0 0.4rem;
-    line-height: 1;
-    color: var(--ui-text-100);
-    border: 1px solid var(--ui-accent-border);
-    background-color: color-mix(in srgb, var(--ui-accent-surface) 18%, var(--ui-surface-2));
+  .ui-segmented {
+    display: grid;
+    min-width: 0;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 2px;
+    padding: 2px;
+    border: 1px solid var(--ui-field-border);
+    border-radius: 999px;
+    background: var(--ui-field-bg);
   }
 
-  .ui-inline-toggle:hover {
-    background-color: var(--ui-field-bg-hover);
+  @media (min-width: 1024px) {
+    .ui-inputs-two, .ui-inputs-three, .ui-inputs-four { margin-inline: auto; width: 100%; }
+    .ui-inputs-two { max-width: 25rem; }
+    .ui-inputs-three { max-width: 38rem; }
+    .ui-inputs-four { max-width: 50rem; }
   }
 
-  .ui-inline-toggle:focus-visible {
-    outline: 2px solid var(--ui-accent-border);
-    outline-offset: 2px;
+  .ui-segmented .ui-choice {
+    min-height: 28px;
+    padding: 2px 8px;
+    border-color: transparent;
+    background: transparent;
+  }
+
+  .ui-segmented .ui-choice[aria-pressed='true'],
+  .ui-segmented .ui-choice.is-selected {
+    border-color: var(--ui-accent-border);
+    background: var(--ui-accent-surface);
   }
 
   .field-control,
   .field-select {
     color-scheme: var(--ui-input-scheme);
-    @apply w-full min-w-0 rounded-lg px-2 py-1.5 text-[13px] transition-colors disabled:cursor-not-allowed disabled:opacity-60 sm:text-sm;
+    @apply w-full min-w-0 rounded-lg px-2 py-1.5 text-sm transition-colors disabled:cursor-not-allowed disabled:opacity-60;
+    min-height: 34px;
+    line-height: 20px;
     color: var(--ui-input-text);
     border: 1px solid var(--ui-field-border);
     background-clip: padding-box;
@@ -395,7 +422,7 @@
     @apply rounded-lg;
     background-color: var(--ui-surface-3);
     border: 1px solid var(--ui-inset-border);
-    box-shadow: var(--ui-surface-shadow);
+    box-shadow: none;
   }
 
   .ui-chip {
@@ -520,12 +547,23 @@
     color: var(--ui-text-100);
   }
 
+  .ui-button.ui-action-quiet {
+    box-shadow: none;
+    background-color: transparent;
+  }
+
   .ui-button:active {
     transform: translateY(0.5px);
   }
 
   .ui-summary {
     list-style: none;
+    min-height: 44px;
+  }
+
+  .ui-summary:focus-visible {
+    outline: 2px solid var(--ui-accent-border);
+    outline-offset: -3px;
   }
 
   .ui-summary::-webkit-details-marker {
@@ -644,6 +682,35 @@
     height: 0.72rem;
     width: 0.72rem;
     flex: none;
+  }
+
+  @media (max-width: 767px) {
+    .ui-tab { height: 40px; min-height: 40px; padding-block: 4px; }
+    .tab-theme-toggle { height: 40px; min-height: 40px; }
+    .field-control:not(.patient-weight-input),
+    .field-select {
+      min-height: 44px;
+      font-size: 16px;
+      line-height: 24px;
+    }
+
+    .ui-choice,
+    .ui-button:not(.tab-theme-toggle) {
+      min-height: 44px;
+    }
+
+    .ui-segmented .ui-choice {
+      min-height: 30px;
+    }
+  }
+
+  @media (max-width: 359px) {
+    .ui-tablist {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+    .tab-theme-toggle {
+      grid-column: 1 / -1;
+    }
   }
 
   .app-footer {

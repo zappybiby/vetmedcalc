@@ -1,4 +1,5 @@
 <script lang="ts">
+  import SegmentedToggle from './SegmentedToggle.svelte';
   import {
     KPHOS_BASE_FLUIDS,
     KPHOS_K_MEQ_PER_ML,
@@ -12,6 +13,7 @@
     calculateKPhosPlan,
     getKPhosExcessFraction,
     type KPhosKTargetBasis,
+    type KPhosPhosTargetBasis,
     type KPhosMode,
     type KPhosPlan,
   } from '../helpers/kphos';
@@ -24,6 +26,7 @@
 
   let mode: KPhosMode = 'bag';
   let kTargetBasis: KPhosKTargetBasis = 'added';
+  let phosTargetBasis: KPhosPhosTargetBasis = 'total';
   let mainFluidId: KPhosBaseFluidId = 'norm-r';
   let criDiluentFluidId: KPhosBaseFluidId = 'normal-saline';
   let mainBagVolumeMl: number | '' = 1000;
@@ -91,14 +94,6 @@
   }
 
 
-  function selectMode(nextMode: KPhosMode): void {
-    mode = nextMode;
-  }
-
-  function toggleKTargetBasis(): void {
-    kTargetBasis = kTargetBasis === 'added' ? 'total' : 'added';
-  }
-
   let weightKg: number | null = null;
   let bagVolumeValue: number | null = null;
   let mainRateValue: number | null = null;
@@ -124,6 +119,7 @@
     mainFluidRateMlHr: mainRateValue,
     phosTargetMmolKgHr: isPresent(phosTargetMmolKgHr) ? phosTargetValue : null,
     kTargetBasis,
+    phosTargetBasis,
     kTargetMeqPerL: isPresent(kTargetMeqPerL) ? kTargetValue : null,
     criDurationHr: criDurationValue,
     criRateMlHr: isPresent(criRateMlHr) ? criRateValue : null,
@@ -131,12 +127,8 @@
 
   let hasAnyTarget = false;
   let kBasisLabel = 'Added';
-  let kBasisSwitchLabel = '';
   $: hasAnyTarget = plan.hasPhosTarget || plan.hasKTarget;
   $: kBasisLabel = kTargetBasis === 'added' ? 'Added' : 'Total';
-  $: kBasisSwitchLabel = kTargetBasis === 'added'
-    ? 'Potassium target uses added potassium; switch to total potassium'
-    : 'Potassium target uses total potassium; switch to added potassium';
 
   let issues: string[] = [];
   $: {
@@ -167,12 +159,12 @@
     if (plan.fluidsMeetPhosTarget && plan.hasPhosTarget) {
       next.push('The selected fluids already meet the phosphate target.');
     }
-    if (phosTargetValue != null && plan.totalPhosDeliveryMmolKgHr != null) {
-      const excessFraction = getKPhosExcessFraction(phosTargetValue, plan.totalPhosDeliveryMmolKgHr);
+    if (phosTargetValue != null && plan.selectedPhosDeliveryMmolKgHr != null) {
+      const excessFraction = getKPhosExcessFraction(phosTargetValue, plan.selectedPhosDeliveryMmolKgHr);
       if (excessFraction != null && excessFraction >= KPHOS_EXCESS_WARNING_FRACTION) {
         next.push(Number.isFinite(excessFraction)
-          ? `Fluid phosphate exceeds the target by ${fmt(excessFraction * 100, 0)}%.`
-          : `Fluid phosphate exceeds the zero target by ${fmt(plan.phosTargetExcessMmolKgHr, 4)} mmol/kg/hr.`);
+          ? `${phosTargetBasis === 'total' ? 'Total' : 'Added'} phosphate exceeds the target by ${fmt(excessFraction * 100, 0)}%.`
+          : `${phosTargetBasis === 'total' ? 'Total' : 'Added'} phosphate exceeds the zero target by ${fmt(plan.phosTargetExcessMmolKgHr, 4)} mmol/kg/hr.`);
       }
     }
     if (plan.kTargetExcessMeqPerL != null) {
@@ -221,23 +213,8 @@
     <header class="kphos-input-header">
       <div class="kphos-mode-picker">
         <span class="ui-label kphos-mode-label">Mode:</span>
-        <div class="ui-inset kphos-mode-control" role="group" aria-label="Add KPhos to">
-          <button
-            type="button"
-            class="ui-choice"
-            aria-pressed={mode === 'bag'}
-            on:click={() => selectMode('bag')}
-          >
-            Bag
-          </button>
-          <button
-            type="button"
-            class="ui-choice"
-            aria-pressed={mode === 'cri'}
-            on:click={() => selectMode('cri')}
-          >
-            CRI
-          </button>
+        <div class="kphos-mode-control">
+          <SegmentedToggle label="Add KPhos to" first="Bag" second="CRI" secondSelected={mode === 'cri'} onToggle={cri => mode = cri ? 'cri' : 'bag'} />
         </div>
       </div>
     </header>
@@ -245,194 +222,88 @@
     <div class="kphos-form" data-testid="kphos-statements">
       <section class="kphos-form-section kphos-target-section" aria-label="Medication targets">
         <div class="kphos-field-grid kphos-target-fields">
-          <div class="kphos-field">
-            <div class="kphos-field-heading">
-              <label class="ui-label" for="kphos-phos-target">Phosphate target</label>
+          <div class="kphos-target-column">
+            <div class="kphos-calculation-mode">
+              <span class="ui-label">Phosphate Calculation Mode</span>
+              <SegmentedToggle label="Phosphate Calculation Mode" first="Added to Bag" second="Total in Bag" secondSelected={phosTargetBasis === 'total'} testId="phos-target-basis" onToggle={total => phosTargetBasis = total ? 'total' : 'added'} />
             </div>
-            <div class="kphos-control-row">
-            <input
-              id="kphos-phos-target"
-              class="field-control kphos-inline-number"
-              type="number"
-              min="0"
-              step="0.001"
-              inputmode="decimal"
-              placeholder="optional"
-              aria-label="Phosphate target (mmol/kg/hr)"
-              bind:value={phosTargetMmolKgHr}
-            />
-            <span class="ui-unit kphos-field-unit">mmol/kg/hr</span>
+            <div class="ui-field kphos-field">
+              <div class="ui-field-heading"><label class="ui-label" for="kphos-phos-target">Phosphate target</label></div>
+              <div class="kphos-control-row">
+                <input id="kphos-phos-target" class="field-control kphos-inline-number" type="number" min="0" step="0.001" inputmode="decimal" placeholder="optional" aria-label="Phosphate target (mmol/kg/hr)" bind:value={phosTargetMmolKgHr} />
+                <span class="ui-unit kphos-field-unit">mmol/kg/hr</span>
+              </div>
             </div>
           </div>
-          <div class="kphos-field kphos-potassium-field">
-            <div class="kphos-field-heading">
-              <button
-                type="button"
-                role="switch"
-                aria-checked={kTargetBasis === 'total'}
-                aria-label={kBasisSwitchLabel}
-                class="ui-inline-toggle"
-                data-testid="k-target-basis"
-                on:click={toggleKTargetBasis}
-              >
-                {kBasisLabel}
-              </button>
-              <label class="ui-label" for="kphos-k-target">Potassium target</label>
+          <div class="kphos-target-column">
+            <div class="kphos-calculation-mode">
+              <span class="ui-label">Potassium Calculation Mode</span>
+              <SegmentedToggle label="Potassium Calculation Mode" first="Added to Bag" second="Total in Bag" secondSelected={kTargetBasis === 'total'} testId="k-target-basis" onToggle={total => kTargetBasis = total ? 'total' : 'added'} />
             </div>
-            <div class="kphos-control-row">
-            <input
-              id="kphos-k-target"
-              class="field-control kphos-inline-number"
-              type="number"
-              min="0"
-              step="1"
-              inputmode="decimal"
-              placeholder="optional"
-              aria-label={`${kBasisLabel} potassium target (mEq/L)`}
-              bind:value={kTargetMeqPerL}
-            />
-            <span class="ui-unit kphos-field-unit">mEq/L</span>
+            <div class="ui-field kphos-field">
+              <div class="ui-field-heading"><label class="ui-label" for="kphos-k-target">Potassium target</label></div>
+              <div class="kphos-control-row">
+                <input id="kphos-k-target" class="field-control kphos-inline-number" type="number" min="0" step="1" inputmode="decimal" placeholder="optional" aria-label={`${kBasisLabel} potassium target (mEq/L)`} bind:value={kTargetMeqPerL} />
+                <span class="ui-unit kphos-field-unit">mEq/L</span>
+              </div>
             </div>
           </div>
         </div>
       </section>
 
-      <section class="kphos-form-section" aria-label={mode === 'bag' ? 'Fluid bag settings' : 'CRI settings'}>
-        {#if mode === 'bag'}
-          <div class="kphos-field-grid kphos-bag-fields">
-            <div class="kphos-field">
-              <div class="kphos-field-heading"><label class="ui-label" for="kphos-main-bag-volume">Bag volume</label></div>
-              <div class="kphos-control-row">
-            <input
-              id="kphos-main-bag-volume"
-              class="field-control kphos-inline-number"
-              type="number"
-              min="0"
-              step="1"
-              inputmode="decimal"
-              aria-label="Bag volume (mL)"
-              bind:value={mainBagVolumeMl}
-            />
-            <span class="ui-unit kphos-field-unit">mL</span>
-              </div>
-          </div>
-            <div class="kphos-field">
-              <div class="kphos-field-heading"><label class="ui-label" for="kphos-main-fluid">Fluid Type</label></div>
+      <section class="kphos-form-section" aria-label="Main fluid settings">
+        <div class="kphos-field-grid kphos-bag-fields" class:kphos-main-no-bag={mode === 'cri' && !plan.hasKTarget}>
+          <div class="ui-field kphos-field">
+            <div class="ui-field-heading"><label class="ui-label" for="kphos-main-fluid">Fluid Type</label></div>
             <select id="kphos-main-fluid" class="field-select" aria-label="Fluid Type" bind:value={mainFluidId}>
-              {#each KPHOS_BASE_FLUIDS as fluid}
-                <option value={fluid.id}>{fluid.label}</option>
-              {/each}
+              {#each KPHOS_BASE_FLUIDS as fluid}<option value={fluid.id}>{fluid.label}</option>{/each}
             </select>
           </div>
-            <div class="kphos-field">
-              <div class="kphos-field-heading"><label class="ui-label" for="kphos-main-fluid-rate">Fluid rate</label></div>
+          {#if mode === 'bag' || plan.hasKTarget}
+            <div class="ui-field kphos-field">
+              <div class="ui-field-heading"><label class="ui-label" for="kphos-main-bag-volume">Bag volume</label></div>
               <div class="kphos-control-row">
-            <input
-              id="kphos-main-fluid-rate"
-              class="field-control kphos-inline-number"
-              type="number"
-              min="0"
-              step="0.1"
-              inputmode="decimal"
-              aria-label="Fluid rate (mL/hr)"
-              bind:value={mainFluidRateMlHr}
-            />
-            <span class="ui-unit kphos-field-unit">mL/hr</span>
+                <input id="kphos-main-bag-volume" class="field-control kphos-inline-number" type="number" min="0" step="1" inputmode="decimal" aria-label="Bag volume (mL)" bind:value={mainBagVolumeMl} />
+                <span class="ui-unit kphos-field-unit">mL</span>
               </div>
-          </div>
-        </div>
-        {:else}
-          <div class="kphos-cri-fields" class:kphos-cri-has-bag={plan.hasKTarget}>
-            <div class="kphos-field-grid kphos-cri-setup-fields" role="group" aria-label="CRI preparation settings">
-            <div class="kphos-field">
-              <div class="kphos-field-heading"><label class="ui-label" for="kphos-cri-duration">Duration</label></div>
-              <div class="kphos-control-row">
-            <input
-              id="kphos-cri-duration"
-              class="field-control kphos-inline-number"
-              type="number"
-              min="0"
-              step="0.1"
-              inputmode="decimal"
-              aria-label="Duration (hr)"
-              bind:value={criDurationHr}
-            />
-            <span class="ui-unit kphos-field-unit">hr</span>
-              </div>
-          </div>
-            <div class="kphos-field">
-              <div class="kphos-field-heading"><label class="ui-label" for="kphos-cri-rate">CRI rate</label></div>
-              <div class="kphos-control-row">
-            <input
-              id="kphos-cri-rate"
-              class="field-control kphos-inline-number"
-              type="number"
-              min="0"
-              step="0.1"
-              inputmode="decimal"
-              placeholder="optional"
-              aria-label="CRI rate (mL/hr)"
-              bind:value={criRateMlHr}
-            />
-            <span class="ui-unit kphos-field-unit">mL/hr</span>
-              </div>
-          </div>
-            <div class="kphos-field">
-              <div class="kphos-field-heading"><label class="ui-label" for="kphos-cri-diluent">Diluent</label></div>
-            <select id="kphos-cri-diluent" class="field-select" aria-label="CRI diluent" bind:value={criDiluentFluidId}>
-              {#each KPHOS_BASE_FLUIDS as fluid}
-                <option value={fluid.id}>{fluid.label}</option>
-              {/each}
-            </select>
-          </div>
-            </div>
-            <div class="kphos-field-grid kphos-cri-fluid-fields" role="group" aria-label="Main fluid settings">
-            <div class="kphos-field">
-              <div class="kphos-field-heading"><label class="ui-label" for="kphos-main-fluid">Fluid Type</label></div>
-            <select id="kphos-main-fluid" class="field-select" aria-label="Fluid Type" bind:value={mainFluidId}>
-              {#each KPHOS_BASE_FLUIDS as fluid}
-                <option value={fluid.id}>{fluid.label}</option>
-              {/each}
-            </select>
-          </div>
-            <div class="kphos-field">
-              <div class="kphos-field-heading"><label class="ui-label" for="kphos-main-fluid-rate">Fluid rate</label></div>
-              <div class="kphos-control-row">
-            <input
-              id="kphos-main-fluid-rate"
-              class="field-control kphos-inline-number"
-              type="number"
-              min="0"
-              step="0.1"
-              inputmode="decimal"
-              aria-label="Fluid rate (mL/hr)"
-              bind:value={mainFluidRateMlHr}
-            />
-            <span class="ui-unit kphos-field-unit">mL/hr</span>
-              </div>
-          </div>
-          {#if plan.hasKTarget}
-              <div class="kphos-field">
-                <div class="kphos-field-heading"><label class="ui-label" for="kphos-main-bag-volume">Bag volume</label></div>
-                <div class="kphos-control-row">
-              <input
-                id="kphos-main-bag-volume"
-                class="field-control kphos-inline-number"
-                type="number"
-                min="0"
-                step="1"
-                inputmode="decimal"
-                aria-label="Bag volume (mL)"
-                bind:value={mainBagVolumeMl}
-              />
-              <span class="ui-unit kphos-field-unit">mL</span>
-                </div>
             </div>
           {/if}
+          <div class="ui-field kphos-field">
+            <div class="ui-field-heading"><label class="ui-label" for="kphos-main-fluid-rate">Fluid rate</label></div>
+            <div class="kphos-control-row">
+              <input id="kphos-main-fluid-rate" class="field-control kphos-inline-number" type="number" min="0" step="0.1" inputmode="decimal" aria-label="Fluid rate (mL/hr)" bind:value={mainFluidRateMlHr} />
+              <span class="ui-unit kphos-field-unit">mL/hr</span>
             </div>
+          </div>
         </div>
-      {/if}
       </section>
+
+      {#if mode === 'cri'}
+        <section class="kphos-form-section" aria-label="CRI preparation settings">
+          <div class="kphos-field-grid kphos-cri-setup-fields">
+            <div class="ui-field kphos-field">
+              <div class="ui-field-heading"><label class="ui-label" for="kphos-cri-duration">Duration</label></div>
+              <div class="kphos-control-row">
+                <input id="kphos-cri-duration" class="field-control kphos-inline-number" type="number" min="0" step="0.1" inputmode="decimal" aria-label="Duration (hr)" bind:value={criDurationHr} />
+                <span class="ui-unit kphos-field-unit">hr</span>
+              </div>
+            </div>
+            <div class="ui-field kphos-field">
+              <div class="ui-field-heading"><label class="ui-label" for="kphos-cri-rate">CRI rate</label></div>
+              <div class="kphos-control-row">
+                <input id="kphos-cri-rate" class="field-control kphos-inline-number" type="number" min="0" step="0.1" inputmode="decimal" placeholder="optional" aria-label="CRI rate (mL/hr)" bind:value={criRateMlHr} />
+                <span class="ui-unit kphos-field-unit">mL/hr</span>
+              </div>
+            </div>
+            <div class="ui-field kphos-field">
+              <div class="ui-field-heading"><label class="ui-label" for="kphos-cri-diluent">Diluent</label></div>
+              <select id="kphos-cri-diluent" class="field-select" aria-label="CRI diluent" bind:value={criDiluentFluidId}>
+                {#each KPHOS_BASE_FLUIDS as fluid}<option value={fluid.id}>{fluid.label}</option>{/each}
+              </select>
+            </div>
+          </div>
+        </section>
+      {/if}
     </div>
   </article>
 
@@ -443,21 +314,21 @@
         <span class="font-black">Needed:</span> {issues.join(' ')}
       </div>
     {:else}
-      <section class="px-3 py-3 sm:px-4" aria-label="Preparation and delivery">
+      <section class="ui-card-padding" aria-label="Preparation and delivery">
         {#if mode === 'bag'}
           <p class="ui-instruction">
             <span>In the {fmtCompact(bagVolumeValue)} mL {mainFluid.label} bag,</span>
             {#if plan.hasPhosTarget && plan.hasKTarget}
               <span>add</span>
-              <strong class="kphos-instruction-value" data-testid="kphos-stock-volume">{fmtStock(plan.kPhosStockMl)}&nbsp;mL KPhos</strong>
+              <strong class="kphos-instruction-value ui-statement-value" data-testid="kphos-stock-volume">{fmtStock(plan.kPhosStockMl)}&nbsp;mL KPhos</strong>
               <span>and</span>
-              <strong class="kphos-instruction-value" data-testid="kcl-stock-volume">{fmtStock(plan.kClStockMl)}&nbsp;mL KCl</strong><span>.</span>
+              <strong class="kphos-instruction-value ui-statement-value" data-testid="kcl-stock-volume">{fmtStock(plan.kClStockMl)}&nbsp;mL KCl</strong><span>.</span>
             {:else if plan.hasPhosTarget}
               <span>add</span>
-              <strong class="kphos-instruction-value" data-testid="kphos-stock-volume">{fmtStock(plan.kPhosStockMl)}&nbsp;mL KPhos</strong><span>.</span>
+              <strong class="kphos-instruction-value ui-statement-value" data-testid="kphos-stock-volume">{fmtStock(plan.kPhosStockMl)}&nbsp;mL KPhos</strong><span>.</span>
             {:else}
               <span>add</span>
-              <strong class="kphos-instruction-value" data-testid="kcl-stock-volume">{fmtStock(plan.kClStockMl)}&nbsp;mL KCl</strong><span>.</span>
+              <strong class="kphos-instruction-value ui-statement-value" data-testid="kcl-stock-volume">{fmtStock(plan.kClStockMl)}&nbsp;mL KCl</strong><span>.</span>
             {/if}
           </p>
         {:else}
@@ -465,13 +336,13 @@
             <div class="kphos-cri-instructions">
             <p class="ui-instruction">
               <span>Mix</span>
-              <strong class="kphos-instruction-value" data-testid="kphos-stock-volume">{fmtStock(plan.kPhosStockMl)}&nbsp;mL KPhos</strong>
-              <span>+</span>
-              <strong class="kphos-instruction-value" data-testid="cri-diluent-volume">{fmtStock(plan.criDiluentVolumeMl)}&nbsp;mL {criDiluentFluid.label}</strong><span>.</span>
+              <strong class="kphos-instruction-value ui-statement-value" data-testid="kphos-stock-volume">{fmtStock(plan.kPhosStockMl)}&nbsp;mL KPhos</strong>
+              <span class="kphos-diluent-line"><span>+</span>
+              <strong class="kphos-instruction-value ui-statement-value" data-testid="cri-diluent-volume"><span class="kphos-diluent-amount">{fmtStock(plan.criDiluentVolumeMl)}&nbsp;mL</span> <span class="kphos-diluent-name">{criDiluentFluid.label}</span></strong><span>.</span></span>
             </p>
             <p class="ui-instruction">
               <span>Run at</span>
-              <strong class="kphos-instruction-value" data-testid="cri-pump-rate">{fmt(plan.criPumpRateMlHr, 3)}&nbsp;mL/hr</strong>
+              <strong class="kphos-instruction-value ui-statement-value" data-testid="cri-pump-rate">{fmt(plan.criPumpRateMlHr, 3)}&nbsp;mL/hr</strong>
               <span>for {fmtCompact(plan.criActualRuntimeHr)} hr.</span>
             </p>
             </div>
@@ -480,7 +351,7 @@
           {#if plan.hasKTarget}
             <p class={`${plan.hasPhosTarget ? 'mt-2 border-t ui-rule pt-2' : ''} ui-instruction`}>
               <span>In the separate {fmtCompact(bagVolumeValue)} mL {mainFluid.label} bag, add</span>
-              <strong class="kphos-instruction-value" data-testid="kcl-stock-volume">{fmtStock(plan.kClStockMl)}&nbsp;mL KCl</strong><span>.</span>
+              <strong class="kphos-instruction-value ui-statement-value" data-testid="kcl-stock-volume">{fmtStock(plan.kClStockMl)}&nbsp;mL KCl</strong><span>.</span>
             </p>
           {:else}
             <span class="sr-only" data-testid="kcl-stock-volume">No KCl requested</span>
@@ -495,6 +366,27 @@
           {/if}
 
           <div class="kphos-source-summary text-sm text-slate-300" data-testid="kphos-source-summary">
+            <section class="kphos-delivery-summary ui-instruction" aria-label="Total delivery from all sources" data-testid="kphos-delivery-summary">
+              <h4 class="ui-section-title">Total delivery · all sources</h4>
+              {#if plan.totalKDeliveryMeqKgHr != null && plan.totalPhosDeliveryMmolKgHr != null}
+                <dl class="kphos-delivery-values">
+                  <div>
+                    <dt class="ui-label">Phosphate</dt>
+                    <dd data-testid="total-phos-delivery"><strong class="ui-result-value">{fmtDose(plan.totalPhosDeliveryMmolKgHr)}</strong> <span class="ui-unit">mmol/kg/hr</span></dd>
+                  </div>
+                  <div>
+                    <dt class="ui-label">Potassium</dt>
+                    <dd data-testid="total-k-delivery"><strong class="ui-result-value">{fmtDose(plan.totalKDeliveryMeqKgHr)}</strong> <span class="ui-unit">mEq/kg/hr</span></dd>
+                  </div>
+                </dl>
+              {:else}
+                <p class="mt-2 ui-meta">
+                  Enter patient weight and fluid rate to see delivery.
+                  <span class="sr-only" data-testid="total-phos-delivery">—</span>
+                  <span class="sr-only" data-testid="total-k-delivery">—</span>
+                </p>
+              {/if}
+            </section>
             {#if mode === 'bag'}
               <section class="kphos-mixture-group" aria-label="Fluid bag composition">
                 <div
@@ -623,27 +515,6 @@
               </div>
             {/if}
 
-            <section class="kphos-delivery-summary ui-instruction" aria-label="Total delivery from all sources" data-testid="kphos-delivery-summary">
-              <h4 class="ui-section-title">Total delivery · all sources</h4>
-              {#if plan.totalKDeliveryMeqKgHr != null && plan.totalPhosDeliveryMmolKgHr != null}
-                <dl class="kphos-delivery-values">
-                  <div>
-                    <dt class="ui-label">Phosphate</dt>
-                    <dd data-testid="total-phos-delivery"><strong class="kphos-instruction-value">{fmtDose(plan.totalPhosDeliveryMmolKgHr)}</strong> <span class="ui-unit">mmol/kg/hr</span></dd>
-                  </div>
-                  <div>
-                    <dt class="ui-label">Potassium</dt>
-                    <dd data-testid="total-k-delivery"><strong class="kphos-instruction-value">{fmtDose(plan.totalKDeliveryMeqKgHr)}</strong> <span class="ui-unit">mEq/kg/hr</span></dd>
-                  </div>
-                </dl>
-              {:else}
-                <p class="mt-2 ui-meta">
-                  Enter patient weight and fluid rate to see delivery.
-                  <span class="sr-only" data-testid="total-phos-delivery">—</span>
-                  <span class="sr-only" data-testid="total-k-delivery">—</span>
-                </p>
-              {/if}
-            </section>
           </div>
         </div>
       </section>
@@ -662,6 +533,7 @@
 
 <style>
   .kphos-input-header {
+    position: relative;
     display: flex;
     min-height: 3.75rem;
     align-items: center;
@@ -671,27 +543,11 @@
     padding: 0.625rem 0.75rem;
   }
 
-  .kphos-mode-picker {
-    display: grid;
-    align-items: center;
-    justify-items: center;
-    gap: 0.375rem;
-  }
-
-  .kphos-mode-label {
-    font-size: 0.875rem;
-    font-weight: 900;
-  }
-
-  .kphos-mode-control {
-    display: grid;
-    width: 11rem;
-    flex: 0 0 11rem;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 0.25rem;
-    padding: 0.25rem;
-  }
-
+  .kphos-mode-picker { display: grid; justify-items: center; gap: 6px; }
+  .kphos-mode-label { font-size: 12px; font-weight: 900; }
+  .kphos-mode-control { width: 176px; }
+  .kphos-target-column { display: grid; min-width: 0; gap: 12px; }
+  .kphos-calculation-mode { display: grid; min-width: 0; gap: 6px; text-align: center; }
   .kphos-form {
     display: grid;
   }
@@ -701,7 +557,7 @@
     min-width: 0;
     grid-template-columns: minmax(0, 1fr);
     gap: 1rem;
-    padding: 0.75rem;
+    padding: 10px;
   }
 
   .kphos-form-section + .kphos-form-section {
@@ -710,63 +566,21 @@
 
   .kphos-field-grid {
     display: grid;
+    align-items: end;
     min-width: 0;
-    gap: 1.25rem;
+    gap: 16px;
   }
 
-  .kphos-target-fields {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
+  .kphos-target-fields, .kphos-main-no-bag { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .kphos-bag-fields, .kphos-cri-setup-fields { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .kphos-bag-fields.kphos-main-no-bag { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 
-  .kphos-bag-fields {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-  }
-
-  .kphos-cri-fields {
-    display: grid;
-    min-width: 0;
-    grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
-    gap: 2rem;
-  }
-
-  .kphos-cri-has-bag {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
-  .kphos-cri-setup-fields {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-  }
-
-  .kphos-cri-fluid-fields {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
-  .kphos-cri-has-bag .kphos-cri-fluid-fields {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-  }
-
-  .kphos-field {
-    display: flex;
-    min-width: 0;
-    flex-direction: column;
-    gap: 0.375rem;
-  }
-
-  .kphos-field-heading {
-    display: flex;
-    min-height: 1.5rem;
-    min-width: 0;
-    align-items: center;
-    justify-content: flex-start;
-    gap: 0.5rem;
-  }
-
-  .kphos-instruction-value {
-    color: var(--ui-text-100);
-    font-size: 1rem;
-    font-weight: 700;
-    line-height: 1.5;
-    font-variant-numeric: tabular-nums;
+  @media (min-width: 1024px) {
+    .kphos-field-grid { width: 100%; max-width: 38rem; margin-inline: auto; }
+    .kphos-target-fields { column-gap: 2rem; }
+    .kphos-calculation-mode { width: 100%; }
+    .kphos-inline-number { max-width: 12rem; }
+    .kphos-bag-fields.kphos-main-no-bag { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   }
 
   .kphos-cri-instructions {
@@ -775,20 +589,9 @@
   }
 
   @media (min-width: 640px) {
-    .kphos-instruction-value {
-      font-size: 1.125rem;
-    }
-
+    .kphos-form-section { padding: 12px; }
     .kphos-mode-picker {
       position: relative;
-    }
-
-    .kphos-mode-label {
-      position: absolute;
-      top: 50%;
-      right: calc(100% + 0.75rem);
-      transform: translateY(-50%);
-      white-space: nowrap;
     }
 
     .kphos-delivery-values > div {
@@ -825,9 +628,9 @@
   }
 
   .kphos-delivery-summary {
-    margin-top: 0.75rem;
-    border-top: 1px solid var(--ui-divider);
-    padding-top: 0.75rem;
+    margin-bottom: 12px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--ui-result-divider);
   }
 
   .kphos-delivery-values {
@@ -913,13 +716,18 @@
 
   .kphos-component-values {
     display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 0.35rem;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 4px;
     margin-top: 0.55rem;
     font-variant-numeric: tabular-nums;
   }
 
   .kphos-component-values > div {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 4px;
     min-width: 0;
     border-top: 1px solid var(--ui-divider);
     padding-top: 0.35rem;
@@ -952,40 +760,39 @@
     font-variant-numeric: tabular-nums;
   }
 
-  @media (max-width: 1199px) {
-    .kphos-cri-fields {
-      grid-template-columns: minmax(0, 1fr);
-      gap: 1.5rem;
-    }
-  }
 
   @media (max-width: 639px) {
     .kphos-input-header {
-      align-items: flex-start;
-      padding: 0.75rem;
+      flex-direction: column;
+      align-items: center;
+      padding: 10px;
     }
+
 
     .kphos-mode-control {
       width: 9.5rem;
-      flex-basis: 9.5rem;
     }
 
     .kphos-form-section {
       grid-template-columns: minmax(0, 1fr);
       gap: 0.65rem;
-      padding: 0.75rem;
+      padding: 10px;
     }
 
-    .kphos-target-fields,
     .kphos-bag-fields,
-    .kphos-cri-setup-fields,
-    .kphos-cri-fluid-fields,
-    .kphos-cri-has-bag .kphos-cri-fluid-fields {
+    .kphos-cri-setup-fields {
       grid-template-columns: repeat(2, minmax(0, 1fr));
     }
 
     .kphos-field-grid {
       gap: 1rem;
+      align-items: start;
+    }
+
+    .kphos-target-fields { grid-template-columns: minmax(0, 1fr); }
+
+    .kphos-bag-fields:not(.kphos-main-no-bag) > .kphos-field:first-child {
+      grid-column: 1 / -1;
     }
 
     .kphos-cri-setup-fields > .kphos-field:last-child {
@@ -1006,6 +813,12 @@
   }
 
   @media (max-width: 767px) {
+    .kphos-source-summary > .kphos-mixture-group, .kphos-cri-groups { display: none; }
+    .kphos-delivery-summary { margin-bottom: 0; padding-bottom: 0; border-bottom: 0; }
+    .kphos-diluent-line { display: flex; align-items: baseline; gap: 6px; margin-top: 4px; }
+    .kphos-diluent-line strong { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px; }
+    .kphos-diluent-amount { white-space: nowrap; }
+    .kphos-diluent-name { font-size: 14px; font-weight: 500; }
     .kphos-flow-three,
     .kphos-flow-four {
       grid-template-columns: minmax(0, 1fr);

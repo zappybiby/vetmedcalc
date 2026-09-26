@@ -10,7 +10,7 @@ export type DrawCard = {
   title: string;
   volumeMl: number;
   volumeText: string; // e.g. "12.30 mL"
-  syringeText?: string; // e.g. "3 cc (0.1 mL ticks)"
+  syringeText?: string; // e.g. "3 cc (0.1 mL increment)"
   tickText?: string; // optional: prefer showing ticks via label; omit to avoid duplication
   fills?: number; // omit or 1 to hide in UI
 };
@@ -171,14 +171,14 @@ export function buildCRIViewModel(params: BuildParams): CRIViewModel | null {
 
     // Summary cards
     const syringeText = syr.label ?? `${syr.sizeCc} cc`;
-    const syringeHasTickInfo = syringeText.toLowerCase().includes('ticks');
+    const syringeHasIncrementInfo = syringeText.toLowerCase().includes('increment');
     const drawCard: DrawCard = {
       kind: 'stock',
       title: 'Stock to Draw Up',
       volumeMl: drawVol,
       volumeText: `${fmt(drawVol, 2)} mL`,
       syringeText,
-      tickText: syringeHasTickInfo ? undefined : `${syr.incrementMl} mL ticks`,
+      tickText: syringeHasIncrementInfo ? undefined : `${syr.incrementMl} mL increment`,
       fills: fills > 1 ? fills : undefined,
     };
 
@@ -205,7 +205,7 @@ export function buildCRIViewModel(params: BuildParams): CRIViewModel | null {
       },
       {
         label: 'Rounded draw volume',
-        math: `round(${fmt(targetVol, 3)} mL → ${fmt(syr.incrementMl, 3)} mL ticks) = ${fmt(drawVol, 2)} mL${hasRoundingChange ? ` (Δ ${fmt(roundingDeltaMl, 2)} mL)` : ''}`,
+        math: `round(${fmt(targetVol, 3)} mL → ${fmt(syr.incrementMl, 3)} mL increment) = ${fmt(drawVol, 2)} mL${hasRoundingChange ? ` (Δ ${fmt(roundingDeltaMl, 2)} mL)` : ''}`,
       },
     ];
 
@@ -226,7 +226,7 @@ export function buildCRIViewModel(params: BuildParams): CRIViewModel | null {
       pumpRateText: `${fmt(rateMlHr, 2)} mL/hr`,
       deliveredDoseText: formatDose(actualDoseMgPerKgHr, doseUnit),
       runtimeText: `${fmt(actualRuntimeHr, 2)} hr`,
-      runtimeNoteText: Math.abs(runtimeDeltaHr) >= 0.05 ? `requested ${fmt(requestedDurationHr, 2)} hr` : undefined,
+      runtimeNoteText: Math.abs(runtimeDeltaHr) >= 0.05 ? `target ${fmt(requestedDurationHr, 2)} hr · ${runtimeDeltaHr >= 0 ? '+' : ''}${fmt(runtimeDeltaHr, 2)} hr` : undefined,
     };
 
     return { mode: 'stock', alerts, drawCards: [drawCard], resultCard, stepByStep: { rows: stepRows } };
@@ -303,7 +303,7 @@ export function buildCRIViewModel(params: BuildParams): CRIViewModel | null {
     pumpRateText: `${fmt(plan.desiredRateMlPerHr, 2)} mL/hr`,
     deliveredDoseText: formatDose(actualDoseMgPerKgHr, doseUnit),
     runtimeText: `${fmt(targetRuntimeHr, 2)} hr`,
-    runtimeNoteText: Math.abs(targetRuntimeHr - Number(durationHr)) >= 0.05 ? `requested ${fmt(Number(durationHr), 2)} hr` : undefined,
+    runtimeNoteText: Math.abs(targetRuntimeHr - Number(durationHr)) >= 0.05 ? `target ${fmt(Number(durationHr), 2)} hr · ${targetRuntimeHr >= Number(durationHr) ? '+' : ''}${fmt(targetRuntimeHr - Number(durationHr), 2)} hr` : undefined,
   };
 
   const durationNum = Number(durationHr);
@@ -329,7 +329,7 @@ export function buildCRIViewModel(params: BuildParams): CRIViewModel | null {
       math: `stock = (C_target/S)×V = (${fmt(targetConcMgPerMl, 4)}/${fmt(plan.stockConcentrationMgPerMl, 4)})×${fmt(plan.targetTotalVolumeMl, 3)} = ${fmt(plan.rawStockVolumeMl, 3)} mL; dil = ${fmt(plan.rawDiluentVolumeMl, 3)} mL`,
     },
     {
-      label: 'Tick-snap result',
+      label: 'Rounded volumes',
       math: `stock ${fmt(plan.snappedStockVolumeMl, 2)} mL${hasStockDelta ? ` (Δ ${fmt(snappedStockDelta, 2)} mL)` : ''} + dil ${fmt(plan.snappedDiluentVolumeMl, 2)} mL${hasDilDelta ? ` (Δ ${fmt(snappedDilDelta, 2)} mL)` : ''} → C_final ${fmt(plan.chosenConcentrationMgPerMl, 4)} mg/mL (ΔC ${fmt(plan.relConcentrationErrorPct, 2)}%, ΔV ${fmt(plan.relTotalVolumeErrorPct, 2)}%)`,
     },
     {

@@ -7,6 +7,6 @@ export type Patient = {
   name: string;
 };
 
-const initialPatient: Patient = { weightKg: null, species: '', name: '' };
+const initialPatient: Patient = { weightKg: null, species: 'dog', name: '' };
 
 export const patient = writable<Patient>(initialPatient);

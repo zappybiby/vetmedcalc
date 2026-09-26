@@ -1,4 +1,5 @@
 <script lang="ts">
+  import SegmentedToggle from './SegmentedToggle.svelte';
   import { patient } from '../stores/patient';
   import type { Species } from '../stores/patient';
   import {
@@ -12,10 +13,6 @@
   $: p = $patient;
   $: label = computeCprLabel(p);
 
-  const speciesOptions: readonly { value: Species; label: string }[] = [
-    { value: 'dog', label: 'Dog' },
-    { value: 'cat', label: 'Cat' },
-  ];
 
   function updateName(event: Event): void {
     const target = event.currentTarget;
@@ -79,17 +76,11 @@
 <section class="ui-tool-stack" aria-label="CPR Card">
   <div class="ui-card grid gap-2 ui-card-padding">
     <div class="cpr-control-grid print:hidden">
-      <label class="ui-inset cpr-batch-toggle inline-flex items-center gap-2 px-2.5 py-2 text-sm font-semibold text-slate-200 sm:px-3" for="cpr-batch-toggle">
-        <input
-          id="cpr-batch-toggle"
-          type="checkbox"
-          class="field-checkbox h-4 w-4"
-          bind:checked={$cprBatchMode}
-        />
-        Batch mode
-      </label>
+      <div class="cpr-batch-toggle">
+        <SegmentedToggle label="Batch mode" first="Single" second="Batch" secondSelected={$cprBatchMode} onToggle={batch => $cprBatchMode = batch} />
+      </div>
 
-      <button class="ui-button cpr-print-button px-2.5 py-2 text-xs font-bold sm:px-3 sm:text-sm" on:click={printLabel} disabled={!p.weightKg || !p.species}>
+      <button class="ui-button cpr-print-button" on:click={printLabel} disabled={!p.weightKg || !p.species}>
         Print label
       </button>
     </div>
@@ -108,19 +99,7 @@
 
       <div class="grid min-w-0 gap-1.5">
         <div class="ui-label" id="cpr-species-label">Species</div>
-        <div class="cpr-species-grid" role="group" aria-labelledby="cpr-species-label">
-          {#each speciesOptions as option (option.value)}
-            <button
-              type="button"
-              class:is-selected={p.species === option.value}
-              class="ui-choice cpr-species-button"
-              aria-pressed={p.species === option.value}
-              on:click={() => selectSpecies(option.value)}
-            >
-              {option.label}
-            </button>
-          {/each}
-        </div>
+        <SegmentedToggle label="Species" first="Dog" second="Cat" secondSelected={p.species ? p.species === 'cat' : null} onToggle={cat => selectSpecies(cat ? 'cat' : 'dog')} />
       </div>
     </div>
 
@@ -135,7 +114,7 @@
         </div>
         <div class="text-right">
           <div class="ui-label">Volume</div>
-          <div class="mt-1 text-lg font-black tabular-nums text-slate-100">{fmtVolume(label.epiVolume)} mL</div>
+          <div class="mt-1.5 ui-result-value">{fmtVolume(label.epiVolume)} mL</div>
         </div>
       </div>
     </article>
@@ -151,7 +130,7 @@
         </div>
         <div class="text-right">
           <div class="ui-label">Volume</div>
-          <div class="mt-1 text-lg font-black tabular-nums text-slate-100">{fmtVolume(label.atropineVolume)} mL</div>
+          <div class="mt-1.5 ui-result-value">{fmtVolume(label.atropineVolume)} mL</div>
         </div>
       </div>
     </article>
@@ -163,7 +142,7 @@
         </div>
         <div class="text-right">
           <div class="ui-label">Estimated ET Tube Size</div>
-          <div class="mt-1 text-lg font-black tabular-nums text-slate-100">
+          <div class="mt-1.5 ui-result-value">
             {#if label.etEstimate}{label.etEstimate.estimateMm.toFixed(1)} mm{:else}—{/if}
           </div>
           {#if label.etEstimate}
@@ -194,11 +173,11 @@
   .cpr-batch-toggle,
   .cpr-print-button {
     min-width: 0;
-    min-height: 2.35rem;
   }
 
   .cpr-batch-toggle {
-    justify-self: start;
+    width: 176px;
+    max-width: 100%;
   }
 
   .cpr-print-button {
@@ -209,20 +188,19 @@
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
-  .cpr-species-grid {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 0.45rem;
-  }
 
-  .cpr-species-button {
-    min-width: 0;
-  }
 
   @media (min-width: 520px) {
     .cpr-patient-grid {
       grid-template-columns: minmax(0, 1.2fr) minmax(150px, 0.8fr);
       align-items: end;
     }
+  }
+
+  @media (min-width: 768px) {
+    .cpr-print-button { min-height: 34px; }
+  }
+  @media (min-width: 1024px) {
+    .cpr-patient-grid { grid-template-columns: minmax(0, 1fr) minmax(0, 11rem); }
   }
 </style>

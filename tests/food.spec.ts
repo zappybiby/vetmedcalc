@@ -1,3 +1,4 @@
+import { setToggle } from './toggle';
 import { expect, type Page, test } from '@playwright/test';
 
 type ClipboardMode = 'success' | 'denied' | 'unavailable';
@@ -33,7 +34,7 @@ test('copies only the food name, decimal portion, interval and matching calories
   await page.getByRole('tab', { name: 'CPR labels', exact: true }).click();
   await page.locator('#cpr-patient-name').fill('Bailey');
   await page.getByRole('tab', { name: 'Food calc', exact: true }).click();
-  await panel.getByRole('button', { name: 'Dog', exact: true }).click();
+  await setToggle(panel, 'Species', false);
   await panel.getByLabel('RER factor', { exact: true }).fill('1.2');
   await panel.getByLabel('Interval (hours)', { exact: true }).fill('6');
 
@@ -49,7 +50,7 @@ test('copies only the food name, decimal portion, interval and matching calories
 test('mobile custom notes follow species, weight, interval and calorie changes', async ({ page }) => {
   await page.setViewportSize({ width: 384, height: 854 });
   const panel = await openFood(page);
-  await panel.getByRole('button', { name: 'Cat', exact: true }).click();
+  await setToggle(panel, 'Species', true);
   await page.getByLabel('Weight (kg)', { exact: true }).fill('4');
   await panel.getByLabel('RER factor', { exact: true }).fill('1');
   await panel.getByLabel('Interval (hours)', { exact: true }).fill('8');

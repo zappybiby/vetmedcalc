@@ -1,4 +1,5 @@
 <script lang="ts">
+  import SegmentedToggle from './SegmentedToggle.svelte';
   import { patient, type Patient } from '../stores/patient';
 
   const DEFAULT_HOURS_WINDOW = 4;
@@ -50,9 +51,10 @@
 </script>
 
 <section class="ui-tool-stack text-slate-200" aria-label="Ins and outs calculator">
-  <article class="ui-card io-inputs ui-card-padding">
-    <div class="io-field io-period">
-      <div class="io-field-heading">
+  <article class="ui-card ui-card-padding">
+    <div class="io-inputs">
+    <div class="ui-field io-period">
+      <div class="ui-field-heading">
         <label class="ui-label" for="io-duration">Time period</label>
       </div>
       <div class="io-control-row">
@@ -69,20 +71,10 @@
       </div>
     </div>
 
-    <div class="io-field">
-      <div class="io-field-heading">
+    <div class="ui-field">
+      <div class="ui-field-heading">
         <label class="ui-label" for={insMode === 'rate' ? 'ins-rate' : 'ins-total'}>Fluid in</label>
-        <button
-          type="button"
-          role="switch"
-          aria-checked={insMode === 'rate'}
-          aria-label="Fluid in rate mode"
-          title={insMode === 'total' ? 'Switch to rate (mL/hr)' : 'Switch to total (mL)'}
-          class="ui-inline-toggle"
-          on:click={() => insMode = insMode === 'total' ? 'rate' : 'total'}
-        >
-          {insMode === 'total' ? 'Total' : 'Rate'}
-        </button>
+
       </div>
       <div class="io-control-row">
         <input
@@ -100,8 +92,8 @@
       </div>
     </div>
 
-    <div class="io-field">
-      <div class="io-field-heading">
+    <div class="ui-field">
+      <div class="ui-field-heading">
         <label class="ui-label" for="out-total">Urine out</label>
       </div>
       <div class="io-control-row">
@@ -119,19 +111,24 @@
         <span class="ui-unit">mL</span>
       </div>
     </div>
+    <div class="ui-field io-mode">
+      <span class="ui-label text-center">Fluid in mode</span>
+      <SegmentedToggle label="Fluid in rate mode" first="Total" second="Rate" secondSelected={insMode === 'rate'} onToggle={rate => insMode = rate ? 'rate' : 'total'} />
+    </div>
+    </div>
   </article>
 
   {#if hasInput}
     <article class="ui-card min-w-0 ui-card-padding" aria-label="Ins and outs results">
       <div class="grid gap-3">
-        <div class="flex items-baseline justify-between gap-3">
+        <div class="io-result-row">
           <span class="ui-label">Fluid in</span>
           <div class="whitespace-nowrap">
             <span class="ui-result-value" data-testid="io-in-weight-rate">{fmt(insMlPerKgHr)}</span>
             <span class="ml-1 ui-unit">mL/kg/hr</span>
           </div>
         </div>
-        <div class="flex items-baseline justify-between gap-3">
+        <div class="io-result-row">
           <span class="ui-label">Fluid out</span>
           <div class="whitespace-nowrap">
             <span class="ui-result-value" data-testid="io-out-weight-rate">{fmt(outMlPerKgHr)}</span>
@@ -144,29 +141,25 @@
 </section>
 
 <style>
+  .io-mode { grid-column: 2; grid-row: 1; }
+  .io-result-row { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: baseline; gap: 12px; }
+  @media (min-width: 640px) {
+    .io-result-row { grid-template-columns: 12rem auto; justify-content: start; }
+  }
   .io-inputs {
     display: grid;
     min-width: 0;
     grid-template-columns: repeat(2, minmax(0, 1fr));
     align-items: start;
-    gap: 1rem;
+    gap: 12px;
   }
 
   .io-period {
-    grid-column: 1 / -1;
+    grid-column: 1;
   }
 
-  .io-field {
-    display: grid;
-    min-width: 0;
-    gap: 0.375rem;
-  }
-
-  .io-field-heading {
-    display: flex;
-    min-height: 1.5rem;
-    align-items: center;
-    gap: 0.375rem;
+  @media (min-width: 1024px) {
+    .io-inputs { width: 100%; max-width: 48rem; margin-inline: auto; }
   }
 
   .io-control-row {
@@ -179,12 +172,14 @@
 
   @media (min-width: 640px) {
     .io-inputs {
-      grid-template-columns: minmax(8rem, 0.8fr) repeat(2, minmax(0, 1fr));
-      gap: 1.25rem;
+      grid-template-columns: minmax(8rem, 0.8fr) repeat(2, minmax(0, 1fr)) auto;
+      gap: 12px;
     }
 
     .io-period {
       grid-column: auto;
     }
+
+    .io-mode { grid-column: 4; }
   }
 </style>

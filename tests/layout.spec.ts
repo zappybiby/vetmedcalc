@@ -1,3 +1,4 @@
+import { calculateBagIfMobile, setToggle } from './toggle';
 import AxeBuilder from '@axe-core/playwright';
 import { expect, type Locator, type Page, test } from '@playwright/test';
 
@@ -85,10 +86,12 @@ const TAB_FILLERS: Record<string, (page: Page, panel: Locator) => Promise<void>>
     await page.locator('#cri-rate').fill('8');
   },
   'Drug in bag': async (page) => {
+    await setToggle(page, 'Calculation mode', false);
     await page.locator('#drugbag-drug-0').selectOption('diazepam-5');
     await page.locator('#drugbag-dose-0').fill('1');
     await page.locator('#drugbag-bag').fill('1000');
     await page.locator('#drugbag-time').fill('12');
+    await calculateBagIfMobile(page);
   },
   'Ins / outs': async (page) => {
     await page.locator('#ins-total').fill('240');
@@ -101,13 +104,13 @@ const TAB_FILLERS: Record<string, (page: Page, panel: Locator) => Promise<void>>
     await panel.getByLabel('Interval (hours)', { exact: true }).fill('6');
   },
   'Food calc': async (_page, panel) => {
-    await panel.getByRole('button', { name: 'Dog' }).click();
+    await setToggle(panel, 'Species', false);
     await panel.getByLabel('RER factor', { exact: true }).fill('1.2');
     await panel.getByLabel('Interval (hours)', { exact: true }).fill('6');
     await panel.getByLabel('Custom kcal/can', { exact: true }).fill('200');
   },
   'KPhos/KCl': async (_page, panel) => {
-    await panel.getByRole('button', { name: 'CRI', exact: true }).click();
+    await setToggle(panel, 'Add KPhos to', true);
     await panel.getByLabel('Fluid rate (mL/hr)', { exact: true }).fill('56.25');
     await panel.getByLabel('Phosphate target (mmol/kg/hr)', { exact: true }).fill('0.01');
     await panel.getByLabel('Added potassium target (mEq/L)', { exact: true }).fill('30');
@@ -122,7 +125,7 @@ const TAB_FILLERS: Record<string, (page: Page, panel: Locator) => Promise<void>>
   'CPR labels': async (page, panel) => {
     await fillCommonPatientData(page);
     await page.locator('#cpr-patient-name').fill('Bailey');
-    await panel.getByRole('button', { name: 'Dog' }).click();
+    await setToggle(panel, 'Species', false);
   },
 };
 
@@ -471,8 +474,8 @@ test.describe('responsive layout guardrails', () => {
   // primary tab checks do not exercise. Screenshots are artifacts, not baselines.
   for (const theme of ['dark', 'light'] as const) {
     for (const viewport of [
-      { name: 'desktop', width: 1440, height: 900 },
-      { name: 'mobile', width: 384, height: 854 },
+      { name: 'desktop', width: 1920, height: 1080 },
+      { name: 'mobile', width: 360, height: 780 },
     ]) {
       test(`visual review: ${theme} ${viewport.name}`, async ({ page }, testInfo) => {
         test.setTimeout(120_000);
@@ -483,7 +486,7 @@ test.describe('responsive layout guardrails', () => {
           const name = `${theme}-${viewport.name}-${state.replace(/[^a-z0-9]+/gi, '-').toLowerCase()}`;
           await page.evaluate(() => window.scrollTo(0, 0));
           const path = testInfo.outputPath(`${name}.png`);
-          await page.screenshot({ path, fullPage: true, animations: 'disabled', caret: 'hide' });
+          await page.screenshot({ path, fullPage: true, animations: 'disabled', caret: 'hide', scale: 'css' });
           await testInfo.attach(name, { path, contentType: 'image/png' });
           await expectThemeToggleIconMatchesTheme(page, name);
           await expectVisibleCardShellsMatch(page, `${name} populated card borders`);
@@ -511,7 +514,7 @@ test.describe('responsive layout guardrails', () => {
               const style = getComputedStyle(element);
               return { size: style.fontSize, weight: style.fontWeight, color: style.color };
             };
-            const resultLabelStyle = await panel.getByText('Delivers', { exact: true }).evaluate(labelStyle);
+            const resultLabelStyle = await panel.getByText('Instruction', { exact: true }).evaluate(labelStyle);
             for (const field of ['cri-med', 'cri-dose', 'cri-duration', 'cri-rate']) {
               expect(await panel.locator(`label[for="${field}"]`).evaluate(labelStyle), `${field} uses the strong result-label style`).toEqual(resultLabelStyle);
             }
@@ -543,7 +546,12 @@ test.describe('responsive layout guardrails', () => {
             const [left, right] = await Promise.all(fields.map((field) => field.boundingBox()));
             expect(left).not.toBeNull();
             expect(right).not.toBeNull();
-            expect.soft(Math.abs(left!.y - right!.y), `${tabName} paired input alignment`).toBeLessThanOrEqual(1);
+            if (tabName === 'KPhos/KCl' && viewport.name === 'mobile') {
+              expect.soft(right!.y, 'Mobile targets follow phosphate then potassium').toBeGreaterThan(left!.y + left!.height);
+              expect.soft(Math.abs(left!.x - right!.x), 'Stacked target alignment').toBeLessThanOrEqual(1);
+            } else {
+              expect.soft(Math.abs(left!.y - right!.y), `${tabName} paired input alignment`).toBeLessThanOrEqual(1);
+            }
             expect.soft(Math.abs(left!.height - right!.height), `${tabName} paired input heights`).toBeLessThanOrEqual(1);
           }
 
@@ -570,8 +578,8 @@ test.describe('responsive layout guardrails', () => {
 
         await selectTab(page, 'Food calc');
         let panel = activePanel(page);
-        await panel.getByRole('button', { name: 'Cat', exact: true }).click();
-        await expect(panel.getByRole('button', { name: 'Cat', exact: true })).toHaveAttribute('aria-pressed', 'true');
+        await setToggle(panel, 'Species', true);
+        await expect(panel.getByRole('switch', { name: 'Species', exact: true })).toBeChecked();
         await capture('Food calc Cat');
         await expectAxeColorContrast(page, `${theme} ${viewport.name} Cat foods`);
 
@@ -588,7 +596,7 @@ test.describe('responsive layout guardrails', () => {
 
         await selectTab(page, 'KPhos/KCl');
         panel = activePanel(page);
-        await panel.getByRole('button', { name: 'Bag', exact: true }).click();
+        await setToggle(panel, 'Add KPhos to', false);
         await capture('KPhos Bag');
         await expectAxeColorContrast(page, `${theme} ${viewport.name} KPhos Bag`);
 
@@ -602,7 +610,7 @@ test.describe('responsive layout guardrails', () => {
 
         await selectTab(page, 'CPR labels');
         panel = activePanel(page);
-        await panel.getByRole('checkbox', { name: 'Batch mode', exact: true }).check();
+        await panel.getByRole('switch', { name: 'Batch mode', exact: true }).check();
         const batch = panel.getByRole('region', { name: 'Batch CPR Labels', exact: true });
         for (const [index, patient] of [
           { name: 'Alexandria Long Patient Name', species: 'Dog', weight: '22.5' },

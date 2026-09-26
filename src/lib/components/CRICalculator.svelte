@@ -1,4 +1,5 @@
 <script lang="ts">
+  import ToolDisclosure from './ToolDisclosure.svelte';
   import { onDestroy } from 'svelte';
   import type { DoseUnit } from '../helpers/doseMapping';
   import { buildCRIViewModel, type CRIViewModel } from '../viewmodels/criViewModel';
@@ -227,7 +228,7 @@
 
 <section class="ui-tool-stack text-slate-200" aria-label="CRI calculator">
   <article class="ui-card ui-card-padding grid gap-2 sm:gap-3">
-    <div class="grid min-w-0 grid-cols-2 items-end gap-2 sm:gap-2.5 xl:grid-cols-[minmax(220px,1.45fr)_minmax(220px,1.25fr)_minmax(104px,0.55fr)_minmax(120px,0.65fr)]">
+    <div class="cri-inputs grid min-w-0 grid-cols-2 items-end gap-2 sm:gap-2.5 xl:grid-cols-[minmax(220px,1.45fr)_minmax(220px,1.25fr)_minmax(104px,0.55fr)_minmax(120px,0.65fr)]">
       <div class="col-span-2 flex min-w-0 flex-col gap-1.5 xl:col-span-1">
         <label class="ui-label" for="cri-med">Medication</label>
         <select id="cri-med" bind:value={medId} class="field-select">
@@ -378,7 +379,7 @@
 
       <div class="grid gap-y-0 border-t ui-rule md:grid-cols-3">
         {#each summaryCards as card, index}
-          <section class={`ui-card-padding grid min-w-0 grid-cols-[minmax(0,0.72fr)_minmax(0,1fr)] items-baseline gap-2 sm:block ${index > 0 ? 'border-t ui-rule md:border-t-0 md:border-l' : ''}`}>
+          <section class={`cri-summary-cell ui-card-padding grid min-w-0 grid-cols-[minmax(0,0.72fr)_minmax(0,1fr)] items-baseline gap-2 sm:block ${index > 0 ? 'border-t ui-rule md:border-t-0 md:border-l' : ''}`}>
             <div class="ui-label-strong">{card.label}</div>
             <div class="ui-result-value text-right sm:mt-1.5 sm:text-left">{card.value}</div>
             {#if card.secondary}
@@ -389,23 +390,11 @@
       </div>
     </article>
 
-    <details class="group ui-card overflow-hidden">
-      <summary class="ui-summary ui-card-padding flex cursor-pointer items-center justify-between gap-3">
-        <div class="ui-section-title">Step-By-Step calculations</div>
-        <svg class="h-5 w-5 flex-none text-slate-400 transition group-open:rotate-180" viewBox="0 0 20 20" aria-hidden="true">
-          <path
-            fill="currentColor"
-            fill-rule="evenodd"
-            d="M5.23 7.21a.75.75 0 011.06.02L10 11.173l3.71-3.94a.75.75 0 011.08 1.04l-4.24 4.5a.75.75 0 01-1.08 0l-4.24-4.5a.75.75 0 01.02-1.06z"
-            clip-rule="evenodd"
-          />
-        </svg>
-      </summary>
-
-      <div class="border-t ui-rule ui-card-padding">
+    <ToolDisclosure title="Step-By-Step calculations">
+      <div>
         <div class="grid gap-2">
           {#each vm.stepByStep.rows as row}
-            <div class="ui-inset grid gap-1.5 px-2.5 py-2 sm:px-3 lg:grid-cols-[168px_minmax(0,1fr)] lg:items-center lg:gap-3 lg:py-1.5">
+            <div class="cri-calculation-step ui-inset grid gap-1.5 px-2.5 py-2 sm:px-3 lg:grid-cols-[168px_minmax(0,1fr)] lg:items-center lg:gap-3 lg:py-1.5">
               <div class="text-[12px] font-semibold leading-snug text-slate-200">{row.label}</div>
 
               <div class="ui-formula">
@@ -426,6 +415,24 @@
           {/each}
         </div>
       </div>
-    </details>
+    </ToolDisclosure>
   {/if}
 </section>
+
+<style>
+  @media (max-width: 767px) {
+    .cri-inputs { gap: 8px; }
+    .cri-inputs .field-control, .cri-inputs .field-select { min-height: 40px; padding-block: 4px; }
+    .cri-summary-cell { grid-template-columns: minmax(0, 1fr) auto; gap: 4px 8px; padding-block: 8px; }
+    .cri-summary-cell .ui-label-strong { font-size: 10px; white-space: nowrap; }
+    .cri-summary-cell .ui-result-value { font-size: 15px; font-weight: 600; text-align: right; }
+    .cri-summary-cell:first-child .ui-result-value { font-size: 18px; font-weight: 800; }
+    .cri-summary-cell .ui-meta { grid-column: 1 / -1; margin-top: 0; text-align: right; }
+    .cri-calculation-step { border: 0; border-radius: 0; background: transparent; box-shadow: none; padding: 4px 0 8px; }
+    .cri-calculation-step + .cri-calculation-step { border-top: 1px solid var(--ui-result-divider); padding-top: 12px; }
+  }
+  @media (min-width: 1024px) {
+    .cri-inputs { max-width: 54rem; }
+    #cri-custom-concentration { max-width: 12rem; }
+  }
+</style>
