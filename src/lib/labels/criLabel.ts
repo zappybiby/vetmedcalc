@@ -89,7 +89,7 @@ function formatMassMg(valueMg: number): string {
 }
 
 function formatConcentrationMgPerMl(valueMgPerMl: number): string {
-  return `${valueMgPerMl.toFixed(2)} mg/mL`;
+  return `${valueMgPerMl.toFixed(4)} mg/mL`;
 }
 
 function formatStockConcentration(medication: MedicationDef): string {

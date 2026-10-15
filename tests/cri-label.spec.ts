@@ -982,8 +982,8 @@ test.describe('CRI label print guardrails', () => {
 
         const finalConcentration = sheet.querySelector<HTMLElement>('.cri-final-value');
         const finalConcentrationText = finalConcentration?.textContent?.trim() ?? '';
-        if (!/^-?\d+\.\d{2}\s+mg\/mL$/.test(finalConcentrationText)) {
-          issues.push(`${prefix}: final concentration is not rounded to the nearest hundredth.`);
+        if (!/^-?\d+\.\d{4}\s+mg\/mL$/.test(finalConcentrationText)) {
+          issues.push(`${prefix}: final concentration is not rounded to four decimal places.`);
         }
         const finalValueSize = finalConcentration
           ? Number.parseFloat(getComputedStyle(finalConcentration).fontSize)
