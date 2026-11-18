@@ -13,7 +13,7 @@
   type Tab = { id: string; label: string };
   const tabs: Tab[] = [
     { id: 'cri',     label: 'CRI calculator' },
-    { id: 'drugbag', label: 'Drug in bag' },
+    { id: 'drugbag', label: 'Multi-Drug CRI' },
     { id: 'insouts', label: 'Ins / outs' },
     { id: 'rer',     label: 'Tube Feeding' },
     { id: 'food',    label: 'Food calc' },
@@ -24,7 +24,7 @@
 
   let active: Tab['id'] = 'cri';
   const desktopWidths: Record<string, string> = {
-    cri: '56rem', drugbag: '65rem', insouts: '38rem', rer: '50rem',
+    cri: '56rem', drugbag: '56rem', insouts: '38rem', rer: '50rem',
     food: '65rem', kphos: '65rem', blood: '50rem', cpr: '36rem',
   };
 

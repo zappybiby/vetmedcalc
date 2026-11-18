@@ -25,9 +25,11 @@ function prepare(input: Input, rate: number) {
     const ticksPerMl = 1 / syringe.incrementMl;
     // A positive requested dose must never become a zero-drug preparation.
     const draw = Math.max(1, Math.round(rawDraw * ticksPerMl)) / ticksPerMl;
-    const deliveredMgKgHr = draw * drug.concentrationMgMl * rate / input.bagMl / input.weightKg;
+    const drawnMg = draw * drug.concentrationMgMl;
+    const bagConcentrationMgMl = drawnMg / input.bagMl;
+    const deliveredMgKgHr = drawnMg * rate / input.bagMl / input.weightKg;
     const errorPct = (deliveredMgKgHr / drug.doseMgKgHr - 1) * 100;
-    return { amount, rawDraw, syringe, draw, deliveredMgKgHr, errorPct };
+    return { amount, rawDraw, syringe, draw, bagConcentrationMgMl, deliveredMgKgHr, errorPct };
   });
   const totalDraw = drugs.reduce((sum, drug) => sum + drug.draw, 0);
   const worstErrorPct = Math.max(...drugs.map(drug => Math.abs(drug.errorPct)));

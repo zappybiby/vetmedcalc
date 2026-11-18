@@ -16,7 +16,7 @@ test('binary toggles respond on both sides, their edge, and the keyboard', async
     await toggle.press('Enter');
     await expect(toggle).toBeChecked({ checked: !initial });
   }
-  for (const tab of ['Drug in bag', 'KPhos/KCl', 'Ins / outs', 'CPR labels', 'Food calc']) {
+  for (const tab of ['Multi-Drug CRI', 'KPhos/KCl', 'Ins / outs', 'CPR labels', 'Food calc']) {
     await page.getByRole('tab', { name: tab, exact: true }).click();
     const panel = page.locator('[role="tabpanel"] > div:not([hidden])');
     if (tab === 'CPR labels') {

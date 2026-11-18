@@ -85,7 +85,7 @@ const TAB_FILLERS: Record<string, (page: Page, panel: Locator) => Promise<void>>
     await page.locator('#cri-duration').fill('12');
     await page.locator('#cri-rate').fill('8');
   },
-  'Drug in bag': async (page) => {
+  'Multi-Drug CRI': async (page) => {
     await setToggle(page, 'Calculation mode', false);
     await page.locator('#drugbag-drug-0').selectOption('diazepam-5');
     await page.locator('#drugbag-dose-0').fill('1');
@@ -500,7 +500,7 @@ test.describe('responsive layout guardrails', () => {
           await fillTabData(page, tabName);
           await capture(tabName);
 
-          if (['CRI calculator', 'Drug in bag', 'Tube Feeding'].includes(tabName)) {
+          if (['CRI calculator', 'Multi-Drug CRI', 'Tube Feeding'].includes(tabName)) {
             const formulaSizes = await activePanel(page).locator('.ui-formula').evaluateAll(
               (elements) => elements.map((element) => Number.parseFloat(getComputedStyle(element).fontSize)),
             );
@@ -537,10 +537,10 @@ test.describe('responsive layout guardrails', () => {
             expect.soft(right!.x - left!.x - left!.width, 'Separate adjacent summary columns').toBeGreaterThanOrEqual(16);
           }
 
-          if (['Drug in bag', 'KPhos/KCl', 'Tube Feeding'].includes(tabName)) {
+          if (['Multi-Drug CRI', 'KPhos/KCl', 'Tube Feeding'].includes(tabName)) {
             const fields = tabName === 'Tube Feeding'
               ? [activePanel(page).getByLabel('Diet density (kcal/mL)', { exact: true }), activePanel(page).getByLabel('RER factor', { exact: true })]
-              : (tabName === 'Drug in bag'
+              : (tabName === 'Multi-Drug CRI'
                 ? ['#drugbag-bag', '#drugbag-time']
                 : ['#kphos-phos-target', '#kphos-k-target']).map((selector) => page.locator(selector));
             const [left, right] = await Promise.all(fields.map((field) => field.boundingBox()));

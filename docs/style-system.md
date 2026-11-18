@@ -1,7 +1,7 @@
 # VetMedCalc visual style
 
 CRI Calculator is the reference for typography, spacing, surfaces and result
-hierarchy. Drug in Bag supplies the pill-switch treatment. Tools may have different
+hierarchy. Multi-Drug CRI supplies the pill-switch treatment. Tools may have different
 layouts, but equivalent controls and content should use the same shared roles.
 
 ## Shared roles
@@ -45,17 +45,17 @@ inside uppercase labels; never uppercase case-sensitive units such as mL or mEq/
   roughly 12rem per numeric field, with extra room for names and medication lists.
   Match the overall work area to the tool's content. Center compact form groups
   when results need a wider card, align supporting text with those groups, and
-  keep units next to their inputs. Drug in Bag settings and medication cards
-  share one column width. Expanding calculations must not move the input column.
-- Drug in Bag uses medication result rows followed by pump rate and duration.
-  Its labeled Add medication action sits below the medication list.
-  Rate is the default calculation mode; Duration/Rate and pump precision use
-  matching segmented toggles. Each medication result and calculation step
-  has its own inset card. Removal rounds up to a whole mL independently of pump
-  precision; dose and runtime calculations retain the entered nominal bag volume.
-  On phones, bag settings start collapsed, medication cards are added explicitly,
-  and results appear after Calculate. Editing inputs hides the previous results
-  until Calculate is pressed again.
+  keep units next to their inputs. Expanding calculations must not move the inputs.
+- Multi-Drug CRI places bag settings above a list that starts with one medication
+  row. Add medication appends a row, and custom name and concentration fields share
+  a line with the medication selector. Rate is the default calculation mode.
+  Duration/Rate and pump precision use matching segmented toggles.
+- Multi-Drug CRI groups the removal instruction, pump rate and duration above
+  alternating medication result rows. Each row shows the bag concentration,
+  delivered dose and volume to add. Removal rounds up to a whole mL independently
+  of pump precision. Concentration, dose and duration use the entered bag volume.
+  On phones, results appear after Calculate, and editing inputs clears them until
+  Calculate is pressed again.
 - Ins/Outs uses the same label/control spacing as CRI, with the mode switch in a
   separate field rather than changing the Fluid in label height.
 - KPhos orders inputs as preparation mode, electrolyte targets with calculation
