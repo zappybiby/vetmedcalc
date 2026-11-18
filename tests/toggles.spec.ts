@@ -16,7 +16,7 @@ test('binary toggles respond on both sides, their edge, and the keyboard', async
     await toggle.press('Enter');
     await expect(toggle).toBeChecked({ checked: !initial });
   }
-  for (const tab of ['Multi-Drug CRI', 'KPhos/KCl', 'Ins / outs', 'CPR labels', 'Food calc']) {
+  for (const tab of ['Multi-Drug CRI', 'KPhos/KCl', 'Ins / outs', 'Tube Feeding', 'CPR labels', 'Food calc']) {
     await page.getByRole('tab', { name: tab, exact: true }).click();
     const panel = page.locator('[role="tabpanel"] > div:not([hidden])');
     if (tab === 'CPR labels') {
@@ -33,4 +33,33 @@ test('binary toggles respond on both sides, their edge, and the keyboard', async
       await panel.getByRole('switch', { name: 'Batch mode', exact: true }).uncheck();
     }
   }
+});
+
+test('tube feeding uses the selected mode independently of the interval', async ({ page }) => {
+  await page.goto('/vetmedcalc/');
+  await page.getByRole('tab', { name: 'Tube Feeding', exact: true }).click();
+  await page.getByLabel('Weight (kg)', { exact: true }).fill('44.2');
+
+  const mode = page.getByRole('switch', { name: 'Feeding mode' });
+  const interval = page.getByLabel('Interval (hours)', { exact: true });
+  const continuous = page.getByRole('article', { name: 'Continuous rate' });
+  await expect(mode).not.toBeChecked();
+  await interval.fill('1');
+  await expect(page.getByText('Give every 1 hr', { exact: true })).toBeVisible();
+  await expect(continuous).toBeHidden();
+
+  await interval.clear();
+  await mode.check();
+  await expect(interval).toBeHidden();
+  await expect(continuous).toContainText('55.6 mL/hr');
+  await expect(page.getByText(/^Give every \d/)).toBeHidden();
+
+  await mode.uncheck();
+  await expect(interval).toHaveValue('');
+  await interval.fill('2');
+  await mode.check();
+  await mode.uncheck();
+  await expect(interval).toHaveValue('2');
+  await expect(page.getByText('Give every 2 hr', { exact: true })).toBeVisible();
+  await expect(continuous).toBeHidden();
 });

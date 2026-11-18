@@ -1,4 +1,5 @@
 <script lang="ts">
+  import SegmentedToggle from './SegmentedToggle.svelte';
   import ToolDisclosure from './ToolDisclosure.svelte';
   import { calculateRERPlan, type RERPlan } from '../helpers/rer';
   import { patient, type Patient } from '../stores/patient';
@@ -9,6 +10,11 @@
   const DEFAULT_KCAL_PER_ML = 0.9;
   const DEFAULT_RER_FACTOR = 1.0;
   const DEFAULT_INTERVAL_HOURS = 6;
+  const continuousRateFormatter = new Intl.NumberFormat('en-US', {
+    minimumFractionDigits: 1,
+    maximumFractionDigits: 1,
+    useGrouping: false
+  });
 
   let p: Patient = { weightKg: null, species: '', name: '' };
   $: p = $patient;
@@ -16,6 +22,7 @@
   let weightKg: number | null = null;
   $: weightKg = p.weightKg != null && !Number.isNaN(p.weightKg) && p.weightKg > 0 ? p.weightKg : null;
 
+  let continuousFeeding = false;
   let kcalPerMl: number | '' = DEFAULT_KCAL_PER_ML;
   let rerFactor: number | '' = DEFAULT_RER_FACTOR;
   let intervalHours: number | '' = DEFAULT_INTERVAL_HOURS;
@@ -45,7 +52,7 @@
 
   function tokenizeMath(expr: string): MathToken[] {
     const tokens: MathToken[] = [];
-    const re = /(-?\d+(?:\.\d+)?)|([=×÷^()+;])/g;
+    const re = /(-?\d+(?:\.\d+)?)|([=≈×÷^()+;])/g;
     let lastIndex = 0;
     let match: RegExpExecArray | null;
 
@@ -70,10 +77,11 @@
 
   let kcalPerMlValue: number | null = null;
   let rerFactorValue: number | null = null;
-  let intervalHoursValue: number | null = null;
+  let planIntervalHours: number | null = null;
   $: kcalPerMlValue = numeric(kcalPerMl);
   $: rerFactorValue = numeric(rerFactor);
-  $: intervalHoursValue = numeric(intervalHours);
+  // The plan uses the interval only to calculate per-feeding values.
+  $: planIntervalHours = continuousFeeding ? DEFAULT_INTERVAL_HOURS : numeric(intervalHours);
 
   let issues: string[] = [];
   $: {
@@ -85,7 +93,7 @@
     if (rerFactorValue != null && rerFactorValue <= 0) {
       next.push('RER factor must be greater than 0.');
     }
-    if (intervalHoursValue != null && intervalHoursValue <= 0) {
+    if (planIntervalHours != null && planIntervalHours <= 0) {
       next.push('Interval hours must be greater than 0.');
     }
 
@@ -97,16 +105,18 @@
     weightKg != null &&
     kcalPerMlValue != null &&
     rerFactorValue != null &&
-    intervalHoursValue != null &&
+    planIntervalHours != null &&
     issues.length === 0
   )
     ? calculateRERPlan({
         weightKg,
         kcalPerMl: kcalPerMlValue,
         rerFactor: rerFactorValue,
-        intervalHours: intervalHoursValue
+        intervalHours: planIntervalHours
       })
     : null;
+
+  $: continuousRate = plan ? continuousRateFormatter.format(plan.mlPerHour) : '';
 
   let calculationRows: CalculationRow[] = [];
   $: calculationRows = plan
@@ -123,10 +133,15 @@
           label: 'Daily volume',
           math: `Daily volume = ${fmt(plan.targetKcalPerDay, 2)} kcal/day ÷ ${fmt(plan.kcalPerMl, 2)} kcal/mL = ${fmt(plan.totalMlPerDay, 2)} mL/day`
         },
-        {
-          label: 'Continuous rate',
-          math: `Continuous rate = ${fmt(plan.totalMlPerDay, 2)} mL/day ÷ 24 hr = ${fmt(plan.mlPerHour, 2)} mL/hr`
-        }
+        continuousFeeding
+          ? {
+              label: 'Continuous rate',
+              math: `Continuous rate = ${fmt(plan.totalMlPerDay, 2)} mL/day ÷ 24 hr ≈ ${continuousRate} mL/hr`
+            }
+          : {
+              label: 'Volume per feeding',
+              math: `Volume per feeding = ${fmt(plan.totalMlPerDay, 2)} mL/day × ${fmtCompact(plan.intervalHours)} hr ÷ (24 hr/day) ≈ ${fmtWhole(plan.mlPerInterval)} mL`
+            }
       ]
     : [];
 </script>
@@ -134,7 +149,17 @@
 <section class="ui-tool-stack text-slate-200" aria-label="Tube Feeding">
   <div class="ui-tool-stack">
     <div class="ui-card min-w-0 ui-card-padding">
-      <div class="ui-inputs-three grid items-end gap-2 min-[360px]:grid-cols-2 sm:gap-3 md:grid-cols-2 xl:grid-cols-3">
+      <div class={`grid items-end gap-2 min-[360px]:grid-cols-2 sm:gap-3 ${continuousFeeding ? 'ui-inputs-two' : 'ui-inputs-three xl:grid-cols-3'}`}>
+        <div class="col-span-full w-full max-w-[17rem] justify-self-center">
+          <SegmentedToggle
+            label="Feeding mode"
+            first="Intermittent"
+            second="Continuous"
+            secondSelected={continuousFeeding}
+            onToggle={isContinuous => continuousFeeding = isContinuous}
+          />
+        </div>
+
         <label class="grid gap-1.5">
           <span class="ui-label">Diet density <span class="normal-case">(kcal/mL)</span></span>
           <input
@@ -161,21 +186,23 @@
           />
         </label>
 
-        <label class="grid gap-1.5 min-[360px]:col-span-2 xl:col-span-1">
-          <span class="ui-label">Interval (hours)</span>
-          <input
-            class="field-control"
-            type="number"
-            min="0"
-            step="0.25"
-            bind:value={intervalHours}
-            inputmode="decimal"
-            placeholder="e.g., 6"
-          />
-        </label>
+        {#if !continuousFeeding}
+          <label class="grid gap-1.5 min-[360px]:col-span-2 xl:col-span-1">
+            <span class="ui-label">Interval (hours)</span>
+            <input
+              class="field-control"
+              type="number"
+              min="0"
+              step="0.25"
+              bind:value={intervalHours}
+              inputmode="decimal"
+              placeholder="e.g., 6"
+            />
+          </label>
+        {/if}
       </div>
 
-      <div class="feeding-setup-note mt-2 ui-meta sm:mt-3">
+      <div class={`mt-2 ui-meta sm:mt-3 ${continuousFeeding ? 'ui-inputs-two' : 'ui-inputs-three'}`}>
         RER = 70 x kg^0.75, then target kcal/day = RER x factor.
       </div>
 
@@ -190,38 +217,40 @@
 
     {#if plan}
       <div class="ui-tool-stack md:grid-cols-[minmax(0,0.8fr)_minmax(0,1.2fr)]">
-        <div class="ui-card ui-card-padding">
-          <div class="ui-label-strong">Give every {fmtCompact(plan.intervalHours)} <span class="normal-case">hr</span></div>
-          <div class="ui-result-value mt-1.5">{fmtWhole(plan.mlPerInterval)} mL</div>
-          <div class="mt-1.5 text-sm text-slate-300 sm:mt-2">
-            Delivers about {fmtWhole(plan.kcalPerInterval)} kcal q{fmtCompact(plan.intervalHours)}h
-          </div>
-        </div>
-
-          <div class="ui-card ui-card-padding">
-            <header class="ui-label-strong">Quick reference</header>
-            <div class="mt-2 grid gap-2 text-sm sm:mt-3 sm:gap-3">
-              <div class="grid gap-2 sm:gap-3">
-                <div class="grid grid-cols-[minmax(0,1fr)_auto] items-baseline gap-2">
-                  <span class="text-slate-300">Calorie goal</span>
-                  <span class="font-black tabular-nums text-slate-100">{fmtWhole(plan.targetKcalPerDay)} kcal/day</span>
-                </div>
-                <div class="grid grid-cols-[minmax(0,1fr)_auto] items-baseline gap-2">
-                  <span class="text-slate-300">Daily volume</span>
-                  <span class="font-black tabular-nums text-slate-100">{fmtWhole(plan.totalMlPerDay)} mL/day</span>
-                </div>
-                <div class="grid grid-cols-[minmax(0,1fr)_auto] items-baseline gap-2">
-                  <span class="text-slate-300">Diet density</span>
-                  <span class="font-black tabular-nums text-slate-100">{fmt(plan.kcalPerMl, 2)} kcal/mL</span>
-                </div>
-              </div>
-
-              <div class="mt-1 grid grid-cols-[minmax(0,1fr)_auto] items-baseline gap-3 border-t ui-rule pt-3 text-sm sm:mt-2">
-                <span class="text-slate-200">Continuous rate</span>
-                <span class="font-black tabular-nums text-slate-100">{fmt(plan.mlPerHour, 2)} mL/hr</span>
-              </div>
+        {#if continuousFeeding}
+          <article class="ui-card ui-card-padding min-w-0" aria-labelledby="continuous-feeding-heading">
+            <h2 id="continuous-feeding-heading" class="ui-label-strong">Continuous rate</h2>
+            <div class="ui-result-value continuous-feeding-value mt-1.5">
+              {continuousRate} <span class="ui-unit">mL/hr</span>
+            </div>
+          </article>
+        {:else}
+          <div class="ui-card ui-card-padding min-w-0">
+            <div class="ui-label-strong">Give every {fmtCompact(plan.intervalHours)} <span class="normal-case">hr</span></div>
+            <div class="ui-result-value mt-1.5">{fmtWhole(plan.mlPerInterval)} mL</div>
+            <div class="mt-1.5 text-sm text-slate-300 sm:mt-2">
+              Delivers about {fmtWhole(plan.kcalPerInterval)} kcal q{fmtCompact(plan.intervalHours)}h
             </div>
           </div>
+        {/if}
+
+        <div class="ui-card ui-card-padding min-w-0">
+          <header class="ui-label-strong">Quick reference</header>
+          <div class="mt-2 grid gap-2 text-sm sm:mt-3 sm:gap-3">
+            <div class="grid grid-cols-[minmax(0,1fr)_auto] items-baseline gap-2">
+              <span class="text-slate-300">Calorie goal</span>
+              <span class="font-black tabular-nums text-slate-100">{fmtWhole(plan.targetKcalPerDay)} kcal/day</span>
+            </div>
+            <div class="grid grid-cols-[minmax(0,1fr)_auto] items-baseline gap-2">
+              <span class="text-slate-300">Daily volume</span>
+              <span class="font-black tabular-nums text-slate-100">{fmtWhole(plan.totalMlPerDay)} mL/day</span>
+            </div>
+            <div class="grid grid-cols-[minmax(0,1fr)_auto] items-baseline gap-2">
+              <span class="text-slate-300">Diet density</span>
+              <span class="font-black tabular-nums text-slate-100">{fmt(plan.kcalPerMl, 2)} kcal/mL</span>
+            </div>
+          </div>
+        </div>
       </div>
 
     <ToolDisclosure title="Calculation summary">
@@ -255,7 +284,13 @@
 </section>
 
 <style>
-  @media (min-width: 1024px) {
-    .feeding-setup-note { max-width: 38rem; margin-inline: auto; }
+  .continuous-feeding-value {
+    font-size: clamp(2rem, 3.6vw, 2.375rem);
+    line-height: 1.1;
+    overflow-wrap: anywhere;
+  }
+  .continuous-feeding-value .ui-unit {
+    font-size: 14px;
+    white-space: nowrap;
   }
 </style>

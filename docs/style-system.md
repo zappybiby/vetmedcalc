@@ -63,8 +63,10 @@ inside uppercase labels; never uppercase case-sensitive units such as mL or mEq/
   matching Added to Bag / Total in Bag toggles. Phosphate defaults to Total and
   potassium to Added. Instructions and total delivery precede composition details.
   Phones omit the composition diagram and place CRI diluent on its own line.
-- Tube Feeding places administration and quick-reference results side by side
-  on desktop and stacks them on phones.
+- Tube Feeding shows the interval and per-feeding volume in Intermittent mode.
+  Continuous mode shows a prominent rate rounded to one decimal place.
+  The selected feeding result sits beside Quick reference on desktop and above it
+  on phones.
 - Blood Transfusion keeps a desktop table and stacks labeled values by interval
   on phones. CPR batch entry gives patient names a full row on phones.
 - Food Calc remains a compact table, including space for touch-sized note actions
