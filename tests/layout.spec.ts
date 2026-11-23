@@ -110,13 +110,13 @@ const TAB_FILLERS: Record<string, (page: Page, panel: Locator) => Promise<void>>
     await panel.getByLabel('Custom kcal/can', { exact: true }).fill('200');
   },
   'KPhos/KCl': async (_page, panel) => {
-    await setToggle(panel, 'Add KPhos to', true);
-    await panel.getByLabel('Fluid rate (mL/hr)', { exact: true }).fill('56.25');
+    await panel.getByRole('radio', { name: 'Separate CRI' }).check();
+    await panel.getByLabel('Main fluid rate (mL/hr)', { exact: true }).fill('56.25');
     await panel.getByLabel('Phosphate target (mmol/kg/hr)', { exact: true }).fill('0.01');
     await panel.getByLabel('Added potassium target (mEq/L)', { exact: true }).fill('30');
     await panel.getByLabel('Bag volume (mL)', { exact: true }).fill('1000');
     await panel.getByLabel('Duration (hr)', { exact: true }).fill('12');
-    await panel.getByLabel('CRI rate (mL/hr)', { exact: true }).fill('1');
+    await panel.getByLabel('CRI pump rate (mL/hr)', { exact: true }).fill('1');
   },
   'Blood transfusion': async (_page, panel) => {
     await panel.getByLabel('Total volume (mL)', { exact: true }).fill('250');
@@ -559,6 +559,9 @@ test.describe('responsive layout guardrails', () => {
             const results = activePanel(page).getByTestId('kphos-results');
             const tables = results.getByRole('table');
             await expect(tables).toHaveCount(2);
+            await results.locator('summary', { hasText: 'Bag concentrations' }).click();
+            await results.locator('summary', { hasText: 'CRI amounts and concentrations' }).click();
+            await expect(tables).toHaveCount(4);
             const resultBox = (await results.boundingBox())!;
             for (const table of await tables.all()) {
               const box = (await table.boundingBox())!;
@@ -594,7 +597,7 @@ test.describe('responsive layout guardrails', () => {
 
         await selectTab(page, 'KPhos/KCl');
         panel = activePanel(page);
-        await setToggle(panel, 'Add KPhos to', false);
+        await panel.getByRole('radio', { name: 'Fluid bag' }).check();
         await capture('KPhos Bag');
         await expectAxeColorContrast(page, `${theme} ${viewport.name} KPhos Bag`);
 
