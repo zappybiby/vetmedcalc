@@ -403,19 +403,17 @@ test.describe('KPhos workflow', () => {
     await panel.getByLabel('Added potassium target (mEq/L)', { exact: true }).fill('82');
 
     const results = panel.getByTestId('kphos-results');
-    const kcl = results.getByRole('region', { name: 'Potassium chloride (KCl)', exact: true });
-    const kphos = results.getByRole('region', { name: 'Potassium phosphate (KPhos)', exact: true });
-    await expect(kcl.getByRole('heading', { name: 'Potassium chloride (KCl)', level: 4 })).toBeVisible();
-    await expect(kphos.getByRole('heading', { name: 'Potassium phosphate (KPhos)', level: 4 })).toBeVisible();
-    await expect(kcl.getByText('Draw', { exact: true })).toBeVisible();
+    const preparation = results.getByRole('table', { name: 'Bag preparation', exact: true });
+    const kcl = preparation.getByRole('row', { name: /Potassium chloride \(KCl\)/ });
+    const kphos = preparation.getByRole('row', { name: /Potassium phosphate \(KPhos\)/ });
+    await expect(preparation.getByRole('columnheader')).toHaveText(['Medication', 'Adds to bag', 'Draw']);
+    await expect(kcl.getByRole('rowheader')).toHaveText('Potassium chloride (KCl)');
+    await expect(kphos.getByRole('rowheader')).toHaveText('Potassium phosphate (KPhos)');
     await expect(kcl.getByTestId('kcl-stock-volume')).toHaveText('15 mL');
-    await expect(kcl.getByText('Adds to bag', { exact: true })).toBeVisible();
-    await expect(kcl).toContainText('30 mEq potassium');
-    await expect(kphos.getByText('Draw', { exact: true })).toBeVisible();
+    await expect(kcl.getByRole('cell', { name: /30 mEq potassium/ })).toBeVisible();
     await expect(kphos.getByTestId('kphos-stock-volume')).toHaveText('2.5 mL');
-    await expect(kphos.getByText('Adds to bag', { exact: true })).toBeVisible();
-    await expect(kphos).toContainText('7.5 mmol phosphate');
-    await expect(kphos).toContainText('11 mEq potassium');
+    const kphosAmount = kphos.getByRole('cell', { name: /7\.5 mmol phosphate/ });
+    await expect(kphosAmount).toContainText('11 mEq potassium');
 
     const table = results.getByRole('table', { name: 'Fluid bag delivery to patient' });
     await expect(table.getByRole('columnheader', { name: /Potassium.*mEq\/kg\/hr/ })).toBeVisible();
@@ -586,8 +584,9 @@ test.describe('KPhos workflow', () => {
     await expect(panel.getByTestId('final-bag-component')).toContainText('0.0725 mEq/kg/hr');
     await expect(panel.getByTestId('final-bag-component')).toContainText('0 mmol/kg/hr');
     await expect(panel.getByTestId('final-cri-component')).toContainText('0.01 mmol/kg/hr');
-    const criAdditive = panel.getByRole('region', { name: 'Potassium phosphate (KPhos)', exact: true });
-    await expect(criAdditive.getByText('Adds to CRI', { exact: true })).toBeVisible();
+    const criPreparation = panel.getByRole('table', { name: 'CRI preparation', exact: true });
+    const criAdditive = criPreparation.getByRole('row', { name: /Potassium phosphate \(KPhos\)/ });
+    await expect(criPreparation.getByRole('columnheader', { name: 'Adds to CRI' })).toBeVisible();
     await expect(criAdditive).toContainText('1.2 mmol phosphate');
     await expect(criAdditive).toContainText('1.76 mEq potassium');
     const bagDetails = panel.locator('summary', { hasText: 'Bag concentrations' });

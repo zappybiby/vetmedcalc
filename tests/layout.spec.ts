@@ -557,13 +557,17 @@ test.describe('responsive layout guardrails', () => {
 
           if (tabName === 'KPhos/KCl') {
             const results = activePanel(page).getByTestId('kphos-results');
-            const tables = results.getByRole('table');
-            await expect(tables).toHaveCount(2);
-            await results.locator('summary', { hasText: 'Bag concentrations' }).click();
-            await results.locator('summary', { hasText: 'CRI amounts and concentrations' }).click();
-            await expect(tables).toHaveCount(4);
+            await expect(results.getByRole('table', { name: /delivery to patient$/ })).toHaveCount(2);
+            for (const [tableName, medication] of [
+              ['Bag preparation', 'Potassium chloride (KCl)'],
+              ['CRI preparation', 'Potassium phosphate (KPhos)'],
+            ]) {
+              const preparation = results.getByRole('table', { name: tableName, exact: true });
+              await expect(preparation.getByRole('rowheader', { name: medication, exact: true })).toBeVisible();
+            }
+            await expect(results.locator('details[open]').getByRole('table')).toHaveCount(2);
             const resultBox = (await results.boundingBox())!;
-            for (const table of await tables.all()) {
+            for (const table of await results.getByRole('table').all()) {
               const box = (await table.boundingBox())!;
               expect.soft(box.x, 'Table starts inside the results').toBeGreaterThanOrEqual(resultBox.x);
               expect.soft(box.x + box.width, 'Table fits the results').toBeLessThanOrEqual(resultBox.x + resultBox.width + 1);

@@ -25,7 +25,7 @@
   let active: Tab['id'] = 'cri';
   const desktopWidths: Record<string, string> = {
     cri: '56rem', drugbag: '56rem', insouts: '38rem', rer: '50rem',
-    food: '65rem', kphos: '65rem', blood: '50rem', cpr: '36rem',
+    food: '65rem', kphos: '56rem', blood: '50rem', cpr: '36rem',
   };
 
   function selectTab(id: Tab['id']) {
@@ -68,6 +68,7 @@
 
   <div
     class="tool-panel mx-auto w-full max-w-[1040px] min-w-0 overflow-x-auto"
+    class:kphos-panel={active === 'kphos'}
     style:--desktop-tool-width={active === 'cpr' && $cprBatchMode ? '44rem' : desktopWidths[active]}
     role="tabpanel"
   >
@@ -101,5 +102,9 @@
 <style>
   @media (min-width: 1024px) {
     .tool-panel { max-width: var(--desktop-tool-width); }
+  }
+
+  @media (min-width: 1440px) {
+    .kphos-panel:has(:global(.kphos-cri-form)) { max-width: 100%; }
   }
 </style>
