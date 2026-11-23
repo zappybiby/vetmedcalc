@@ -75,6 +75,7 @@ export type KPhosPlan = {
   kClAddedMeqPerL: number | null;
   kClRawStockMl: number | null;
   kClTotalMeq: number | null;
+  kClDeliveryMeqKgHr: number | null;
   kClStockMl: number | null;
   kClDraw: KPhosSyringeDraw | null;
   addedKActualMeqPerL: number | null;
@@ -83,6 +84,10 @@ export type KPhosPlan = {
   selectedKDeltaMeqPerL: number | null;
   finalMainBagKMeqPerL: number | null;
   finalMainBagPhosMmolPerL: number | null;
+  finalMainBagKDeliveryMeqKgHr: number | null;
+  finalMainBagPhosDeliveryMmolKgHr: number | null;
+  criKDeliveryMeqKgHr: number | null;
+  criPhosDeliveryMmolKgHr: number | null;
   totalKDeliveryMeqKgHr: number | null;
   totalPhosDeliveryMmolKgHr: number | null;
   selectedPhosDeliveryMmolKgHr: number | null;
@@ -360,6 +365,9 @@ export function calculateKPhosPlan(input: KPhosPlanInput): KPhosPlan {
   const supplementalKDeliveryMeqKgHr = kPhosKDeliveryMeqKgHr != null && criDiluentKDeliveryMeqKgHr != null
     ? kPhosKDeliveryMeqKgHr + criDiluentKDeliveryMeqKgHr
     : null;
+  const supplementalPhosDeliveryMmolKgHr = kPhosPhosDeliveryMmolKgHr != null && criDiluentPhosDeliveryMmolKgHr != null
+    ? kPhosPhosDeliveryMmolKgHr + criDiluentPhosDeliveryMmolKgHr
+    : null;
   const kPhosKCreditMeqPerL = kPhosKDeliveryMeqKgHr == null
     ? null
     : kPhosKDeliveryMeqKgHr === 0
@@ -423,11 +431,17 @@ export function calculateKPhosPlan(input: KPhosPlanInput): KPhosPlan {
   const kClDeliveryMeqKgHr = mainFluidRateMlKgHr != null && bagKClContribution != null
     ? bagKClContribution * mainFluidRateMlKgHr / 1000
     : null;
+  const finalMainBagKDeliveryMeqKgHr = mainFluidRateMlKgHr != null && finalMainBagKMeqPerL != null
+    ? finalMainBagKMeqPerL * mainFluidRateMlKgHr / 1000
+    : null;
+  const finalMainBagPhosDeliveryMmolKgHr = mainFluidRateMlKgHr != null && finalMainBagPhosMmolPerL != null
+    ? finalMainBagPhosMmolPerL * mainFluidRateMlKgHr / 1000
+    : null;
   const totalKDeliveryMeqKgHr = mainNativeKDeliveryMeqKgHr != null && kClDeliveryMeqKgHr != null && supplementalKDeliveryMeqKgHr != null
     ? mainNativeKDeliveryMeqKgHr + kClDeliveryMeqKgHr + supplementalKDeliveryMeqKgHr
     : null;
-  const totalPhosDeliveryMmolKgHr = mainNativePhosDeliveryMmolKgHr != null && criDiluentPhosDeliveryMmolKgHr != null && kPhosPhosDeliveryMmolKgHr != null
-    ? mainNativePhosDeliveryMmolKgHr + criDiluentPhosDeliveryMmolKgHr + kPhosPhosDeliveryMmolKgHr
+  const totalPhosDeliveryMmolKgHr = mainNativePhosDeliveryMmolKgHr != null && supplementalPhosDeliveryMmolKgHr != null
+    ? mainNativePhosDeliveryMmolKgHr + supplementalPhosDeliveryMmolKgHr
     : null;
   const combinedEquivalentKMeqPerL = totalKDeliveryMeqKgHr != null && mainFluidRateMlKgHr != null
     ? totalKDeliveryMeqKgHr * 1000 / mainFluidRateMlKgHr
@@ -452,7 +466,7 @@ export function calculateKPhosPlan(input: KPhosPlanInput): KPhosPlan {
     mainFluidRateMlKgHr,
     mainBagRuntimeHr,
     mainNativeKDeliveryMeqKgHr,
-    mainNativePhosDeliveryMmolKgHr,
+    mainNativePhosDeliveryMmolKgHr: mainFluidRateMlKgHr != null ? mainNativePhosDeliveryMmolKgHr : null,
     criDiluentKDeliveryMeqKgHr,
     criDiluentPhosDeliveryMmolKgHr,
     kPhosPhosDeliveryMmolKgHr,
@@ -477,6 +491,7 @@ export function calculateKPhosPlan(input: KPhosPlanInput): KPhosPlan {
     kClAddedMeqPerL,
     kClRawStockMl,
     kClTotalMeq,
+    kClDeliveryMeqKgHr,
     kClStockMl,
     kClDraw,
     addedKActualMeqPerL,
@@ -485,6 +500,10 @@ export function calculateKPhosPlan(input: KPhosPlanInput): KPhosPlan {
     selectedKDeltaMeqPerL,
     finalMainBagKMeqPerL,
     finalMainBagPhosMmolPerL,
+    finalMainBagKDeliveryMeqKgHr,
+    finalMainBagPhosDeliveryMmolKgHr,
+    criKDeliveryMeqKgHr: input.mode === 'cri' ? supplementalKDeliveryMeqKgHr : 0,
+    criPhosDeliveryMmolKgHr: input.mode === 'cri' ? supplementalPhosDeliveryMmolKgHr : 0,
     totalKDeliveryMeqKgHr,
     totalPhosDeliveryMmolKgHr,
     selectedPhosDeliveryMmolKgHr,

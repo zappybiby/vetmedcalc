@@ -110,13 +110,13 @@ const TAB_FILLERS: Record<string, (page: Page, panel: Locator) => Promise<void>>
     await panel.getByLabel('Custom kcal/can', { exact: true }).fill('200');
   },
   'KPhos/KCl': async (_page, panel) => {
-    await setToggle(panel, 'Add KPhos to', true);
-    await panel.getByLabel('Fluid rate (mL/hr)', { exact: true }).fill('56.25');
+    await panel.getByRole('radio', { name: 'Separate CRI' }).check();
+    await panel.getByLabel('Main fluid rate (mL/hr)', { exact: true }).fill('56.25');
     await panel.getByLabel('Phosphate target (mmol/kg/hr)', { exact: true }).fill('0.01');
     await panel.getByLabel('Added potassium target (mEq/L)', { exact: true }).fill('30');
     await panel.getByLabel('Bag volume (mL)', { exact: true }).fill('1000');
     await panel.getByLabel('Duration (hr)', { exact: true }).fill('12');
-    await panel.getByLabel('CRI rate (mL/hr)', { exact: true }).fill('1');
+    await panel.getByLabel('CRI pump rate (mL/hr)', { exact: true }).fill('1');
   },
   'Blood transfusion': async (_page, panel) => {
     await panel.getByLabel('Total volume (mL)', { exact: true }).fill('250');
@@ -555,18 +555,23 @@ test.describe('responsive layout guardrails', () => {
             expect.soft(Math.abs(left!.height - right!.height), `${tabName} paired input heights`).toBeLessThanOrEqual(1);
           }
 
-          if (tabName === 'KPhos/KCl' && viewport.name === 'desktop') {
-            const groups = activePanel(page).locator('.kphos-cri-groups > section');
-            const [leftTitle, rightTitle, leftCard, rightGroup, rightCard] = await Promise.all([
-              groups.nth(0).locator('h4').boundingBox(),
-              groups.nth(1).locator('h4').boundingBox(),
-              groups.nth(0).locator('.kphos-mixture-card').last().boundingBox(),
-              groups.nth(1).boundingBox(),
-              groups.nth(1).locator('.kphos-mixture-card').first().boundingBox(),
-            ]);
-            expect.soft(Math.abs(leftTitle!.y - rightTitle!.y), 'Composition heading alignment').toBeLessThanOrEqual(1);
-            expect.soft(rightGroup!.x - leftCard!.x - leftCard!.width, 'Space before the divider').toBeGreaterThanOrEqual(8);
-            expect.soft(rightCard!.x - rightGroup!.x, 'Space after the divider').toBeGreaterThanOrEqual(8);
+          if (tabName === 'KPhos/KCl') {
+            const results = activePanel(page).getByTestId('kphos-results');
+            await expect(results.getByRole('table', { name: /delivery to patient$/ })).toHaveCount(2);
+            for (const [tableName, medication] of [
+              ['Bag preparation', 'Potassium chloride (KCl)'],
+              ['CRI preparation', 'Potassium phosphate (KPhos)'],
+            ]) {
+              const preparation = results.getByRole('table', { name: tableName, exact: true });
+              await expect(preparation.getByRole('rowheader', { name: medication, exact: true })).toBeVisible();
+            }
+            await expect(results.locator('details[open]').getByRole('table')).toHaveCount(2);
+            const resultBox = (await results.boundingBox())!;
+            for (const table of await results.getByRole('table').all()) {
+              const box = (await table.boundingBox())!;
+              expect.soft(box.x, 'Table starts inside the results').toBeGreaterThanOrEqual(resultBox.x);
+              expect.soft(box.x + box.width, 'Table fits the results').toBeLessThanOrEqual(resultBox.x + resultBox.width + 1);
+            }
           }
         }
 
@@ -596,7 +601,7 @@ test.describe('responsive layout guardrails', () => {
 
         await selectTab(page, 'KPhos/KCl');
         panel = activePanel(page);
-        await setToggle(panel, 'Add KPhos to', false);
+        await panel.getByRole('radio', { name: 'Fluid bag' }).check();
         await capture('KPhos Bag');
         await expectAxeColorContrast(page, `${theme} ${viewport.name} KPhos Bag`);
 
