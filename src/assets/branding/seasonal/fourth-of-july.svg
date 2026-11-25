@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -48 1208 404">
+  <defs>
+    <path id="star" fill="currentColor" stroke="#47506e" stroke-width="3" stroke-linejoin="round"
+      d="M-4-25h8v9h5v10h16v7h-8v7h-5v7h4v9H8v-5H0v-5h-4v5h-8v5h-8v-9h4V8h-5V1h-7v-7h16v-10h4Z"/>
+    <g id="firework" fill="none" stroke="currentColor" stroke-width="5" stroke-linecap="round">
+      <path d="M0-27v13m0 28v13m-27-27h13m28 0h13m-46-19 9 9m20 20 9 9m0-38-9 9m-20 20-9 9"/>
+      <path stroke="#dd5265" d="M-5 0H5M0-5V5"/>
+    </g>
+  </defs>
+  <use href="#star" color="#e36273" transform="translate(534 123) rotate(-12) scale(.68)"/>
+  <use href="#firework" color="#619ad2" transform="translate(678 77)"/>
+  <use href="#firework" color="#c64462" transform="translate(1042 90) rotate(18) scale(.93)"/>
+  <use href="#star" color="#6cabe3" transform="translate(1148 132) rotate(15) scale(.67)"/>
+  <g transform="translate(822 -27) scale(4)">
+    <path fill="#365b81" stroke="#2a374e" stroke-width="1.15" stroke-linejoin="round"
+      d="M9 0h13v1h3v2h-1v3h-1v2h-1v3h-1v3h-1v2h2v1h3v2h-2v1h-5v1h-5v1H5v-1H2v-1H0v-2h3v-1h2v-3h1v-3h1V8h1V5h1Z"/>
+    <path fill="#fff0de" d="M10 1h12v1h2v2h-1v3h-1v3h-1v3H6v-2h1V8h1V5h1V3h1Z"/>
+    <path fill="#bf4e56"
+      d="M10 1h3v3h-1v3h-1v3h-1v3H7v-2h1V8h1V5h1Zm6 0h3v3h-1v3h-1v3h-1v3h-3v-3h1V7h1V4h1Zm6 0v1h2v2h-1v3h-1v3h-1v3h-2v-3h1V7h1V4h1Z"/>
+    <path fill="#7391ae" d="M3 18h4v1h9v-1h5v-1h2v2h-5v1h-6v1H5v-1H2Z"/>
+    <path fill="#fff0de" d="M13 13.3l.85 1.72 1.9.28-1.37 1.33.32 1.88-1.7-.88-1.7.88.32-1.88-1.37-1.33 1.9-.28Z"/>
+  </g>
+</svg>

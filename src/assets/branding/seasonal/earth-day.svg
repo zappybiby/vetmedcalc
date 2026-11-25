@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -48 1208 404">
+  <defs>
+    <g id="globe">
+      <path fill="#5da9d3" stroke="#37577a" stroke-width="3.5" stroke-linejoin="round"
+        d="M-10-24h20v4h8v5h5v8h4V7h-4v8h-5v5h-8v4h-20v-4h-8v-5h-5V7h-4V-7h4v-8h5v-5h8Z"/>
+      <path fill="#a0d18a"
+        d="M-18-14h6v-5h10v4h6v7h-5v5h-5v5h-8v-5h-6v-6h2Zm10 17H1v5h6v7H4v6h-7v-6h-5ZM9-13h8v5h7V4h-7v4h-6V2H5v-7h4Zm2 24h10v5h-5v4h-5Z"/>
+      <path fill="#bde8f6" d="M-20-8h4v6h-4Z"/>
+    </g>
+    <g id="sprout">
+      <path fill="#80bd78" stroke="#427451" stroke-width="3.5" stroke-linejoin="round"
+        d="M-25-19h12v4h8v5h5v6h5v-6h5v-6h8v-4h9v9h-4v8h-5v5H6v18H0V7h-9V3h-8v-6h-5v-8h-3Z"/>
+      <path fill="none" stroke="#438152" stroke-width="3.5" d="M3 12V2l-17-12M3 3l14-12"/>
+    </g>
+  </defs>
+  <use href="#sprout" transform="translate(534 123) rotate(-12) scale(.79)"/>
+  <use href="#globe" transform="translate(678 77)"/>
+  <use href="#globe" transform="translate(1042 90) rotate(14) scale(.93)"/>
+  <use href="#sprout" transform="translate(1148 132) rotate(17) scale(.77)"/>
+  <g transform="translate(821 -17) scale(4)">
+    <path fill="#64885a" stroke="#2c453a" stroke-width="1" stroke-linejoin="round"
+      d="M4 11h2V9h3V8h6V7h4v1h2v2h2v2h1v3h1v2h-3v1h-9v1H3v-1H1v-2h1v-2h1v-2h1Z"/>
+    <path fill="#9dbb7e" d="M7 10h3V9h8v1h3v3h-7v1H5v-2h2Z"/>
+    <path fill="#3e674f" d="M3 16h9v-1h7v-1h4v2h-3v1h-8v1H3Z"/>
+    <path fill="#659052" stroke="#375742" stroke-width="1" stroke-linejoin="round"
+      d="M13 10V7h-2V5H8V4H6V2H4v-4h4v1h3v1h2v2h1v1h1V1h2v-2h3v-1h4v-1h3v3h-1v2h-2v1h-3v1h-3v2h-2v2h-1v3Z"/>
+    <path fill="#bad78c" d="M5-1h3v1h3v1h1v2h-2V2H8V1H6V0H5Zm16 0h3v-1h2v2h-2v1h-2v1h-3v1h-2V2h1V1h2V0h1Z"/>
+  </g>
+</svg>
