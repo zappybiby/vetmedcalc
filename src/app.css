@@ -142,23 +142,20 @@
 
 @layer components {
   .patient-header {
-    position: relative;
     min-width: 0;
   }
 
   .desktop-brand {
     display: none;
-    position: absolute;
-    left: max(0px, calc(50% - 324px));
-    top: 50%;
-    transform: translateY(-50%);
     pointer-events: none;
   }
 
   .brand-logo {
     display: block;
-    width: 160px;
+    width: 100%;
     height: auto;
+    transform: scaleY(0.95);
+    transform-origin: center;
   }
 
   .brand-logo-light,
@@ -171,8 +168,18 @@
   }
 
   @media screen and (min-width: 1024px) {
+    .patient-header {
+      /* Leave 24px on each side of the 280px weight panel. */
+      --weight-column-width: 328px;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) var(--weight-column-width) minmax(0, 1fr);
+      align-items: center;
+    }
+
     .desktop-brand {
       display: block;
+      justify-self: end;
+      width: min(100%, calc((var(--cri-tool-width) - var(--weight-column-width)) / 2));
     }
   }
 

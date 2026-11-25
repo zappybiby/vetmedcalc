@@ -60,7 +60,7 @@
   </div>
 
   {#if !$cprBatchMode}
-    <div class="patient-header">
+    <div class="patient-header" style:--cri-tool-width={desktopWidths.cri}>
       <slot name="brand" />
       <PatientPanel />
     </div>
