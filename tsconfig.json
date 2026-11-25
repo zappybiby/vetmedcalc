@@ -3,11 +3,10 @@
   "compilerOptions": {
     "module": "ESNext",
     "moduleResolution": "bundler",
-    "baseUrl": ".",
     "paths": {
-      "@/*": ["src/*"],
-      "@defs": ["src/lib/definitions/index.ts"],
-      "@defs/*": ["src/lib/definitions/*"]
+      "@/*": ["./src/*"],
+      "@defs": ["./src/lib/definitions/index.ts"],
+      "@defs/*": ["./src/lib/definitions/*"]
     },
     "types": ["svelte", "vite/client"],
     "strict": true,
