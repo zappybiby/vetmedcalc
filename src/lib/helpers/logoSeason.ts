@@ -1,5 +1,3 @@
-import type { SuperBowlDay } from './superBowlSchedule';
-
 export type LogoSeason =
   | 'regular'
   | 'new-year'
@@ -44,14 +42,11 @@ function isHolidayWeek(today: Date, holiday: Date): boolean {
   return today >= firstDay && today <= holiday;
 }
 
-export function getLogoSeason(date: Date, gameDay?: SuperBowlDay): LogoSeason {
+export function getLogoSeason(date: Date): LogoSeason {
   const year = date.getFullYear();
   const month = date.getMonth();
   if (month === 11) return 'christmas';
 
-  const superBowl = gameDay?.year === year
-    ? new Date(year, gameDay.month - 1, gameDay.day)
-    : getNthWeekday(year, 1, 0, 2);
   const holidays: { season: LogoSeason; day: Date }[] = [
     { season: 'new-year', day: new Date(year, 0, 1) },
     { season: 'valentines', day: new Date(year, 1, 14) },
@@ -60,7 +55,7 @@ export function getLogoSeason(date: Date, gameDay?: SuperBowlDay): LogoSeason {
     { season: 'fourth-of-july', day: new Date(year, 6, 4) },
     { season: 'halloween', day: new Date(year, 9, 31) },
     { season: 'thanksgiving', day: getNthWeekday(year, 10, 4, 4) },
-    { season: 'super-bowl', day: superBowl },
+    { season: 'super-bowl', day: getNthWeekday(year, 1, 0, 2) },
   ];
 
   const today = new Date(year, month, date.getDate());

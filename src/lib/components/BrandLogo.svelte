@@ -10,7 +10,6 @@
   import logoDark from '../../assets/branding/vetmedcalc-logo-dark.svg';
   import logoLight from '../../assets/branding/vetmedcalc-logo-light.svg';
   import { getLogoSeason, type LogoSeason } from '../helpers/logoSeason';
-  import { fetchSuperBowlDay, type SuperBowlDay } from '../helpers/superBowlSchedule';
 
   const seasonalOverlays: Partial<Record<LogoSeason, string>> = {
     'new-year': newYear,
@@ -26,34 +25,19 @@
   $: overlay = seasonalOverlays[season];
 
   onMount(() => {
-    const scheduleRequest = new AbortController();
-    let gameDay: SuperBowlDay | undefined;
-    let lastScheduleCheck: string | undefined;
     let timer: number;
 
     function updateSeason() {
       const now = new Date();
-      season = getLogoSeason(now, gameDay);
+      season = getLogoSeason(now);
 
       const nextUpdate = new Date(now);
       nextUpdate.setHours(now.getHours() < 12 ? 12 : 24, 0, 0, 0);
       timer = window.setTimeout(updateSeason, nextUpdate.getTime() - now.getTime());
-
-      const today = now.toDateString();
-      if (now.getMonth() > 2 || today === lastScheduleCheck) return;
-      lastScheduleCheck = today;
-      void fetchSuperBowlDay(now.getFullYear(), scheduleRequest.signal).then((publishedDay) => {
-        if (!publishedDay || scheduleRequest.signal.aborted || today !== lastScheduleCheck) return;
-        gameDay = publishedDay;
-        season = getLogoSeason(new Date(), gameDay);
-      });
     }
 
     updateSeason();
-    return () => {
-      scheduleRequest.abort();
-      window.clearTimeout(timer);
-    };
+    return () => window.clearTimeout(timer);
   });
 </script>
 
