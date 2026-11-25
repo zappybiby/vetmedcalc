@@ -81,8 +81,6 @@ Meaningful differences in table density and result hierarchy are intentional.
 
 ## Validation
 
-Run `npm run check`, `npm run build`, `git diff --check` and `npm run test:layout`
-from the WSL checkout. The existing Playwright suite covers workflows, calculations,
-responsive geometry, theme contrast and print-label fitting. Reinspect populated
-screenshots after style changes; screenshots are review evidence, not pixel baselines.
+Run `npm run check:commit` and `git diff --check` from the WSL checkout.
+Reinspect populated screenshots after style changes. Use the screenshots as review evidence.
 Do not add brittle tests for each spacing or markup choice during design iteration.

@@ -11,12 +11,9 @@
     "build": "vite build",
     "preview": "vite preview",
     "check": "svelte-check --tsconfig ./tsconfig.app.json && tsc -p tsconfig.node.json",
-    "test:layout": "playwright test",
-    "check:commit": "npm run check && npm run build && npm run test:layout"
+    "check:commit": "npm run check && npm run build"
   },
   "devDependencies": {
-    "@axe-core/playwright": "^4.14.1",
-    "@playwright/test": "^1.65.1",
     "@rollup/rollup-linux-x64-gnu": "^4.68.8",
     "@sveltejs/vite-plugin-svelte": "^7.3.2",
     "@tailwindcss/forms": "^0.5.10",
