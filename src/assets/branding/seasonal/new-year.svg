@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -48 1208 404">
+  <defs>
+    <g id="balloon">
+      <path fill="none" stroke="#998dc2" stroke-width="5" stroke-linecap="round"
+        d="M0 13v6h6v7h-5v6"/>
+      <path fill="currentColor" stroke="#614c87" stroke-width="3.5" stroke-linejoin="round"
+        d="M-9-24H9v4h7v7h4V1h-4v7H9v4H4v5h-8v-5h-5V8h-7V1h-4v-14h4v-7h7Z"/>
+      <path fill="#fff0fa" d="M-12-15h7v5h-4v7h-6v-8h3Z"/>
+    </g>
+    <g id="flute">
+      <path fill="#ffefcb" stroke="#89663e" stroke-width="3.5" stroke-linejoin="round"
+        d="M-17-25h34v20h-4v8H6v16h10v6h-32v-6h10V3h-7v-8h-4Z"/>
+      <path fill="#f1b754" d="M-12-12h24v6H8v5H-8v-5h-4Z"/>
+      <path fill="#b67c44" d="M-9-20h5v5h-5Zm12 6h4v4H3Z"/>
+    </g>
+  </defs>
+  <use href="#balloon" color="#b57be4" transform="translate(534 122) rotate(-13) scale(.8)"/>
+  <use href="#flute" transform="translate(678 77) rotate(-16)"/>
+  <use href="#flute" transform="translate(1042 90) rotate(16)"/>
+  <use href="#balloon" color="#63c9bc" transform="translate(1148 129) rotate(13) scale(.8)"/>
+  <g transform="translate(820 -29) scale(4)">
+    <path fill="#317d86" stroke="#23434a" stroke-width="1.15" stroke-linejoin="round"
+      d="M11 2h3v2h1v3h1v3h1v3h2v3h2v3h2v2h-3v1H5v-1H2v-2h2v-3h2v-3h2v-3h1V7h1V4h1Z"/>
+    <path fill="#5ab7b3" d="M11 4h1v5h-1v4h-1v3H8v3H5v-2h1v-3h2v-3h1V8h1V5h1Z"/>
+    <path fill="#fbd38b" d="M10 8h5v2h-5Zm-2 4h9v1h1v1H7v-1h1Zm-3 5h15v1h1v1H4v-1h1Z"/>
+    <path fill="#f4c672" stroke="#68503c" stroke-width=".8"
+      d="M11 0h1v-1h2v1h1v1h1v1h-2v2h-2v-1h-2V2H9V1h2Z"/>
+    <path fill="#ffefd4" d="M12 0h2v2h-2Z"/>
+  </g>
+</svg>

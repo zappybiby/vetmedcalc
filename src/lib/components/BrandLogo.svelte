@@ -1,31 +1,59 @@
 <script lang="ts">
   import { onMount } from 'svelte';
+  import easter from '../../assets/branding/seasonal/easter.svg?no-inline';
+  import earthDay from '../../assets/branding/seasonal/earth-day.svg?no-inline';
+  import fourthOfJuly from '../../assets/branding/seasonal/fourth-of-july.svg?no-inline';
+  import halloween from '../../assets/branding/seasonal/halloween.svg?no-inline';
+  import newYear from '../../assets/branding/seasonal/new-year.svg?no-inline';
+  import superBowl from '../../assets/branding/seasonal/super-bowl.svg?no-inline';
+  import valentines from '../../assets/branding/seasonal/valentines.svg?no-inline';
   import logoDark from '../../assets/branding/vetmedcalc-logo-dark.svg';
   import logoLight from '../../assets/branding/vetmedcalc-logo-light.svg';
+  import { getLogoSeason, type LogoSeason } from '../helpers/logoSeason';
+  import { fetchSuperBowlDay, type SuperBowlDay } from '../helpers/superBowlSchedule';
 
-  function getLogoSeason(date: Date) {
-    const month = date.getMonth() + 1;
-    if (month === 12) return 'christmas';
-    if (month === 11 && date.getDate() >= 17) return 'thanksgiving';
-    return 'regular';
-  }
+  const seasonalOverlays: Partial<Record<LogoSeason, string>> = {
+    'new-year': newYear,
+    valentines,
+    'super-bowl': superBowl,
+    easter,
+    'earth-day': earthDay,
+    'fourth-of-july': fourthOfJuly,
+    halloween,
+  };
 
   let season = getLogoSeason(new Date());
+  $: overlay = seasonalOverlays[season];
 
   onMount(() => {
+    const scheduleRequest = new AbortController();
+    let gameDay: SuperBowlDay | undefined;
+    let lastScheduleCheck: string | undefined;
     let timer: number;
 
-    function updateAtLocalMidnight() {
+    function updateSeason() {
       const now = new Date();
-      season = getLogoSeason(now);
+      season = getLogoSeason(now, gameDay);
 
-      const midnight = new Date(now);
-      midnight.setHours(24, 0, 0, 0);
-      timer = window.setTimeout(updateAtLocalMidnight, midnight.getTime() - now.getTime());
+      const nextUpdate = new Date(now);
+      nextUpdate.setHours(now.getHours() < 12 ? 12 : 24, 0, 0, 0);
+      timer = window.setTimeout(updateSeason, nextUpdate.getTime() - now.getTime());
+
+      const today = now.toDateString();
+      if (now.getMonth() > 2 || today === lastScheduleCheck) return;
+      lastScheduleCheck = today;
+      void fetchSuperBowlDay(now.getFullYear(), scheduleRequest.signal).then((publishedDay) => {
+        if (!publishedDay || scheduleRequest.signal.aborted || today !== lastScheduleCheck) return;
+        gameDay = publishedDay;
+        season = getLogoSeason(new Date(), gameDay);
+      });
     }
 
-    updateAtLocalMidnight();
-    return () => window.clearTimeout(timer);
+    updateSeason();
+    return () => {
+      scheduleRequest.abort();
+      window.clearTimeout(timer);
+    };
   });
 </script>
 
@@ -88,6 +116,8 @@
       <path fill="#7e879c" d="M6 10h12v1h1v3h-1v1H6v-1H5v-3h1ZM0 8h3v1h1v3H3v1H0v-1h-1V9h1Z" />
       <path fill="#f8faff" d="M6 11h12v3H6ZM0 9h3v3H0Z" />
     </g>
+  {:else if overlay}
+    <image href={overlay} y="-48" width="1208" height="404" aria-hidden="true" />
   {:else}
     <path
       class="emphasis"

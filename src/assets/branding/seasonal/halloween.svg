@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -48 1208 404">
+  <defs>
+    <g id="ghost">
+      <path fill="currentColor" stroke="#696194" stroke-width="3.5" stroke-linejoin="round"
+        d="M-11-21h22v4h7v6h5V5h4v17h-8v-5h-8v7H3v-6h-7v5h-8v-6h-7v4h-8V6h5v-17h5v-6h6Z"/>
+      <path fill="#41365f" d="M-11-8h6v9h-6Zm16 0h6v9H5ZM-3 4h6v5h-6Z"/>
+    </g>
+  </defs>
+  <use href="#ghost" color="#f6edff" transform="translate(534 123) rotate(-12) scale(.75)"/>
+  <use href="#ghost" color="#e7d6ff" transform="translate(678 77) rotate(10)"/>
+  <use href="#ghost" color="#f6edff" transform="translate(1042 90) rotate(-9)"/>
+  <use href="#ghost" color="#e7d6ff" transform="translate(1148 132) rotate(14) scale(.72)"/>
+  <g transform="translate(818 -35) scale(4)">
+    <path fill="#392e4b" stroke="#302337" stroke-width="1.15" stroke-linejoin="round"
+      d="M6 1h5v1h3v2h2v3h2v4h2v4h2v2h4v1h3v2h-2v1h-7v1H6v1H2v-1H0v-2h3v-1h4v-2h2v-3h1v-3h1V8h-1V6H8V5H5v1H3V3h2V2h1Z"/>
+    <path fill="#7a658d" d="M6 2h5v1h2v2h2v3h-3V6h-2V5H8V4H6v1H4V4h2Zm5 6h3v3h1v4h-4v-2h1v-2h-1Z"/>
+    <path fill="#a86444" d="M10 14h8v1h3v2h1v1h-5v1H8v-1h1v-2h1Z"/>
+    <path fill="#f4c880" fill-rule="evenodd" d="M13 14h6v5h-6Zm1 1v3h4v-3Z"/>
+    <path fill="#8d749f" d="M3 20h5v-1h6v1H7v1H3Zm18-2h5v1h2v1h-6v-1h-1Z"/>
+  </g>
+</svg>

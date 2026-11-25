@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -48 1208 404">
+  <defs>
+    <g id="football">
+      <path fill="#bd6a48" stroke="#653f39" stroke-width="3.5" stroke-linejoin="round"
+        d="M-30-1h5v-5h6v-5h8v-4h22v4h8v5h6v5h5v3h-5v5h-6v5h-8v4h-22v-4h-8V7h-6V2h-5Z"/>
+      <path fill="#ffe2bc" d="M-18-10h4v21h-4Zm32 0h4v21h-4ZM-9-2H9v4H-9Z"/>
+      <path fill="#fff3db" d="M-7-5h3v10h-3Zm6 0h3v10h-3Zm6 0h3v10H5Z"/>
+    </g>
+    <g id="goalpost">
+      <path fill="none" stroke="#855d3d" stroke-width="9" stroke-linecap="square"
+        d="M-20-22V0h40v-22M0 0v23"/>
+      <path fill="none" stroke="#ffc975" stroke-width="5" stroke-linecap="square"
+        d="M-20-22V0h40v-22M0 0v23"/>
+      <path fill="#71b189" d="M-13 21h26v5h-26Z"/>
+    </g>
+  </defs>
+  <use href="#football" transform="translate(534 123) rotate(-26) scale(.82)"/>
+  <use href="#goalpost" transform="translate(678 77)"/>
+  <use href="#goalpost" transform="translate(1042 90) rotate(10) scale(.9)"/>
+  <use href="#football" transform="translate(1148 132) rotate(26) scale(.8)"/>
+  <g transform="translate(783 -16) scale(4)">
+    <path fill="#38536f" stroke="#263446" stroke-width="1.15" stroke-linejoin="round"
+      d="M9 0h10v1h3v1h3v2h2v3h1v4h-1v2h-2v2h-3v2h-3v2h-4v2H6v-1H4v-3H2v-4H1V9h1V6h1V4h2V2h2V1h2Z"/>
+    <path fill="#7293ab" d="M9 1h8v1h-5v1H8v2H6v3H4V5h2V3h3Z"/>
+    <path fill="#29435f" d="M22 10h5v2h-2v2h-3v2h-4v2h-3v2H6v-2h7v-2h3v-3h3v-2h3Z"/>
+    <path fill="#e5bf7b" d="M17 1h3v1h3v2h2v2h1v3h-2V7h-2V5h-2V3h-3Z"/>
+    <path fill="#1b3046" d="M8 13h4v1h1v3h-1v1H8v-1H7v-3h1Z"/>
+    <path fill="#a6bbca" d="M9 14h2v2H9Z"/>
+  </g>
+</svg>
